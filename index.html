@@ -3423,33 +3423,38 @@
                 removals[tipo] = (removals[tipo] || 0) + 1;
             });
             
-            // Verificar se há algo para processar
-            if (Object.keys(additions).length === 0 && Object.keys(removals).length === 0) {
-                showToast('Selecione pelo menos uma base para adicionar ou remover.', 'warning');
+            // Verificar se há algo para processar (bases ou data)
+            const hasBaseChanges = Object.keys(additions).length > 0 || Object.keys(removals).length > 0;
+            const hasDateChange = executionDate && executionDate.trim() !== '';
+
+            if (!hasBaseChanges && !hasDateChange) {
+                showToast('Selecione pelo menos uma base para adicionar/remover ou defina uma data de execução.', 'warning');
                 return;
             }
             
-            // Atualizar progressData para a linha específica
-            if (!progressData[selectedUsina]) {
-                progressData[selectedUsina] = {};
-            }
-            if (!progressData[selectedUsina][selectedLinha]) {
-                progressData[selectedUsina][selectedLinha] = {};
+            // Atualizar progressData para a linha específica apenas se houver mudanças nas bases
+            if (hasBaseChanges) {
+                if (!progressData[selectedUsina]) {
+                    progressData[selectedUsina] = {};
+                }
+                if (!progressData[selectedUsina][selectedLinha]) {
+                    progressData[selectedUsina][selectedLinha] = {};
+                }
+
+                // Aplicar adições
+                for (const tipo in additions) {
+                    progressData[selectedUsina][selectedLinha][tipo] = (progressData[selectedUsina][selectedLinha][tipo] || 0) + additions[tipo];
+                }
+
+                // Aplicar remoções
+                for (const tipo in removals) {
+                    const currentValue = progressData[selectedUsina][selectedLinha][tipo] || 0;
+                    progressData[selectedUsina][selectedLinha][tipo] = Math.max(0, currentValue - removals[tipo]);
+                }
             }
             
-            // Aplicar adições
-            for (const tipo in additions) {
-                progressData[selectedUsina][selectedLinha][tipo] = (progressData[selectedUsina][selectedLinha][tipo] || 0) + additions[tipo];
-            }
-            
-            // Aplicar remoções
-            for (const tipo in removals) {
-                const currentValue = progressData[selectedUsina][selectedLinha][tipo] || 0;
-                progressData[selectedUsina][selectedLinha][tipo] = Math.max(0, currentValue - removals[tipo]);
-            }
-            
-            // Salvar data de execução se houve adições
-            if (Object.keys(additions).length > 0) {
+            // Salvar data de execução se foi informada (independente de mudanças nas bases)
+            if (hasDateChange) {
                 if (!executionDates[selectedUsina]) {
                     executionDates[selectedUsina] = {};
                 }
@@ -3480,14 +3485,14 @@
             
             // Mostrar notificação de sucesso detalhada
             let message = `Progresso da ${projectData[selectedUsina].name} atualizado!\n\n`;
-            
+
             if (Object.keys(additions).length > 0) {
                 message += '✅ Bases concluídas:\n';
                 for (const tipo in additions) {
                     message += `  • ${additions[tipo]} base(s) tipo ${tipo}\n`;
                 }
             }
-            
+
             if (Object.keys(removals).length > 0) {
                 if (Object.keys(additions).length > 0) message += '\n';
                 message += '❌ Bases removidas:\n';
@@ -3495,7 +3500,12 @@
                     message += `  • ${removals[tipo]} base(s) tipo ${tipo}\n`;
                 }
             }
-            
+
+            if (hasDateChange) {
+                if (hasBaseChanges) message += '\n';
+                message += `📅 Data de execução: ${executionDate}`;
+            }
+
             showToast(message, 'success');
         });
 
