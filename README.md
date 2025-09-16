@@ -1,1 +1,26 @@
-# Fernando
+# Sistema de Gestão - Linhas de Vida
+
+Sistema web para gerenciamento da instalação de linhas de vida nas usinas hidrelétricas Pimental e Belo Monte.
+
+**Desenvolvido para:** Thommen Engenharia • Norte Energia
+
+## Acesso ao Sistema
+- **Arquivo principal:** `index.html`
+- **GitHub Pages:** https://oamadorr.github.io/Fernando
+
+## Funcionalidades
+- Dashboard com métricas de progresso
+- Tabelas interativas com filtros e busca  
+- Sistema de notificações toast
+- Relatórios PDF e Excel completos
+- Coluna de data de execução
+- Sincronização Firebase em tempo real
+
+## Tecnologias
+- HTML5, CSS3, JavaScript (Vanilla)
+- Chart.js, jsPDF, SheetJS, Font Awesome
+- Firebase Firestore
+- Responsive Design
+
+---
+*Sistema atualizado em 16/09/2025*
