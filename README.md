@@ -7,7 +7,7 @@ Sistema web para gerenciamento da instalação de linhas de vida nas usinas hidr
 ## Acesso ao Sistema
 - **Arquivo principal:** `index.html`
 - **Vercel Deploy:** https://linhasdevida.vercel.app ✅
-- **GitHub Pages:** https://oamadorr.github.io/Fernando (configurar)
+- **GitHub Pages:** Em configuração
 
 ## Funcionalidades
 - Dashboard com métricas de progresso
