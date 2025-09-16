@@ -1,8 +1,6 @@
 # Vercel
 .vercel
 
-# Netlify (removido)
-.netlify
 
 # Claude Code
 .claude

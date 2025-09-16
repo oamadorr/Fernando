@@ -10,13 +10,7 @@ Esta pasta contém **APENAS** os arquivos necessários para fazer o deploy do si
 
 ## 📋 Como fazer o Deploy:
 
-### **Netlify (Drop Zone):**
-1. Acesse: https://app.netlify.com/drop
-2. Arraste TODA esta pasta `deploy/` 
-3. Ou selecione apenas `index.html` e `thommen-logo.png`
-4. Deploy instantâneo!
-
-### **Outros serviços:**
+### **Serviços disponíveis:**
 - **Vercel:** Upload desta pasta
 - **GitHub Pages:** Copie estes arquivos para repositório
 - **Firebase Hosting:** Upload desta pasta
