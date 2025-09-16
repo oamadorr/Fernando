@@ -1646,7 +1646,10 @@
                         <h3>Produtividade</h3>
                         <div class="metric" id="produtividade">0</div>
                         <div class="sub-metric">bases/dia útil</div>
-                        <div class="sub-metric" style="margin-top: 10px;">
+                        <div class="sub-metric" style="margin-top: 8px;">
+                            <i class="fas fa-clock"></i> <span id="horasTrabalhadas">0</span> horas trabalhadas
+                        </div>
+                        <div class="sub-metric" style="margin-top: 8px;">
                             <i class="fas fa-users"></i> 4 pessoas • 6h/dia • 80% aproveitamento
                         </div>
                     </div>
@@ -2379,7 +2382,7 @@
             const atual = teamConfig.dataAtual;
             const diffTime = atual - inicio;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
+
             // Contar apenas dias úteis (seg-sex)
             let workDays = 0;
             for (let i = 0; i <= diffDays; i++) {
@@ -2390,6 +2393,13 @@
                 }
             }
             return workDays;
+        }
+
+        function calculateWorkedHours() {
+            const workDays = calculateWorkDays();
+            // 6 horas/dia * 80% aproveitamento = 4.8 horas efetivas por dia
+            const hoursPerDay = 6 * 0.8;
+            return workDays * hoursPerDay;
         }
 
         // Função para definir manualmente qual usina está ativa
@@ -2900,7 +2910,11 @@
             document.getElementById('basesCompletas').textContent = `${completedBases} de ${totalBases} bases concluídas`;
             
             document.getElementById('produtividade').textContent = productivity.toFixed(1);
-            
+
+            // Calcular e exibir horas trabalhadas
+            const horasTrabalhadas = calculateWorkedHours();
+            document.getElementById('horasTrabalhadas').textContent = horasTrabalhadas.toFixed(1);
+
             if (estimatedCompletion) {
                 document.getElementById('estimativaConclusao').textContent = estimatedCompletion.toLocaleDateString('pt-BR');
                 const remainingDays = Math.ceil((estimatedCompletion - teamConfig.dataAtual) / (1000 * 60 * 60 * 24));
@@ -2909,7 +2923,7 @@
                 document.getElementById('estimativaConclusao').textContent = 'Calculando...';
                 document.getElementById('diasRestantes').textContent = 'Aguardando dados';
             }
-            
+
             document.getElementById('diasTrabalhados').textContent = workDays;
             
             // Data de início fixa
