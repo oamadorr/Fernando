@@ -1,0 +1,31 @@
+# Vercel
+.vercel
+
+# Netlify (removido)
+.netlify
+
+# Claude Code
+.claude
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
