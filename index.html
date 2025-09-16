@@ -176,6 +176,35 @@
             margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .last-updated {
+            font-size: 0.7rem;
+            color: var(--medium-gray);
+            font-weight: normal;
+            text-transform: none;
+            letter-spacing: normal;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .update-indicator {
+            width: 6px;
+            height: 6px;
+            background: var(--success-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         .dashboard-card .metric {
@@ -197,13 +226,51 @@
             border-radius: 4px;
             overflow: hidden;
             margin: 15px 0;
+            position: relative;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: translateX(-100%);
+            animation: shimmer 2s infinite;
         }
 
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--success-green), var(--accent-blue));
             border-radius: 4px;
-            transition: width 0.5s ease;
+            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: translateX(-100%);
+            animation: progressShine 3s infinite 1s;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(100%); }
         }
 
         /* Seções das usinas */
@@ -288,29 +355,75 @@
         }
 
         .status-badge {
-            padding: 4px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .status-badge:hover::before {
+            left: 100%;
         }
 
         .status-concluido {
-            background-color: rgba(16, 185, 129, 0.1);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.1));
             color: var(--success-green);
-            border: 1px solid var(--success-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-concluido::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
         }
 
         .status-pendente {
-            background-color: rgba(239, 68, 68, 0.1);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.1));
             color: var(--error-red);
-            border: 1px solid var(--error-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-pendente::after {
+            content: '\f017';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
         }
 
         .status-andamento {
-            background-color: rgba(245, 158, 11, 0.1);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.1));
             color: var(--warning-orange);
-            border: 1px solid var(--warning-orange);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-andamento::after {
+            content: '\f110';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .btn-small {
@@ -341,32 +454,89 @@
         }
 
         .step-toggle {
-            padding: 2px 8px;
+            padding: 4px 12px;
             font-size: 0.65rem;
-            border-radius: 12px;
+            border-radius: 16px;
             border: none;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 80px;
+            justify-content: center;
+        }
+
+        .step-toggle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .step-toggle:active::before {
+            width: 120%;
+            height: 120%;
         }
 
         .step-done {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: var(--success-green);
-            border: 1px solid var(--success-green);
+            background: linear-gradient(135deg, var(--success-green), #059669);
+            color: white;
+            border: 1px solid transparent;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .step-done::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: 4px;
         }
 
         .step-pending {
-            background-color: rgba(239, 68, 68, 0.1);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
             color: var(--error-red);
-            border: 1px solid var(--error-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .step-pending::after {
+            content: '\f017';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: 4px;
         }
 
         .step-toggle:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .step-done:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .step-pending:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.1));
+            border-color: var(--error-red);
+        }
+
+        .execution-date-cell {
+            text-align: center;
+            font-size: 0.85rem;
+            min-width: 100px;
+            white-space: nowrap;
         }
 
         /* Charts section */
@@ -406,6 +576,168 @@
         .info-value {
             color: #1f2937;
             font-weight: 600;
+        }
+
+        /* Sistema de Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-left-color: #10b981;
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+
+        .toast-icon {
+            font-size: 18px;
+            min-width: 18px;
+        }
+
+        .toast.success .toast-icon {
+            color: #10b981;
+        }
+
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+
+        .toast.warning .toast-icon {
+            color: #f59e0b;
+        }
+
+        .toast.info .toast-icon {
+            color: #3b82f6;
+        }
+
+        .toast-content {
+            flex: 1;
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast-close:hover {
+            color: #6b7280;
+        }
+
+        @media (max-width: 480px) {
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+
+        /* Filtros de Tabelas */
+        .table-filters {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px 20px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+        }
+
+        .filter-search, .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            min-width: 200px;
+        }
+
+        .filter-search:focus, .filter-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .filter-results {
+            margin-left: auto;
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .table-filters {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            
+            .filter-search, .filter-select {
+                min-width: auto;
+                width: 100%;
+            }
+            
+            .filter-results {
+                margin-left: 0;
+                text-align: center;
+            }
         }
 
         .chart-title {
@@ -478,6 +810,14 @@
             margin-bottom: 8px;
             font-weight: 600;
             color: var(--dark-gray);
+        }
+
+        .form-help {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+            font-style: italic;
         }
 
         .form-select {
@@ -857,7 +1197,12 @@
             <section class="dashboard">
                 <div class="dashboard-grid">
                     <div class="dashboard-card">
-                        <h3>Progresso Geral</h3>
+                        <h3>Progresso Geral
+                            <span class="last-updated" id="lastUpdatedMain">
+                                <span class="update-indicator"></span>
+                                <span id="lastUpdateTime">--:--</span>
+                            </span>
+                        </h3>
                         <div class="metric" id="progressoGeral">0%</div>
                         <div class="progress-bar">
                             <div class="progress-fill" id="progressBar" style="width: 0%"></div>
@@ -963,6 +1308,27 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Filtros para Pimental -->
+                <div class="table-filters">
+                    <div class="filter-group">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="filterPimentalSearch" placeholder="Buscar por linha..." class="filter-search">
+                    </div>
+                    <div class="filter-group">
+                        <i class="fas fa-filter"></i>
+                        <select id="filterPimentalStatus" class="filter-select">
+                            <option value="">Todos os status</option>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Em Andamento">Em Andamento</option>
+                            <option value="Concluído">Concluído</option>
+                        </select>
+                    </div>
+                    <div class="filter-results">
+                        <span id="pimentalFilterResults">Mostrando 6 de 6 linhas</span>
+                    </div>
+                </div>
+                
                 <div class="table-container">
                     <table class="data-table" id="tablePimental">
                         <thead>
@@ -973,6 +1339,7 @@
                                 <th>Concluídas</th>
                                 <th>Progresso</th>
                                 <th>Status</th>
+                                <th>Data Execução</th>
                                 <th>Etapas do Cabo</th>
                                 <th>Ações</th>
                             </tr>
@@ -1007,6 +1374,27 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Filtros para Belo Monte -->
+                <div class="table-filters">
+                    <div class="filter-group">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="filterBeloMonteSearch" placeholder="Buscar por linha..." class="filter-search">
+                    </div>
+                    <div class="filter-group">
+                        <i class="fas fa-filter"></i>
+                        <select id="filterBeloMonteStatus" class="filter-select">
+                            <option value="">Todos os status</option>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Em Andamento">Em Andamento</option>
+                            <option value="Concluído">Concluído</option>
+                        </select>
+                    </div>
+                    <div class="filter-results">
+                        <span id="beloMonteFilterResults">Mostrando 18 de 18 linhas</span>
+                    </div>
+                </div>
+                
                 <div class="table-container">
                     <table class="data-table" id="tableBeloMonte">
                         <thead>
@@ -1017,6 +1405,7 @@
                                 <th>Concluídas</th>
                                 <th>Progresso</th>
                                 <th>Status</th>
+                                <th>Data Execução</th>
                                 <th>Etapas do Cabo</th>
                                 <th>Ações</th>
                             </tr>
@@ -1027,6 +1416,9 @@
             </section>
         </div>
     </main>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- Modal para atualização de progresso -->
     <div id="updateModal" class="modal">
@@ -1050,6 +1442,14 @@
                     <select id="linhaSelect" class="form-select" onchange="loadBases()" disabled>
                         <option value="">Selecione uma linha</option>
                     </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="executionDate">
+                        <i class="fas fa-calendar-alt"></i> Data de Execução:
+                    </label>
+                    <input type="date" id="executionDate" class="form-select" />
+                    <small class="form-help">Opcional - deixe em branco para usar data atual</small>
                 </div>
                 
                 <div class="form-group">
@@ -1249,12 +1649,16 @@
             dataAtual: new Date()
         };
 
+        // Datas de execução das linhas - estrutura: usina -> linha -> data
+        let executionDates = {};
+
         // Charts globais
         let chartConclusaoGeral, chartPimental, chartBeloMonte;
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
             initializeFirebase();
+            initializeFilters();
             checkUrlParams();
             
             // Mostrar aviso de modo somente leitura por padrão
@@ -1272,6 +1676,60 @@
         window.addEventListener('beforeunload', function() {
             disconnectRealtimeListener();
         });
+        
+        // Cleanup quando a página fica invisível
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                disconnectRealtimeListener();
+            }
+        });
+
+        // Sistema de Toast Notifications
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <i class="toast-icon ${icons[type]}"></i>
+                <div class="toast-content">${message}</div>
+                <button class="toast-close" onclick="removeToast(this.parentElement)">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Animar entrada
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Auto remover
+            setTimeout(() => {
+                removeToast(toast);
+            }, duration);
+            
+            return toast;
+        }
+        
+        function removeToast(toast) {
+            if (toast && toast.parentElement) {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.parentElement.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }
 
         // Funções de cálculo
         function calculateTotalBases() {
@@ -1323,6 +1781,19 @@
                 }
             }
             return total;
+        }
+
+        function calculateCompletedBasesOfType(tipo, usinaFilter = null) {
+            let completed = 0;
+            for (const usina in progressData) {
+                if (usinaFilter && usina !== usinaFilter) continue;
+                for (const linha in progressData[usina]) {
+                    if (progressData[usina][linha] && progressData[usina][linha][tipo]) {
+                        completed += progressData[usina][linha][tipo];
+                    }
+                }
+            }
+            return completed;
         }
 
         function calculateTotalBasesOfUsina(usinaKey) {
@@ -1491,6 +1962,11 @@
                             lineStepsStatus = data.lineStepsStatus;
                         }
                         
+                        // Carregar datas de execução se disponível
+                        if (data.executionDates) {
+                            executionDates = data.executionDates;
+                        }
+                        
                         // Carregar configuração da equipe se disponível
                         if (data.teamConfig) {
                             // Restaurar datas a partir de strings
@@ -1529,6 +2005,8 @@
         }
 
         let unsubscribeListener = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 3;
 
         function setupRealtimeListener() {
             if (!db || !currentProjectId || unsubscribeListener) {
@@ -1536,31 +2014,84 @@
             }
 
             unsubscribeListener = db.collection('projects').doc(currentProjectId)
-                .onSnapshot((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const newProgressData = data.progressData;
-                        const newLineStepsStatus = data.lineStepsStatus || {};
-                        
-                        // Verificar se houve mudanças nos dados
-                        let hasChanges = false;
-                        if (JSON.stringify(newProgressData) !== JSON.stringify(progressData)) {
-                            progressData = newProgressData;
-                            hasChanges = true;
+                .onSnapshot({
+                    includeMetadataChanges: false
+                }, (doc) => {
+                    // Verificar se a página ainda está ativa e o listener não foi cancelado
+                    if (document.visibilityState === 'hidden' || 
+                        document.hidden || 
+                        !unsubscribeListener) {
+                        return;
+                    }
+                    
+                    try {
+                        if (doc.exists && !doc.metadata.fromCache) {
+                            const data = doc.data();
+                            const newProgressData = data.progressData;
+                            const newLineStepsStatus = data.lineStepsStatus || {};
+                            const newExecutionDates = data.executionDates || {};
+                            
+                            // Verificar se houve mudanças nos dados
+                            let hasChanges = false;
+                            if (JSON.stringify(newProgressData) !== JSON.stringify(progressData)) {
+                                progressData = newProgressData;
+                                hasChanges = true;
+                            }
+                            if (JSON.stringify(newLineStepsStatus) !== JSON.stringify(lineStepsStatus)) {
+                                lineStepsStatus = newLineStepsStatus;
+                                hasChanges = true;
+                            }
+                            if (JSON.stringify(newExecutionDates) !== JSON.stringify(executionDates)) {
+                                // Validar datas antes de aplicar
+                                try {
+                                    for (const usina in newExecutionDates) {
+                                        for (const linha in newExecutionDates[usina]) {
+                                            const dateStr = newExecutionDates[usina][linha];
+                                            if (dateStr && isNaN(new Date(dateStr).getTime())) {
+                                                console.warn(`Data inválida encontrada para ${usina} linha ${linha}:`, dateStr);
+                                                delete newExecutionDates[usina][linha];
+                                            }
+                                        }
+                                    }
+                                    executionDates = newExecutionDates;
+                                    hasChanges = true;
+                                } catch (dateError) {
+                                    console.warn('Erro ao processar datas de execução:', dateError);
+                                }
+                            }
+                            if (hasChanges) {
+                                updateAllDisplays();
+                                updateCharts();
+                                updateStatusIndicator('online');
+                                reconnectAttempts = 0; // Reset contador em caso de sucesso
+                            }
                         }
-                        if (JSON.stringify(newLineStepsStatus) !== JSON.stringify(lineStepsStatus)) {
-                            lineStepsStatus = newLineStepsStatus;
-                            hasChanges = true;
-                        }
-                        if (hasChanges) {
-                            updateAllDisplays();
-                            updateCharts();
-                            updateStatusIndicator('online');
-                        }
+                    } catch (error) {
+                        console.error('Erro ao processar dados do Firebase:', error);
                     }
                 }, (error) => {
-                    console.error('Erro no listener:', error);
+                    // Filtrar erros conhecidos que não são críticos
+                    if (error.code === 'cancelled' || 
+                        error.message?.includes('channel closed') ||
+                        error.message?.includes('asynchronous response') ||
+                        error.message?.includes('message channel closed') ||
+                        error.name === 'FirebaseError') {
+                        // Erros silenciosos - não mostrar no console nem afetar UI
+                        return;
+                    }
+                    
+                    console.error('Erro no listener Firebase:', error);
                     updateStatusIndicator('offline');
+                    
+                    // Tentar reconectar automaticamente em caso de erro de rede
+                    if (error.code === 'unavailable' && reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        setTimeout(() => {
+                            console.log(`Tentativa de reconexão ${reconnectAttempts}/${maxReconnectAttempts}`);
+                            disconnectRealtimeListener();
+                            setupRealtimeListener();
+                        }, 2000 * reconnectAttempts); // Delay progressivo
+                    }
                 });
         }
 
@@ -1590,6 +2121,7 @@
                     // Dados detalhados (v2.0)
                     progressData: progressData,
                     lineStepsStatus: lineStepsStatus,
+                    executionDates: executionDates,
                     teamConfig: teamConfig,
                     projectData: simplifiedData,
                     
@@ -1603,7 +2135,18 @@
                 updateStatusIndicator('online');
                 
             } catch (error) {
-                console.error('Erro ao salvar dados:', error);
+                // Filtrar erros conhecidos que não devem aparecer para o usuário
+                if (error.message && (
+                    error.message.includes('channel closed') ||
+                    error.message.includes('asynchronous response') ||
+                    error.message.includes('Invalid time value')
+                )) {
+                    // Erros silenciosos - apenas log no console se necessário
+                    console.debug('Erro conhecido ignorado:', error.message);
+                } else {
+                    console.error('Erro ao salvar dados:', error);
+                }
+                
                 updateStatusIndicator('offline');
                 // Fallback para localStorage
                 saveProgressToStorage();
@@ -1802,6 +2345,59 @@
             updateTable('belo-monte', 'tableBeloMonte');
         }
 
+        // Sistema de Filtros
+        function initializeFilters() {
+            // Filtros Pimental
+            document.getElementById('filterPimentalSearch').addEventListener('input', () => {
+                filterTable('pimental');
+            });
+            document.getElementById('filterPimentalStatus').addEventListener('change', () => {
+                filterTable('pimental');
+            });
+            
+            // Filtros Belo Monte
+            document.getElementById('filterBeloMonteSearch').addEventListener('input', () => {
+                filterTable('belo-monte');
+            });
+            document.getElementById('filterBeloMonteStatus').addEventListener('change', () => {
+                filterTable('belo-monte');
+            });
+        }
+
+        function filterTable(usinaKey) {
+            const tableId = usinaKey === 'pimental' ? 'tablePimental' : 'tableBeloMonte';
+            const searchId = usinaKey === 'pimental' ? 'filterPimentalSearch' : 'filterBeloMonteSearch';
+            const statusId = usinaKey === 'pimental' ? 'filterPimentalStatus' : 'filterBeloMonteStatus';
+            const resultId = usinaKey === 'pimental' ? 'pimentalFilterResults' : 'beloMonteFilterResults';
+            
+            const searchTerm = document.getElementById(searchId).value.toLowerCase();
+            const statusFilter = document.getElementById(statusId).value;
+            
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            const rows = tbody.querySelectorAll('tr');
+            
+            let visibleCount = 0;
+            const totalCount = rows.length;
+            
+            rows.forEach(row => {
+                const linhaText = row.cells[0].textContent.toLowerCase();
+                const statusText = row.cells[5].textContent.trim();
+                
+                const matchesSearch = linhaText.includes(searchTerm);
+                const matchesStatus = !statusFilter || statusText === statusFilter;
+                
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Atualizar contador
+            document.getElementById(resultId).textContent = `Mostrando ${visibleCount} de ${totalCount} linhas`;
+        }
+
         function updateTable(usinaKey, tableId) {
             const tbody = document.querySelector(`#${tableId} tbody`);
             tbody.innerHTML = '';
@@ -1861,6 +2457,16 @@
                         <span class="status-badge ${progress === 100 ? 'status-concluido' : progress > 0 ? 'status-andamento' : 'status-pendente'}">
                             ${status}
                         </span>
+                    </td>
+                    <td class="execution-date-cell">
+                        ${(executionDates[usinaKey] && executionDates[usinaKey][linha]) 
+                            ? (() => {
+                                const dateObj = new Date(executionDates[usinaKey][linha]);
+                                return !isNaN(dateObj.getTime()) 
+                                    ? dateObj.toLocaleDateString('pt-BR')
+                                    : '<span style="color: #ef4444;">Data inválida</span>';
+                            })()
+                            : (completedBases > 0 ? '<span style="color: #6b7280; font-style: italic;">Não informada</span>' : '')}
                     </td>
                     <td>
                         <div class="cable-steps">
@@ -1988,6 +2594,27 @@
             updateTables();
             updateCharts();
             updateChartInfos();
+            updateLastUpdateTimestamp();
+        }
+
+        function updateLastUpdateTimestamp() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            const element = document.getElementById('lastUpdateTime');
+            if (element) {
+                element.textContent = timeString;
+                
+                // Adicionar efeito visual de atualização
+                const indicator = element.parentElement.querySelector('.update-indicator');
+                if (indicator) {
+                    indicator.style.animation = 'none';
+                    indicator.offsetHeight; // Trigger reflow
+                    indicator.style.animation = 'pulse 2s infinite';
+                }
+            }
         }
 
         function updateChartInfos() {
@@ -2531,16 +3158,18 @@
             
             const usinaSelect = document.getElementById('usinaSelect');
             const linhaSelect = document.getElementById('linhaSelect');
+            const executionDateInput = document.getElementById('executionDate');
             const selectedUsina = usinaSelect.value;
             const selectedLinha = linhaSelect.value;
+            const executionDate = executionDateInput.value;
             
             if (!selectedUsina) {
-                alert('Por favor, selecione uma usina.');
+                showToast('Por favor, selecione uma usina.', 'warning');
                 return;
             }
             
             if (!selectedLinha) {
-                alert('Por favor, selecione uma linha.');
+                showToast('Por favor, selecione uma linha.', 'warning');
                 return;
             }
             
@@ -2564,7 +3193,7 @@
             
             // Verificar se há algo para processar
             if (Object.keys(additions).length === 0 && Object.keys(removals).length === 0) {
-                alert('Selecione pelo menos uma base para adicionar ou remover.');
+                showToast('Selecione pelo menos uma base para adicionar ou remover.', 'warning');
                 return;
             }
             
@@ -2585,6 +3214,31 @@
             for (const tipo in removals) {
                 const currentValue = progressData[selectedUsina][selectedLinha][tipo] || 0;
                 progressData[selectedUsina][selectedLinha][tipo] = Math.max(0, currentValue - removals[tipo]);
+            }
+            
+            // Salvar data de execução se houve adições
+            if (Object.keys(additions).length > 0) {
+                if (!executionDates[selectedUsina]) {
+                    executionDates[selectedUsina] = {};
+                }
+                // Usar data informada ou data atual
+                let dateToSave;
+                if (executionDate && executionDate.trim() !== '') {
+                    // Validar se a data informada é válida
+                    const testDate = new Date(executionDate);
+                    if (!isNaN(testDate.getTime())) {
+                        dateToSave = executionDate;
+                    } else {
+                        dateToSave = new Date().toISOString().split('T')[0];
+                        console.warn('Data inválida fornecida, usando data atual:', executionDate);
+                    }
+                } else {
+                    dateToSave = new Date().toISOString().split('T')[0];
+                }
+                executionDates[selectedUsina][selectedLinha] = dateToSave;
+                
+                // Salvar no localStorage
+                localStorage.setItem('linhasVidaExecutionDates', JSON.stringify(executionDates));
             }
             
             saveProgressToStorage();
@@ -2610,7 +3264,7 @@
                 }
             }
             
-            alert(message);
+            showToast(message, 'success');
         });
 
         // Fechar modal ao clicar fora
@@ -2647,6 +3301,7 @@
                     // Dados detalhados (v2.0)
                     progressData: progressData,
                     lineStepsStatus: lineStepsStatus,
+                    executionDates: executionDates,
                     teamConfig: teamConfigForFirebase,
                     projectData: simplifiedData,
                     
@@ -2709,6 +3364,12 @@
                 const loadedData = JSON.parse(stored);
                 // Check if data is in old format (type-based) and migrate to new format (line-based)
                 progressData = migrateProgressDataIfNeeded(loadedData);
+            }
+            
+            // Carregar datas de execução
+            const storedDates = localStorage.getItem('linhasVidaExecutionDates');
+            if (storedDates) {
+                executionDates = JSON.parse(storedDates);
             }
         }
 
@@ -2787,7 +3448,7 @@
                 saveProjectData(); // Salvar no Firebase também
                 updateAllDisplays();
                 
-                alert('Todo o progresso foi limpo com sucesso!');
+                showToast('Todo o progresso foi limpo com sucesso!', 'success');
             }
         }
 
@@ -2816,7 +3477,7 @@
             link.click();
             document.body.removeChild(link);
             
-            alert('Backup dos dados exportado com sucesso!');
+            showToast('Backup dos dados exportado com sucesso!', 'success');
         }
 
         function importProgressData(event) {
@@ -2830,7 +3491,7 @@
             if (!file) return;
             
             if (file.type !== 'application/json') {
-                alert('Por favor, selecione um arquivo JSON válido.');
+                showToast('Por favor, selecione um arquivo JSON válido.', 'error');
                 return;
             }
             
@@ -2881,11 +3542,11 @@
                     // Atualizar interface
                     updateAllDisplays();
                     
-                    alert('Dados importados com sucesso!');
+                    showToast('Dados importados com sucesso!', 'success');
                     
                 } catch (error) {
                     console.error('Erro ao importar dados:', error);
-                    alert('Erro ao importar arquivo. Verifique se é um backup válido.');
+                    showToast('Erro ao importar arquivo. Verifique se é um backup válido.', 'error');
                 }
             };
             
@@ -2899,101 +3560,417 @@
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            let currentY = 20;
             
-            // Título
+            // Função auxiliar para adicionar quebra de página se necessário
+            function checkPageBreak(addHeight = 20) {
+                if (currentY + addHeight > 280) {
+                    doc.addPage();
+                    currentY = 20;
+                    return true;
+                }
+                return false;
+            }
+            
+            // Cabeçalho principal
             doc.setFontSize(20);
-            doc.text('Relatório - Linhas de Vida', 20, 30);
+            doc.setFont('helvetica', 'bold');
+            doc.text('RELATÓRIO COMPLETO - LINHAS DE VIDA', 20, currentY);
+            currentY += 15;
+            
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Usinas Hidrelétricas Belo Monte e Pimental', 20, currentY);
+            currentY += 10;
+            
             doc.setFontSize(12);
-            doc.text('Thommen Engenharia • Norte Energia', 20, 45);
-            doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 20, 55);
+            doc.text('Thommen Engenharia • Norte Energia', 20, currentY);
+            currentY += 8;
+            
+            const now = new Date();
+            doc.text(`Gerado em: ${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`, 20, currentY);
+            currentY += 15;
             
             // Dados gerais
             const progress = calculateProgress();
             const totalBases = calculateTotalBases();
             const completedBases = calculateCompletedBases();
-            
-            doc.setFontSize(14);
-            doc.text('Resumo Executivo', 20, 75);
-            doc.setFontSize(10);
-            doc.text(`Progresso Geral: ${progress.toFixed(1)}%`, 20, 90);
-            doc.text(`Bases Concluídas: ${completedBases} de ${totalBases}`, 20, 100);
-            doc.text(`Produtividade: ${calculateProductivity().toFixed(1)} bases/dia`, 20, 110);
-            
+            const productivity = calculateProductivity();
             const estimatedCompletion = calculateEstimatedCompletion();
+            
+            checkPageBreak(40);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('1. RESUMO EXECUTIVO', 20, currentY);
+            currentY += 12;
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`• Progresso Geral: ${progress.toFixed(1)}%`, 25, currentY);
+            currentY += 8;
+            doc.text(`• Bases Concluídas: ${completedBases} de ${totalBases} bases`, 25, currentY);
+            currentY += 8;
+            doc.text(`• Produtividade Atual: ${productivity.toFixed(1)} bases/dia útil`, 25, currentY);
+            currentY += 8;
+            doc.text(`• Equipe: 4 pessoas • 6h/dia • 80% de aproveitamento`, 25, currentY);
+            currentY += 8;
+            
             if (estimatedCompletion) {
-                doc.text(`Estimativa de Conclusão: ${estimatedCompletion.toLocaleDateString('pt-BR')}`, 20, 120);
+                doc.text(`• Estimativa de Conclusão: ${estimatedCompletion.toLocaleDateString('pt-BR')}`, 25, currentY);
+                currentY += 8;
             }
             
-            // Dados por usina
-            doc.setFontSize(14);
-            doc.text('Detalhamento por Usina', 20, 140);
+            // Dias trabalhados
+            const startDate = new Date('2025-09-01');
+            const workDays = calculateWorkDays(startDate, new Date());
+            doc.text(`• Dias Trabalhados: ${workDays} dias úteis desde 01/09/2025`, 25, currentY);
+            currentY += 15;
+            
+            // Detalhamento por usina
+            checkPageBreak(50);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('2. DETALHAMENTO POR USINA', 20, currentY);
+            currentY += 12;
             
             const pimentalStats = calculateUsinaStats('pimental');
             const beloMonteStats = calculateUsinaStats('belo-monte');
             
-            doc.setFontSize(10);
-            doc.text(`Pimental: ${pimentalStats.progress.toFixed(1)}% (${pimentalStats.completedBases}/${pimentalStats.totalBases} bases)`, 20, 155);
-            doc.text(`Belo Monte: ${beloMonteStats.progress.toFixed(1)}% (${beloMonteStats.completedBases}/${beloMonteStats.totalBases} bases)`, 20, 165);
+            // Pimental
+            doc.setFontSize(14);
+            doc.text('2.1 Usina Pimental', 25, currentY);
+            currentY += 10;
             
-            doc.save('relatorio-linhas-vida.pdf');
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`• Progresso: ${pimentalStats.progress.toFixed(1)}%`, 30, currentY);
+            currentY += 8;
+            doc.text(`• Bases: ${pimentalStats.completedBases}/${pimentalStats.totalBases} concluídas`, 30, currentY);
+            currentY += 8;
+            doc.text(`• Linhas Ativas: 6 linhas`, 30, currentY);
+            currentY += 8;
+            doc.text(`• Extensão Total: 395,7m`, 30, currentY);
+            currentY += 12;
+            
+            // Belo Monte
+            checkPageBreak(40);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('2.2 Usina Belo Monte', 25, currentY);
+            currentY += 10;
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`• Progresso: ${beloMonteStats.progress.toFixed(1)}%`, 30, currentY);
+            currentY += 8;
+            doc.text(`• Bases: ${beloMonteStats.completedBases}/${beloMonteStats.totalBases} concluídas`, 30, currentY);
+            currentY += 8;
+            doc.text(`• Linhas Ativas: 18 linhas`, 30, currentY);
+            currentY += 8;
+            doc.text(`• Extensão Total: 1.738,9m`, 30, currentY);
+            currentY += 15;
+            
+            // Análise por tipo de base
+            checkPageBreak(60);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('3. ANÁLISE POR TIPO DE BASE', 20, currentY);
+            currentY += 12;
+            
+            const tiposBases = ['extremidade', 'J', 'C', 'K', 'E', 'E/F', 'D'];
+            for (const tipo of tiposBases) {
+                const total = calculateTotalBasesOfType(tipo);
+                if (total > 0) {
+                    const completed = calculateCompletedBasesOfType(tipo);
+                    const percent = ((completed / total) * 100);
+                    
+                    doc.setFontSize(11);
+                    doc.text(`• Tipo ${tipo}: ${completed}/${total} bases (${percent.toFixed(1)}%)`, 25, currentY);
+                    currentY += 8;
+                }
+            }
+            currentY += 10;
+            
+            // Detalhamento linha por linha - Pimental
+            checkPageBreak(80);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('4. DETALHAMENTO LINHA POR LINHA', 20, currentY);
+            currentY += 12;
+            
+            doc.setFontSize(14);
+            doc.text('4.1 Pimental - Detalhamento', 25, currentY);
+            currentY += 10;
+            
+            for (const linha in projectData.pimental.linhas) {
+                checkPageBreak(25);
+                const linhaData = projectData.pimental.linhas[linha];
+                let totalLinea = 0;
+                let completedLinea = 0;
+                
+                for (const tipo in linhaData.bases) {
+                    totalLinea += linhaData.bases[tipo];
+                    if (progressData.pimental && progressData.pimental[linha] && progressData.pimental[linha][tipo]) {
+                        completedLinea += progressData.pimental[linha][tipo];
+                    }
+                }
+                
+                const progressLinea = totalLinea > 0 ? (completedLinea / totalLinea) * 100 : 0;
+                
+                doc.setFontSize(11);
+                doc.text(`Linha ${linha}: ${completedLinea}/${totalLinea} bases (${progressLinea.toFixed(1)}%) - ${linhaData.metragem}m`, 30, currentY);
+                currentY += 8;
+                
+                // Tipos de base da linha
+                for (const tipo in linhaData.bases) {
+                    if (linhaData.bases[tipo] > 0) {
+                        const completedTipo = (progressData.pimental && progressData.pimental[linha] && progressData.pimental[linha][tipo]) ? progressData.pimental[linha][tipo] : 0;
+                        doc.text(`  └ ${tipo}: ${completedTipo}/${linhaData.bases[tipo]}`, 35, currentY);
+                        currentY += 6;
+                    }
+                }
+                currentY += 3;
+            }
+            
+            // Detalhamento linha por linha - Belo Monte
+            checkPageBreak(80);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('4.2 Belo Monte - Detalhamento', 25, currentY);
+            currentY += 10;
+            
+            for (const linha in projectData['belo-monte'].linhas) {
+                checkPageBreak(25);
+                const linhaData = projectData['belo-monte'].linhas[linha];
+                let totalLinea = 0;
+                let completedLinea = 0;
+                
+                for (const tipo in linhaData.bases) {
+                    totalLinea += linhaData.bases[tipo];
+                    if (progressData['belo-monte'] && progressData['belo-monte'][linha] && progressData['belo-monte'][linha][tipo]) {
+                        completedLinea += progressData['belo-monte'][linha][tipo];
+                    }
+                }
+                
+                const progressLinea = totalLinea > 0 ? (completedLinea / totalLinea) * 100 : 0;
+                
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Linha ${linha}: ${completedLinea}/${totalLinea} bases (${progressLinea.toFixed(1)}%) - ${linhaData.metragem}m`, 30, currentY);
+                currentY += 8;
+                
+                // Tipos de base da linha
+                for (const tipo in linhaData.bases) {
+                    if (linhaData.bases[tipo] > 0) {
+                        const completedTipo = (progressData['belo-monte'] && progressData['belo-monte'][linha] && progressData['belo-monte'][linha][tipo]) ? progressData['belo-monte'][linha][tipo] : 0;
+                        doc.text(`  └ ${tipo}: ${completedTipo}/${linhaData.bases[tipo]}`, 35, currentY);
+                        currentY += 6;
+                    }
+                }
+                currentY += 3;
+            }
+            
+            // Status das etapas de cabos
+            checkPageBreak(60);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('5. STATUS DAS ETAPAS DE CABOS', 20, currentY);
+            currentY += 12;
+            
+            let totalLines = 0;
+            let completedSteps = { passagemCabo: 0, crimpagemCabo: 0, tensionamentoCabo: 0 };
+            
+            // Contar etapas concluídas
+            for (const usinaKey in lineStepsStatus) {
+                for (const linha in lineStepsStatus[usinaKey]) {
+                    totalLines++;
+                    for (const step in completedSteps) {
+                        if (lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha][step]) {
+                            completedSteps[step]++;
+                        }
+                    }
+                }
+            }
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`• Passagem de Cabo: ${completedSteps.passagemCabo}/${totalLines} linhas (${((completedSteps.passagemCabo/totalLines)*100).toFixed(1)}%)`, 25, currentY);
+            currentY += 8;
+            doc.text(`• Crimpagem de Cabo: ${completedSteps.crimpagemCabo}/${totalLines} linhas (${((completedSteps.crimpagemCabo/totalLines)*100).toFixed(1)}%)`, 25, currentY);
+            currentY += 8;
+            doc.text(`• Tensionamento: ${completedSteps.tensionamentoCabo}/${totalLines} linhas (${((completedSteps.tensionamentoCabo/totalLines)*100).toFixed(1)}%)`, 25, currentY);
+            currentY += 15;
+            
+            // Observações e próximos passos
+            checkPageBreak(40);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('6. OBSERVAÇÕES E PRÓXIMOS PASSOS', 20, currentY);
+            currentY += 12;
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text('• Manter ritmo atual de produtividade para cumprir cronograma', 25, currentY);
+            currentY += 8;
+            doc.text('• Focar em linhas com maior complexidade técnica', 25, currentY);
+            currentY += 8;
+            doc.text('• Acompanhar condições climáticas que possam afetar o cronograma', 25, currentY);
+            currentY += 8;
+            doc.text('• Realizar inspeções de qualidade periódicas', 25, currentY);
+            currentY += 15;
+            
+            // Rodapé
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'italic');
+            doc.text('Este relatório foi gerado automaticamente pelo Sistema de Gestão de Linhas de Vida', 20, currentY);
+            
+            // Salvar
+            const filename = `relatorio-completo-linhas-vida-${now.toISOString().split('T')[0]}.pdf`;
+            doc.save(filename);
+            
+            showToast('Relatório PDF completo gerado com sucesso!', 'success');
         }
 
         function exportToExcel() {
             const workbook = XLSX.utils.book_new();
             
-            // Planilha resumo
-            const resumoData = [
-                ['Relatório - Linhas de Vida'],
-                ['Thommen Engenharia • Norte Energia'],
-                [`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`],
-                [],
-                ['Resumo Executivo'],
-                [`Progresso Geral: ${calculateProgress().toFixed(1)}%`],
-                [`Bases Concluídas: ${calculateCompletedBases()} de ${calculateTotalBases()}`],
-                [`Produtividade: ${calculateProductivity().toFixed(1)} bases/dia`],
-                []
-            ];
-            
-            const estimatedCompletion = calculateEstimatedCompletion();
-            if (estimatedCompletion) {
-                resumoData.push([`Estimativa de Conclusão: ${estimatedCompletion.toLocaleDateString('pt-BR')}`]);
+            // Função auxiliar para formatar tipos de bases
+            function formatBasesTypes(bases) {
+                const tipos = [];
+                for (const [tipo, quantidade] of Object.entries(bases)) {
+                    if (quantidade > 0) {
+                        tipos.push(`${quantidade} ${tipo}`);
+                    }
+                }
+                return tipos.join(', ');
             }
             
-            const resumoSheet = XLSX.utils.aoa_to_sheet(resumoData);
-            XLSX.utils.book_append_sheet(workbook, resumoSheet, 'Resumo');
-            
-            // Planilhas por usina
+            // Planilha para cada usina no formato solicitado
             for (const usinaKey in projectData) {
                 const usina = projectData[usinaKey];
                 const usinaData = [
-                    ['Linha', 'Metragem', 'Bases Totais', 'Bases Concluídas', 'Progresso %']
+                    ['LINHA', 'COMPRIMENTO', 'BASES', 'TOTAL DE BASES', 'BASES CONCLUÍDAS', 'PROGRESSO REAL', 'BASES RESTANTES', 'DATA DE EXECUÇÃO']
                 ];
                 
-                for (const linha in usina.linhas) {
+                // Ordenar linhas numericamente
+                const linhasOrdenadas = Object.keys(usina.linhas).sort((a, b) => {
+                    const numA = parseInt(a);
+                    const numB = parseInt(b);
+                    return numA - numB;
+                });
+                
+                for (const linha of linhasOrdenadas) {
                     const linhaData = usina.linhas[linha];
                     let totalBases = 0;
                     let completedBases = 0;
                     
+                    // Calcular total de bases
                     for (const tipo in linhaData.bases) {
                         totalBases += linhaData.bases[tipo];
                     }
                     
+                    // Calcular bases concluídas
+                    if (progressData[usinaKey] && progressData[usinaKey][linha]) {
+                        for (const tipo in progressData[usinaKey][linha]) {
+                            completedBases += progressData[usinaKey][linha][tipo] || 0;
+                        }
+                    }
+                    
                     const progress = totalBases > 0 ? (completedBases / totalBases * 100) : 0;
+                    const basesRestantes = totalBases - completedBases;
+                    
+                    // Obter data de execução
+                    let executionDate = '';
+                    if (executionDates[usinaKey] && executionDates[usinaKey][linha]) {
+                        const dateString = executionDates[usinaKey][linha];
+                        const dateObj = new Date(dateString);
+                        
+                        // Validar se a data é válida
+                        if (!isNaN(dateObj.getTime())) {
+                            executionDate = dateObj.toLocaleDateString('pt-BR');
+                        } else {
+                            executionDate = 'Data inválida';
+                        }
+                    } else if (completedBases > 0) {
+                        executionDate = 'Não informado';
+                    }
                     
                     usinaData.push([
-                        `Linha ${linha}`,
-                        `${linhaData.metragem}m`,
-                        totalBases,
-                        completedBases,
-                        `${progress.toFixed(1)}%`
+                        parseInt(linha), // Linha como número
+                        linhaData.metragem, // Comprimento
+                        formatBasesTypes(linhaData.bases), // Bases (formatadas)
+                        totalBases, // Total de bases
+                        completedBases, // Bases concluídas
+                        `${progress.toFixed(0)}%`, // Progresso real
+                        basesRestantes, // Bases restantes
+                        executionDate // Data de execução
                     ]);
                 }
                 
                 const usinaSheet = XLSX.utils.aoa_to_sheet(usinaData);
+                
+                // Configurar larguras das colunas
+                usinaSheet['!cols'] = [
+                    { wch: 8 },   // LINHA
+                    { wch: 12 },  // COMPRIMENTO
+                    { wch: 20 },  // BASES
+                    { wch: 15 },  // TOTAL DE BASES
+                    { wch: 18 },  // BASES CONCLUÍDAS
+                    { wch: 18 },  // PROGRESSO REAL
+                    { wch: 16 },  // BASES RESTANTES
+                    { wch: 18 }   // DATA DE EXECUÇÃO
+                ];
+                
+                // Adicionar formatação condicional para progresso 100%
+                for (let i = 2; i <= usinaData.length; i++) {
+                    const cellRef = `F${i}`; // Coluna de progresso
+                    const progressValue = usinaData[i-1][5];
+                    
+                    if (progressValue === '100%') {
+                        if (!usinaSheet[cellRef]) usinaSheet[cellRef] = {};
+                        usinaSheet[cellRef].s = {
+                            fill: { fgColor: { rgb: "90EE90" } }, // Verde claro
+                            font: { bold: true }
+                        };
+                    }
+                }
+                
                 XLSX.utils.book_append_sheet(workbook, usinaSheet, usina.name);
             }
             
-            XLSX.writeFile(workbook, 'cronograma-linhas-vida.xlsx');
+            // Adicionar planilha de resumo
+            const resumoData = [
+                ['RELATÓRIO - LINHAS DE VIDA'],
+                ['Thommen Engenharia • Norte Energia'],
+                [`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`],
+                [],
+                ['RESUMO EXECUTIVO'],
+                [`Progresso Geral: ${calculateProgress().toFixed(1)}%`],
+                [`Bases Concluídas: ${calculateCompletedBases()} de ${calculateTotalBases()}`],
+                [`Produtividade: ${calculateProductivity().toFixed(1)} bases/dia útil`],
+                [],
+                ['DETALHAMENTO POR USINA']
+            ];
+            
+            for (const usinaKey in projectData) {
+                const stats = calculateUsinaStats(usinaKey);
+                resumoData.push([
+                    `${projectData[usinaKey].name}: ${stats.progress.toFixed(1)}% (${stats.completedBases}/${stats.totalBases} bases)`
+                ]);
+            }
+            
+            const resumoSheet = XLSX.utils.aoa_to_sheet(resumoData);
+            resumoSheet['!cols'] = [{ wch: 50 }];
+            
+            // Inserir resumo no início
+            XLSX.utils.book_append_sheet(workbook, resumoSheet, 'Resumo', 0);
+            
+            // Salvar arquivo com timestamp
+            const now = new Date();
+            const filename = `cronograma-linhas-vida-${now.toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, filename);
+            
+            showToast('Relatório Excel gerado com sucesso!', 'success');
         }
 
         // Inicializar aplicação quando a página carregar
