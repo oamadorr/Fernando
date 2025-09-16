@@ -64,10 +64,15 @@
 
         .header-content {
             display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header-top {
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
+            width: 100%;
         }
 
         .logo-section {
@@ -97,6 +102,13 @@
         .title-section p {
             font-size: 0.95rem;
             opacity: 0.9;
+        }
+
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 15px;
         }
 
         .header-actions {
@@ -1304,13 +1316,26 @@
         }
 
         .footer-company-logo {
-            height: 40px;
+            height: 50px;
             width: auto;
             max-width: 150px;
             object-fit: contain;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .primary-logo {
+            height: 90px !important;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .secondary-logo {
             height: 90px !important;
             border: 2px solid rgba(255, 255, 255, 0.9);
             border-radius: 8px;
@@ -1340,12 +1365,16 @@
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <div class="logo-section">
-                    <img src="thommen-logo.png" alt="Thommen Engenharia" class="company-logo primary-logo">
-                    <div class="title-section">
-                        <h1>Linhas de Vida - Cronograma</h1>
-                        <p>Norte Energia • Usinas Hidrelétricas Belo Monte e Pimental</p>
+                <div class="header-top">
+                    <div class="logo-section">
+                        <img src="thommen-logo.png" alt="Thommen Engenharia" class="company-logo primary-logo">
+                        <div class="title-section">
+                            <h1 style="margin: 0;">Cronograma</h1>
+                            <h1>Linhas de Vida - Primeira Etapa</h1>
+                            <p>Norte Energia • Usinas Hidrelétricas Belo Monte e Pimental</p>
+                        </div>
                     </div>
+                    <img src="norte-energia-logo.png" alt="Norte Energia" class="company-logo secondary-logo">
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-secondary" onclick="exportToPDF()">
@@ -1371,6 +1400,7 @@
                     <!-- Status indicator integrado no header -->
                     <div id="statusIndicator" class="status-indicator status-offline">
                         <i class="fas fa-circle"></i> Offline
+                    </div>
                     </div>
                 </div>
             </div>
