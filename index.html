@@ -1132,6 +1132,39 @@
             border: 2px solid var(--warning-orange);
         }
 
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: var(--white);
+            padding: 20px 0;
+            margin-top: 40px;
+            border-top: 1px solid var(--border-gray);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .footer-text {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .footer-company-logo {
+            height: 40px;
+            width: auto;
+            max-width: 150px;
+            object-fit: contain;
+        }
+
+        .primary-logo {
+            height: 70px !important;
+        }
+
     </style>
 </head>
 <body>
@@ -1159,10 +1192,10 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo-section">
-                    <img src="thommen-logo.png" alt="Thommen Engenharia" class="company-logo">
+                    <img src="norte-energia-logo.png" alt="Norte Energia" class="company-logo primary-logo">
                     <div class="title-section">
                         <h1>Linhas de Vida - Cronograma</h1>
-                        <p>Thommen Engenharia • Norte Energia • Usinas Belo Monte e Pimental</p>
+                        <p>Norte Energia • Usinas Hidrelétricas Belo Monte e Pimental</p>
                     </div>
                 </div>
                 <div class="header-actions">
@@ -1357,7 +1390,7 @@
                     </h2>
                     <div class="usina-stats">
                         <div class="stat-item">
-                            <div class="stat-value" id="beloMonteLinhas">18</div>
+                            <div class="stat-value" id="beloMonteLinhas">20</div>
                             <div class="stat-label">Linhas</div>
                         </div>
                         <div class="stat-item">
@@ -1509,7 +1542,35 @@
         </div>
     </div>
 
-
+    <!-- Modal para observações -->
+    <div id="observationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📝 Observação da Linha</h2>
+                <button class="close-btn" onclick="closeObservationModal()">&times;</button>
+            </div>
+            <div>
+                <div class="form-group">
+                    <label class="form-label" id="observationLineLabel">Linha:</label>
+                    <p style="font-weight: bold; color: var(--primary-blue);" id="observationLineInfo"></p>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="observationText">Observação:</label>
+                    <textarea id="observationText" class="form-textarea" 
+                              placeholder="Digite aqui comentários, alertas, status da linha..." 
+                              rows="4" style="width: 100%; resize: vertical;"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeObservationModal()">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveObservation()">
+                        <i class="fas fa-save"></i> Salvar Observação
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Firebase Configuration
@@ -1609,34 +1670,46 @@
         // Status das etapas por linha - estrutura: usina -> linha -> etapa -> status (true/false)
         let lineStepsStatus = {
             pimental: {
-                "01": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "02": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "03": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "04": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "05": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "18": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false }
+                "01": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "02": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "03": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "04": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "05": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "18": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false }
             },
             "belo-monte": {
-                "01": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "02": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "03": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "04": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "05": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "06": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "07": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "08": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "09": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "10": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "11": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "12": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "13": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "14": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "15": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "16": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "17": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "18": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "19": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false },
-                "71": { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false }
+                "01": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "02": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "03": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "04": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "05": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "06": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "07": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "08": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "09": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "10": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "11": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "12": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "13": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "14": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "15": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "16": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "17": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "18": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "19": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "71": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false }
+            }
+        };
+
+        // Observações por linha - estrutura: usina -> linha -> observação
+        let lineObservations = {
+            pimental: {
+                "01": "", "02": "", "03": "", "04": "", "05": "", "18": ""
+            },
+            "belo-monte": {
+                "01": "", "02": "", "03": "", "04": "", "05": "", "06": "", "07": "", "08": "", 
+                "09": "", "10": "", "11": "", "12": "", "13": "", "14": "", "15": "", "16": "", 
+                "17": "", "18": "", "19": "", "71": ""
             }
         };
 
@@ -2174,6 +2247,7 @@
                     const steps = lineStepsStatus[usina][linha];
                     if (steps.passagemCabo) completed++;
                     if (steps.crimpagemCabo) completed++;
+                    if (steps.afericaoCrimpagem) completed++;
                     if (steps.tensionamentoCabo) completed++;
                 }
             }
@@ -2187,6 +2261,7 @@
                     const steps = lineStepsStatus[usinaKey][linha];
                     if (steps.passagemCabo) completed++;
                     if (steps.crimpagemCabo) completed++;
+                    if (steps.afericaoCrimpagem) completed++;
                     if (steps.tensionamentoCabo) completed++;
                 }
             }
@@ -2197,7 +2272,7 @@
             let total = 0;
             for (const usina in projectData) {
                 for (const linha in projectData[usina].linhas) {
-                    total += 3; // 3 etapas por linha
+                    total += 4; // 4 etapas por linha
                 }
             }
             return total;
@@ -2207,7 +2282,7 @@
             let total = 0;
             if (projectData[usinaKey]) {
                 for (const linha in projectData[usinaKey].linhas) {
-                    total += 3; // 3 etapas por linha
+                    total += 4; // 4 etapas por linha
                 }
             }
             return total;
@@ -2219,6 +2294,7 @@
                 const steps = lineStepsStatus[usinaKey][linha];
                 if (steps.passagemCabo) completed++;
                 if (steps.crimpagemCabo) completed++;
+                if (steps.afericaoCrimpagem) completed++;
                 if (steps.tensionamentoCabo) completed++;
             }
             return completed;
@@ -2435,7 +2511,7 @@
                 
                 // Incluir etapas do cabo no cálculo do progresso da linha
                 const completedCableSteps = calculateCableStepsCompletedOfLine(usinaKey, linha);
-                const totalCableSteps = 3; // 3 etapas por linha
+                const totalCableSteps = 4; // 4 etapas por linha
                 
                 const totalItems = totalBases + totalCableSteps;
                 const completedItems = completedBases + completedCableSteps;
@@ -2448,10 +2524,12 @@
                     <td>${basesText.join(', ')}</td>
                     <td>${completedBases}/${totalBases}</td>
                     <td>
-                        <div class="progress-bar" style="width: 100px; height: 6px;">
+                        <div class="progress-bar" style="width: ${Math.max(20, totalBases * 8)}px; height: 8px;">
                             <div class="progress-fill" style="width: ${progress}%"></div>
                         </div>
-                        ${progress.toFixed(1)}%
+                        <div style="font-size: 0.85em; margin-top: 2px;">
+                            ${progress.toFixed(1)}% (${totalBases} bases)
+                        </div>
                     </td>
                     <td>
                         <span class="status-badge ${progress === 100 ? 'status-concluido' : progress > 0 ? 'status-andamento' : 'status-pendente'}">
@@ -2485,6 +2563,13 @@
                                 </button>
                             </div>
                             <div class="step-item">
+                                <span class="step-label">Aferição de Crimpagem:</span>
+                                <button class="step-toggle ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].afericaoCrimpagem) ? 'step-done' : 'step-pending'}" 
+                                        onclick="toggleStep('${usinaKey}', '${linha}', 'afericaoCrimpagem')">
+                                    ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].afericaoCrimpagem) ? 'Realizado' : 'Pendente'}
+                                </button>
+                            </div>
+                            <div class="step-item">
                                 <span class="step-label">Tensionamento:</span>
                                 <button class="step-toggle ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].tensionamentoCabo) ? 'step-done' : 'step-pending'}" 
                                         onclick="toggleStep('${usinaKey}', '${linha}', 'tensionamentoCabo')">
@@ -2496,6 +2581,9 @@
                     <td>
                         <button class="btn btn-primary btn-small" onclick="openLineModal('${usinaKey}', '${linha}')">
                             <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="openObservationModal('${usinaKey}', '${linha}')" style="margin-left: 5px;">
+                            <i class="fas fa-comment"></i>
                         </button>
                     </td>
                 `;
@@ -2541,8 +2629,8 @@
                 <span class="tooltip-label">Etapas do cabo:</span>
             </div>`;
             
-            const steps = lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] || { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false };
-            const stepNames = { passagemCabo: 'Passagem', crimpagemCabo: 'Crimpagem', tensionamentoCabo: 'Tensionamento' };
+            const steps = lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] || { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false };
+            const stepNames = { passagemCabo: 'Passagem', crimpagemCabo: 'Crimpagem', afericaoCrimpagem: 'Aferição de Crimpagem', tensionamentoCabo: 'Tensionamento' };
             
             for (const [stepKey, stepName] of Object.entries(stepNames)) {
                 const isCompleted = steps[stepKey];
@@ -2904,6 +2992,56 @@
             document.getElementById('selectAllRemoveBases').checked = false;
         }
 
+        // Variáveis globais para o modal de observação
+        let currentObservationUsina = '';
+        let currentObservationLinha = '';
+
+        function openObservationModal(usinaKey, linha) {
+            currentObservationUsina = usinaKey;
+            currentObservationLinha = linha;
+            
+            // Atualizar informações da linha
+            const usinaName = projectData[usinaKey].name;
+            document.getElementById('observationLineInfo').textContent = `${usinaName} - Linha ${linha}`;
+            
+            // Carregar observação existente
+            const currentObservation = lineObservations[usinaKey] && lineObservations[usinaKey][linha] ? lineObservations[usinaKey][linha] : '';
+            document.getElementById('observationText').value = currentObservation;
+            
+            // Mostrar modal
+            document.getElementById('observationModal').style.display = 'block';
+        }
+
+        function closeObservationModal() {
+            document.getElementById('observationModal').style.display = 'none';
+            document.getElementById('observationText').value = '';
+            currentObservationUsina = '';
+            currentObservationLinha = '';
+        }
+
+        function saveObservation() {
+            if (!currentObservationUsina || !currentObservationLinha) {
+                showToast('Erro: Informações da linha não encontradas.', 'error');
+                return;
+            }
+
+            const observationText = document.getElementById('observationText').value.trim();
+            
+            // Inicializar estrutura se necessário
+            if (!lineObservations[currentObservationUsina]) {
+                lineObservations[currentObservationUsina] = {};
+            }
+            
+            // Salvar observação
+            lineObservations[currentObservationUsina][currentObservationLinha] = observationText;
+            
+            // Salvar no localStorage
+            saveProgressToStorage();
+            
+            showToast('Observação salva com sucesso!', 'success');
+            closeObservationModal();
+        }
+
         function toggleAllBases(checkbox) {
             const basesCheckboxes = document.querySelectorAll('#basesCheckboxes input[type="checkbox"]');
             basesCheckboxes.forEach(cb => {
@@ -3012,7 +3150,7 @@
                 lineStepsStatus[usinaKey] = {};
             }
             if (!lineStepsStatus[usinaKey][linha]) {
-                lineStepsStatus[usinaKey][linha] = { passagemCabo: false, crimpagemCabo: false, tensionamentoCabo: false };
+                lineStepsStatus[usinaKey][linha] = { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false };
             }
             
             // Alternar o status
@@ -3320,6 +3458,7 @@
         // Funções de persistência
         function saveProgressToStorage() {
             localStorage.setItem('linhasVidaProgress', JSON.stringify(progressData));
+            localStorage.setItem('linhasVidaObservations', JSON.stringify(lineObservations));
         }
 
         function saveTeamConfigToStorage() {
@@ -3370,6 +3509,12 @@
             const storedDates = localStorage.getItem('linhasVidaExecutionDates');
             if (storedDates) {
                 executionDates = JSON.parse(storedDates);
+            }
+            
+            // Carregar observações
+            const storedObservations = localStorage.getItem('linhasVidaObservations');
+            if (storedObservations) {
+                lineObservations = JSON.parse(storedObservations);
             }
         }
 
@@ -3778,7 +3923,7 @@
             currentY += 12;
             
             let totalLines = 0;
-            let completedSteps = { passagemCabo: 0, crimpagemCabo: 0, tensionamentoCabo: 0 };
+            let completedSteps = { passagemCabo: 0, crimpagemCabo: 0, afericaoCrimpagem: 0, tensionamentoCabo: 0 };
             
             // Contar etapas concluídas
             for (const usinaKey in lineStepsStatus) {
@@ -3797,6 +3942,8 @@
             doc.text(`• Passagem de Cabo: ${completedSteps.passagemCabo}/${totalLines} linhas (${((completedSteps.passagemCabo/totalLines)*100).toFixed(1)}%)`, 25, currentY);
             currentY += 8;
             doc.text(`• Crimpagem de Cabo: ${completedSteps.crimpagemCabo}/${totalLines} linhas (${((completedSteps.crimpagemCabo/totalLines)*100).toFixed(1)}%)`, 25, currentY);
+            currentY += 8;
+            doc.text(`• Aferição de Crimpagem: ${completedSteps.afericaoCrimpagem}/${totalLines} linhas (${((completedSteps.afericaoCrimpagem/totalLines)*100).toFixed(1)}%)`, 25, currentY);
             currentY += 8;
             doc.text(`• Tensionamento: ${completedSteps.tensionamentoCabo}/${totalLines} linhas (${((completedSteps.tensionamentoCabo/totalLines)*100).toFixed(1)}%)`, 25, currentY);
             currentY += 15;
@@ -3978,5 +4125,19 @@
             updateAllDisplays();
         });
     </script>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-text">
+                    <p>Sistema desenvolvido por</p>
+                </div>
+                <div class="footer-logo">
+                    <img src="thommen-logo.png" alt="Thommen Engenharia" class="footer-company-logo">
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
