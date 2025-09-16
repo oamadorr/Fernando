@@ -581,6 +581,94 @@
             border-top: 1px solid #e5e7eb;
         }
 
+        /* Horizontal bars chart */
+        .horizontal-bars-chart {
+            padding: 20px 0;
+        }
+
+        .bar-item {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bar-label {
+            min-width: 80px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--dark-gray);
+            text-align: center;
+        }
+
+        .bar-container {
+            flex: 1;
+            position: relative;
+            height: 32px;
+            background-color: #f3f4f6;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        .bar-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-green), #16a34a);
+            border-radius: 16px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+
+        .bar-pending {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            border-radius: 0 16px 16px 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: width 0.8s ease;
+        }
+
+        .bar-stats {
+            min-width: 120px;
+            font-size: 13px;
+            text-align: right;
+            line-height: 1.2;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-green), #16a34a);
+            border-radius: 16px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+
+        .bar-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+
+        .bar-percentage {
+            min-width: 50px;
+            font-weight: 700;
+            color: var(--success-green);
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .bar-numbers {
+            color: var(--medium-gray);
+            font-size: 12px;
+        }
+
         .info-row {
             display: flex;
             justify-content: space-between;
@@ -1347,7 +1435,7 @@
                 </div>
                 <div class="chart-container">
                     <h3 class="chart-title">Progresso Pimental</h3>
-                    <canvas id="chartPimental"></canvas>
+                    <div id="chartPimental" class="horizontal-bars-chart"></div>
                     <div class="chart-info" id="chartPimentalInfo">
                         <div class="info-row">
                             <span class="info-label">📊 Total de bases:</span>
@@ -1369,7 +1457,7 @@
                 </div>
                 <div class="chart-container">
                     <h3 class="chart-title">Progresso Belo Monte</h3>
-                    <canvas id="chartBeloMonte"></canvas>
+                    <div id="chartBeloMonte" class="horizontal-bars-chart"></div>
                     <div class="chart-info" id="chartBeloMonteInfo">
                         <div class="info-row">
                             <span class="info-label">📊 Total de bases:</span>
@@ -1805,7 +1893,7 @@
         let executionDates = {};
 
         // Charts globais
-        let chartConclusaoGeral, chartPimental, chartBeloMonte;
+        let chartConclusaoGeral;
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
@@ -2925,20 +3013,20 @@
         }
 
         function initChartPimental() {
-            const ctx = document.getElementById('chartPimental').getContext('2d');
-            
+            const container = document.getElementById('chartPimental');
+
             const usinaKey = 'pimental';
             const tipos = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K'];
-            
+
             // Calcular totais por tipo para Pimental
             const totalByType = {};
             const completedByType = {};
-            
+
             for (const tipo of tipos) {
                 totalByType[tipo] = 0;
                 completedByType[tipo] = 0;
             }
-            
+
             // Calcular totais de Pimental
             if (projectData[usinaKey]) {
                 for (const linha in projectData[usinaKey].linhas) {
@@ -2948,7 +3036,7 @@
                     }
                 }
             }
-            
+
             // Calcular totais concluídos de Pimental
             if (progressData[usinaKey]) {
                 for (const linha in progressData[usinaKey]) {
@@ -2957,68 +3045,54 @@
                     }
                 }
             }
-            
+
             // Filtrar apenas tipos que existem em Pimental
             const tiposComBases = tipos.filter(tipo => totalByType[tipo] > 0);
-            
-            const data = {
-                labels: tiposComBases,
-                datasets: [{
-                    label: 'Concluídas',
-                    data: tiposComBases.map(tipo => completedByType[tipo] || 0),
-                    backgroundColor: '#10b981'
-                }, {
-                    label: 'Pendentes',
-                    data: tiposComBases.map(tipo => (totalByType[tipo] || 0) - (completedByType[tipo] || 0)),
-                    backgroundColor: '#f59e0b'
-                }]
-            };
 
-            chartPimental = new Chart(ctx, {
-                type: 'bar',
-                data: data,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        },
-                        title: {
-                            display: true,
-                            text: 'Bases por Tipo'
-                        }
-                    },
-                    scales: {
-                        x: {
-                            stacked: true
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
+            // Encontrar o máximo para escala proporcional
+            const maxBases = Math.max(...tiposComBases.map(tipo => totalByType[tipo]));
+
+            // Limpar container
+            container.innerHTML = '';
+
+            // Criar barras horizontais
+            tiposComBases.forEach(tipo => {
+                const total = totalByType[tipo];
+                const completed = completedByType[tipo] || 0;
+                const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+                const barWidth = (total / maxBases) * 100; // Largura proporcional
+
+                const barItem = document.createElement('div');
+                barItem.className = 'bar-item';
+
+                barItem.innerHTML = `
+                    <div class="bar-label">Tipo ${tipo}</div>
+                    <div class="bar-container" style="width: ${barWidth}%;">
+                        <div class="bar-fill" style="width: ${percentage}%;"></div>
+                        <div class="bar-text">${completed}/${total}</div>
+                    </div>
+                    <div class="bar-percentage">${percentage}%</div>
+                `;
+
+                container.appendChild(barItem);
             });
         }
 
         function initChartBeloMonte() {
-            const ctx = document.getElementById('chartBeloMonte').getContext('2d');
-            
+            const container = document.getElementById('chartBeloMonte');
+
             const usinaKey = 'belo-monte';
             const tipos = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K'];
-            
+
             // Calcular totais por tipo para Belo Monte
             const totalByType = {};
             const completedByType = {};
-            
+
             for (const tipo of tipos) {
                 totalByType[tipo] = 0;
                 completedByType[tipo] = 0;
             }
-            
+
             // Calcular totais de Belo Monte
             if (projectData[usinaKey]) {
                 for (const linha in projectData[usinaKey].linhas) {
@@ -3028,7 +3102,7 @@
                     }
                 }
             }
-            
+
             // Calcular totais concluídos de Belo Monte
             if (progressData[usinaKey]) {
                 for (const linha in progressData[usinaKey]) {
@@ -3037,50 +3111,36 @@
                     }
                 }
             }
-            
+
             // Filtrar apenas tipos que existem em Belo Monte
             const tiposComBases = tipos.filter(tipo => totalByType[tipo] > 0);
-            
-            const data = {
-                labels: tiposComBases,
-                datasets: [{
-                    label: 'Concluídas',
-                    data: tiposComBases.map(tipo => completedByType[tipo] || 0),
-                    backgroundColor: '#3b82f6'
-                }, {
-                    label: 'Pendentes',
-                    data: tiposComBases.map(tipo => (totalByType[tipo] || 0) - (completedByType[tipo] || 0)),
-                    backgroundColor: '#f59e0b'
-                }]
-            };
 
-            chartBeloMonte = new Chart(ctx, {
-                type: 'bar',
-                data: data,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        },
-                        title: {
-                            display: true,
-                            text: 'Bases por Tipo'
-                        }
-                    },
-                    scales: {
-                        x: {
-                            stacked: true
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
+            // Encontrar o máximo para escala proporcional
+            const maxBases = Math.max(...tiposComBases.map(tipo => totalByType[tipo]));
+
+            // Limpar container
+            container.innerHTML = '';
+
+            // Criar barras horizontais
+            tiposComBases.forEach(tipo => {
+                const total = totalByType[tipo];
+                const completed = completedByType[tipo] || 0;
+                const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+                const barWidth = (total / maxBases) * 100; // Largura proporcional
+
+                const barItem = document.createElement('div');
+                barItem.className = 'bar-item';
+
+                barItem.innerHTML = `
+                    <div class="bar-label">Tipo ${tipo}</div>
+                    <div class="bar-container" style="width: ${barWidth}%;">
+                        <div class="bar-fill" style="width: ${percentage}%;"></div>
+                        <div class="bar-text">${completed}/${total}</div>
+                    </div>
+                    <div class="bar-percentage">${percentage}%</div>
+                `;
+
+                container.appendChild(barItem);
             });
         }
 
@@ -3089,14 +3149,8 @@
                 chartConclusaoGeral.destroy();
                 initChartConclusaoGeral();
             }
-            if (chartPimental) {
-                chartPimental.destroy();
-                initChartPimental();
-            }
-            if (chartBeloMonte) {
-                chartBeloMonte.destroy();
-                initChartBeloMonte();
-            }
+            initChartPimental();
+            initChartBeloMonte();
         }
 
         // Funções do modal
