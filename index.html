@@ -2723,16 +2723,16 @@
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
             
-            let left = event.pageX + 25;
-            let top = event.pageY - rect.height - 25;
+            let left = event.pageX + 35;
+            let top = event.pageY - rect.height - 35;
             
             // Ajustar posição se sair da tela
             if (left + rect.width > viewportWidth) {
-                left = event.pageX - rect.width - 25;
+                left = event.pageX - rect.width - 35;
             }
             
             if (top < window.pageYOffset) {
-                top = event.pageY + 25;
+                top = event.pageY + 35;
             }
             
             tooltip.style.left = left + 'px';
