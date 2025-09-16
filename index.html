@@ -1162,15 +1162,16 @@
         }
 
         .status-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 15px;
-            border-radius: 25px;
-            font-size: 0.9rem;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: 600;
-            z-index: 1000;
+            margin-left: 15px;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         .status-online {
@@ -1238,11 +1239,6 @@
         <div class="loading-text">Carregando sistema...</div>
     </div>
 
-    <!-- Status indicator -->
-    <div id="statusIndicator" class="status-indicator status-offline">
-        <i class="fas fa-circle"></i> Offline
-    </div>
-
     <!-- Tooltip para detalhes das bases -->
     <div id="basesTooltip" class="tooltip"></div>
     
@@ -1282,6 +1278,11 @@
                     <button class="btn btn-primary" onclick="openUpdateModal()">
                         <i class="fas fa-edit"></i> Atualizar Progresso
                     </button>
+
+                    <!-- Status indicator integrado no header -->
+                    <div id="statusIndicator" class="status-indicator status-offline">
+                        <i class="fas fa-circle"></i> Offline
+                    </div>
                 </div>
             </div>
         </div>
