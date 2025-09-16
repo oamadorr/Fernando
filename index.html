@@ -1361,6 +1361,10 @@
                             <span class="info-label">📏 Extensão total:</span>
                             <span class="info-value">395,7m</span>
                         </div>
+                        <div class="info-row">
+                            <span class="info-label">📅 Estimativa conclusão:</span>
+                            <span class="info-value" id="pimentalEstimativa">Calculando...</span>
+                        </div>
                     </div>
                 </div>
                 <div class="chart-container">
@@ -1378,6 +1382,10 @@
                         <div class="info-row">
                             <span class="info-label">📏 Extensão total:</span>
                             <span class="info-value">1738,9m</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📅 Estimativa conclusão:</span>
+                            <span class="info-value" id="beloMonteEstimativa">Calculando...</span>
                         </div>
                     </div>
                 </div>
@@ -2452,11 +2460,31 @@
             document.getElementById('pimentalMetros').textContent = pimentalStats.totalMetros.toFixed(1) + 'm';
             document.getElementById('pimentalProgresso').textContent = pimentalStats.progress.toFixed(1) + '%';
 
+            // Estimativa Pimental
+            const pimentalEstimativa = calculateUsinaEstimatedCompletion('pimental');
+            if (pimentalEstimativa && pimentalStats.progress < 100) {
+                document.getElementById('pimentalEstimativa').textContent = pimentalEstimativa.toLocaleDateString('pt-BR');
+            } else if (pimentalStats.progress >= 100) {
+                document.getElementById('pimentalEstimativa').textContent = 'Concluído';
+            } else {
+                document.getElementById('pimentalEstimativa').textContent = 'Calculando...';
+            }
+
             // Belo Monte
             const beloMonteStats = calculateUsinaStats('belo-monte');
             document.getElementById('beloMonteBases').textContent = beloMonteStats.totalBases;
             document.getElementById('beloMonteMetros').textContent = beloMonteStats.totalMetros.toFixed(1) + 'm';
             document.getElementById('beloMonteProgresso').textContent = beloMonteStats.progress.toFixed(1) + '%';
+
+            // Estimativa Belo Monte
+            const beloMonteEstimativa = calculateUsinaEstimatedCompletion('belo-monte');
+            if (beloMonteEstimativa && beloMonteStats.progress < 100) {
+                document.getElementById('beloMonteEstimativa').textContent = beloMonteEstimativa.toLocaleDateString('pt-BR');
+            } else if (beloMonteStats.progress >= 100) {
+                document.getElementById('beloMonteEstimativa').textContent = 'Concluído';
+            } else {
+                document.getElementById('beloMonteEstimativa').textContent = 'Calculando...';
+            }
         }
 
         function calculateUsinaStats(usinaKey) {
@@ -2493,6 +2521,40 @@
             const progress = totalItems > 0 ? (completedItems / totalItems * 100) : 0;
             
             return { totalBases, totalMetros, completedBases, progress, totalCableSteps, completedCableSteps };
+        }
+
+        function calculateUsinaEstimatedCompletion(usinaKey) {
+            const usinaStats = calculateUsinaStats(usinaKey);
+            const remainingBases = usinaStats.totalBases - usinaStats.completedBases;
+            const productivity = calculateProductivity();
+
+            if (productivity <= 0 || remainingBases <= 0) return null;
+
+            // Calcular proporção desta usina no total de bases
+            const totalProjectBases = calculateTotalBases();
+            const usinaRatio = usinaStats.totalBases / totalProjectBases;
+
+            // Estimar produtividade proporcional para esta usina
+            const usinaProductivity = productivity * usinaRatio;
+
+            if (usinaProductivity <= 0) return null;
+
+            const daysNeeded = Math.ceil(remainingBases / usinaProductivity);
+            const completionDate = new Date(teamConfig.dataAtual);
+
+            // Adicionar dias úteis
+            let addedDays = 0;
+            let currentDate = new Date(completionDate);
+
+            while (addedDays < daysNeeded) {
+                currentDate.setDate(currentDate.getDate() + 1);
+                const weekDay = currentDate.getDay();
+                if (weekDay >= 1 && weekDay <= 5) {
+                    addedDays++;
+                }
+            }
+
+            return currentDate;
         }
 
         function updateTables() {
