@@ -1798,13 +1798,21 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
+            // Carregar dados locais primeiro para exibição imediata
+            loadTeamConfigFromStorage();
+            loadLineStepsFromStorage();
+            loadProgressFromStorage();
+
+            // Atualizar displays com dados existentes
+            updateAllDisplays();
+
             initializeFirebase();
             initializeFilters();
             checkUrlParams();
-            
+
             // Mostrar aviso de modo somente leitura por padrão
             showReadOnlyNotice();
-            
+
             // Configurar evento Enter no campo de senha
             document.getElementById('passwordInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
