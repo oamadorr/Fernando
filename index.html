@@ -638,9 +638,8 @@
 
         .bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--success-green), #16a34a);
             border-radius: 16px;
-            transition: width 0.8s ease;
+            transition: all 0.8s ease;
             position: relative;
         }
 
@@ -3012,6 +3011,30 @@
             });
         }
 
+        // Função para calcular gradiente de cor baseado na porcentagem
+        function getProgressGradient(percentage) {
+            if (percentage === 0) {
+                return 'linear-gradient(90deg, #e5e7eb, #d1d5db)'; // Cinza para 0%
+            }
+
+            // Transição de laranja para verde baseada na porcentagem
+            if (percentage <= 50) {
+                // 0-50%: De laranja escuro para laranja claro
+                const intensity = percentage / 50;
+                const r = Math.round(245 - (245 - 217) * intensity); // 245 -> 217
+                const g = Math.round(101 + (151 - 101) * intensity); // 101 -> 151
+                const b = Math.round(11 + (47 - 11) * intensity);    // 11 -> 47
+                return `linear-gradient(90deg, rgb(${r}, ${g}, ${b}), rgb(${Math.max(r-20, 180)}, ${Math.max(g-10, 130)}, ${Math.max(b-5, 30)}))`;
+            } else {
+                // 50-100%: De laranja claro para verde
+                const intensity = (percentage - 50) / 50;
+                const r = Math.round(217 - (217 - 16) * intensity);  // 217 -> 16
+                const g = Math.round(151 + (185 - 151) * intensity); // 151 -> 185
+                const b = Math.round(47 + (129 - 47) * intensity);   // 47 -> 129
+                return `linear-gradient(90deg, rgb(${r}, ${g}, ${b}), rgb(${Math.max(r-10, 10)}, ${Math.min(g+15, 200)}, ${Math.min(b+20, 150)}))`;
+            }
+        }
+
         function initChartPimental() {
             const container = document.getElementById('chartPimental');
 
@@ -3065,10 +3088,12 @@
                 const barItem = document.createElement('div');
                 barItem.className = 'bar-item';
 
+                const progressGradient = getProgressGradient(percentage);
+
                 barItem.innerHTML = `
                     <div class="bar-label">Tipo ${tipo}</div>
                     <div class="bar-container" style="width: ${barWidth}%;">
-                        <div class="bar-fill" style="width: ${percentage}%;"></div>
+                        <div class="bar-fill" style="width: ${percentage}%; background: ${progressGradient};"></div>
                         <div class="bar-text">${completed}/${total}</div>
                     </div>
                     <div class="bar-percentage">${percentage}%</div>
@@ -3131,10 +3156,12 @@
                 const barItem = document.createElement('div');
                 barItem.className = 'bar-item';
 
+                const progressGradient = getProgressGradient(percentage);
+
                 barItem.innerHTML = `
                     <div class="bar-label">Tipo ${tipo}</div>
                     <div class="bar-container" style="width: ${barWidth}%;">
-                        <div class="bar-fill" style="width: ${percentage}%;"></div>
+                        <div class="bar-fill" style="width: ${percentage}%; background: ${progressGradient};"></div>
                         <div class="bar-text">${completed}/${total}</div>
                     </div>
                     <div class="bar-percentage">${percentage}%</div>
