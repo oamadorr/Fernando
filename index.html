@@ -2209,6 +2209,15 @@
         document.addEventListener('DOMContentLoaded', async function() {
             // Inicializar hash da senha
             await initializePasswordHash();
+
+            // Garantir que teamConfig tenha datas válidas ANTES de carregar dados
+            if (!teamConfig.inicioTrabalhoBruto || !(teamConfig.inicioTrabalhoBruto instanceof Date)) {
+                teamConfig.inicioTrabalhoBruto = new Date('2025-09-11');
+            }
+            if (!teamConfig.dataAtual || !(teamConfig.dataAtual instanceof Date)) {
+                teamConfig.dataAtual = new Date();
+            }
+
             // Carregar dados locais primeiro para exibição imediata
             loadTeamConfigFromStorage();
             loadLineStepsFromStorage();
@@ -2220,7 +2229,7 @@
                 manualActiveUsina = savedActiveUsina;
             }
 
-            // Atualizar displays com dados existentes
+            // Atualizar displays com dados existentes APÓS carregar configurações
             updateAllDisplays();
 
             initializeFirebase();
@@ -2397,6 +2406,11 @@
         function calculateWorkDays() {
             const inicio = teamConfig.inicioTrabalhoBruto;
             const atual = teamConfig.dataAtual;
+
+            if (!inicio || !atual || !(inicio instanceof Date) || !(atual instanceof Date)) {
+                return 0;
+            }
+
             const diffTime = atual - inicio;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -4295,23 +4309,27 @@
 
         function loadTeamConfigFromStorage() {
             const stored = localStorage.getItem('linhasVidaTeamConfig');
+
             if (stored) {
                 try {
                     const loadedConfig = JSON.parse(stored);
-                    
+
                     // Restaurar datas de forma mais robusta
                     teamConfig.pessoas = loadedConfig.pessoas || 4;
                     teamConfig.horasPorDia = loadedConfig.horasPorDia || 6;
                     teamConfig.aproveitamento = loadedConfig.aproveitamento || 0.8;
-                    
+
                     // Data de início sempre fixa em 11/09/2025
                     teamConfig.inicioTrabalhoBruto = new Date('2025-09-11');
                     teamConfig.dataAtual = new Date();
-                    
+
                 } catch (error) {
                     console.error('Erro ao carregar config:', error);
                 }
             }
+
+            // Salvar configuração atualizada para garantir persistência
+            saveTeamConfigToStorage();
         }
 
         function saveLineStepsToStorage() {
