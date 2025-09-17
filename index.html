@@ -2101,6 +2101,12 @@
             border: 2px solid var(--warning-orange);
         }
 
+        .status-syncing {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+
         /* Footer */
         .footer {
             background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
@@ -3363,22 +3369,25 @@
 
 
         async function loadProjectData() {
-            if (!db || !currentProjectId) {
-                // Fallback para localStorage
-                loadTeamConfigFromStorage();
-                loadLineStepsFromStorage();
-                loadProgressFromStorage();
-                updateAllDisplays();
-                initializeCharts();
-                hideLoading();
-                return;
-            }
-            
             showLoading('Carregando dados do projeto...');
             updateStatusIndicator('saving');
-            
-            try {
-                const doc = await db.collection('projects').doc(currentProjectId).get();
+
+            // Sempre tentar Firebase primeiro, detectando e resolvendo conflitos
+            if (db && currentProjectId) {
+                // Detectar e resolver conflitos primeiro
+                const conflictResolved = await detectAndResolveDataConflicts();
+                if (conflictResolved) {
+                    // Dados já foram sincronizados, apenas atualizar displays
+                    updateAllDisplays();
+                    initializeCharts();
+                    updateStatusIndicator('online');
+                    setupRealtimeListener();
+                    hideLoading();
+                    return;
+                }
+
+                try {
+                    const doc = await db.collection('projects').doc(currentProjectId).get();
                 
                 if (doc.exists) {
                     const data = doc.data();
@@ -3437,30 +3446,112 @@
                             };
                         }
                     }
-                    
+    
                 } else {
                     // Projeto novo, criar dados iniciais
                     await saveProjectData();
                 }
-                
+
                 updateAllDisplays();
                 initializeCharts();
                 updateStatusIndicator('online');
-                
+
                 // Configurar listener em tempo real
                 setupRealtimeListener();
-                
-            } catch (error) {
-                console.error('Erro ao carregar dados:', error);
+
+                } catch (error) {
+                    console.error('Erro ao carregar dados do Firebase:', error);
+                    updateStatusIndicator('offline');
+
+                    // Fallback para localStorage apenas se Firebase falhar
+                    loadTeamConfigFromStorage();
+                    loadLineStepsFromStorage();
+                    loadProgressFromStorage();
+                    updateAllDisplays();
+                    initializeCharts();
+                }
+            } else {
+                // Firebase não disponível, usar localStorage
+                console.log('Firebase não disponível, usando localStorage');
                 updateStatusIndicator('offline');
-                // Fallback para localStorage
                 loadTeamConfigFromStorage();
                 loadLineStepsFromStorage();
                 loadProgressFromStorage();
                 updateAllDisplays();
                 initializeCharts();
-            } finally {
-                hideLoading();
+            }
+
+            hideLoading();
+        }
+
+        // Função para limpar cache local órfão
+        function clearLocalData() {
+            localStorage.removeItem('linhasVidaProgress');
+            localStorage.removeItem('linhasVidaObservations');
+            localStorage.removeItem('linhasVidaTeamConfig');
+            localStorage.removeItem('linhasVidaLineSteps');
+            localStorage.removeItem('linhasVidaExecutionDates');
+            localStorage.removeItem('linhasVidaLastUpdate');
+            console.log('Cache local limpo');
+        }
+
+        // Função para detectar e resolver conflitos entre Firebase e localStorage
+        async function detectAndResolveDataConflicts() {
+            if (!db || !currentProjectId) return false;
+
+            updateStatusIndicator('syncing');
+
+            try {
+                // Verificar se há dados no localStorage
+                const localProgress = localStorage.getItem('linhasVidaProgress');
+                const localSteps = localStorage.getItem('linhasVidaLineSteps');
+                const localTeamConfig = localStorage.getItem('linhasVidaTeamConfig');
+
+                if (!localProgress && !localSteps && !localTeamConfig) {
+                    return false; // Sem dados locais
+                }
+
+                // Buscar dados do Firebase
+                const doc = await db.collection('projects').doc(currentProjectId).get();
+
+                if (!doc.exists) {
+                    // Firebase vazio mas localStorage tem dados - sincronizar para Firebase
+                    console.log('Sincronizando dados locais para Firebase...');
+                    await saveProjectData();
+                    showToast('Dados locais sincronizados com a nuvem', 'success');
+                    return true;
+                }
+
+                const firebaseData = doc.data();
+                const firebaseUpdated = firebaseData.updatedAt ? firebaseData.updatedAt.toDate() : new Date(0);
+
+                // Verificar timestamps dos dados locais (se disponível)
+                const localTimestamp = localStorage.getItem('linhasVidaLastUpdate');
+                const localUpdated = localTimestamp ? new Date(localTimestamp) : new Date(0);
+
+                const timeDiff = Math.abs(firebaseUpdated - localUpdated);
+                const significantDiff = timeDiff > 5 * 60 * 1000; // 5 minutos
+
+                if (firebaseUpdated > localUpdated) {
+                    // Firebase é mais recente
+                    if (significantDiff) {
+                        console.log('Dados do Firebase são significativamente mais recentes, limpando cache local...');
+                        clearLocalData();
+                        showToast('Carregando dados mais recentes da nuvem', 'info');
+                    }
+                    return false; // Deixa o loadProjectData carregar do Firebase
+                } else if (localUpdated > firebaseUpdated) {
+                    // localStorage é mais recente
+                    console.log('Dados locais são mais recentes, sincronizando para Firebase...');
+                    await saveProjectData();
+                    showToast('Dados locais sincronizados com a nuvem', 'success');
+                    return true;
+                }
+
+                return false; // Dados estão sincronizados
+            } catch (error) {
+                console.error('Erro ao detectar conflitos:', error);
+                return false;
             }
         }
 
@@ -3725,14 +3816,16 @@
             
             const statusText = {
                 online: 'Online',
-                offline: 'Offline', 
-                saving: 'Salvando...'
+                offline: 'Offline',
+                saving: 'Salvando...',
+                syncing: 'Sincronizando...'
             };
-            
+
             const statusIcon = {
                 online: 'fa-circle',
                 offline: 'fa-circle',
-                saving: 'fa-spinner fa-spin'
+                saving: 'fa-spinner fa-spin',
+                syncing: 'fa-sync fa-spin'
             };
             
             indicator.innerHTML = `<i class="fas ${statusIcon[status]}"></i> ${statusText[status]}`;
@@ -5337,10 +5430,13 @@
         function saveProgressToStorage() {
             localStorage.setItem('linhasVidaProgress', JSON.stringify(progressData));
             localStorage.setItem('linhasVidaObservations', JSON.stringify(lineObservations));
+            // Salvar timestamp da última atualização
+            localStorage.setItem('linhasVidaLastUpdate', new Date().toISOString());
         }
 
         function saveTeamConfigToStorage() {
             localStorage.setItem('linhasVidaTeamConfig', JSON.stringify(teamConfig));
+            localStorage.setItem('linhasVidaLastUpdate', new Date().toISOString());
         }
 
         function loadTeamConfigFromStorage() {
@@ -5370,6 +5466,7 @@
 
         function saveLineStepsToStorage() {
             localStorage.setItem('linhasVidaLineSteps', JSON.stringify(lineStepsStatus));
+            localStorage.setItem('linhasVidaLastUpdate', new Date().toISOString());
         }
 
         function loadLineStepsFromStorage() {
