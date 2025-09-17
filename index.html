@@ -2405,10 +2405,19 @@
 
         function calculateWorkDays() {
             const inicio = teamConfig.inicioTrabalhoBruto;
-            const atual = teamConfig.dataAtual;
+            let atual = teamConfig.dataAtual;
 
             if (!inicio || !atual || !(inicio instanceof Date) || !(atual instanceof Date)) {
                 return 0;
+            }
+
+            // Ajustar data atual: se for antes das 18h, não contar o dia atual
+            const now = new Date();
+            const horaAtual = now.getHours();
+
+            // Se ainda não passou das 18h, considerar o dia anterior como último trabalhado
+            if (horaAtual < 18) {
+                atual = new Date(now.getTime() - 24 * 60 * 60 * 1000); // Subtrair 1 dia
             }
 
             const diffTime = atual - inicio;
