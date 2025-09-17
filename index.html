@@ -786,6 +786,573 @@
             white-space: nowrap;
         }
 
+        /* Mapa Interativo */
+        .map-section {
+            margin: 30px 0;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 25px;
+        }
+
+        .map-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .map-tab-btn {
+            background: var(--light-gray);
+            border: 2px solid var(--border-gray);
+            color: var(--dark-gray);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .map-tab-btn.active {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .map-tab-btn:hover:not(.active) {
+            background: var(--border-gray);
+        }
+
+        .map-stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .map-stat-card {
+            background: linear-gradient(135deg, var(--light-blue), rgba(37, 99, 235, 0.1));
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+        }
+
+        .map-stat-card .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 5px;
+        }
+
+        .map-stat-card .stat-label {
+            font-size: 0.85rem;
+            color: var(--medium-gray);
+            font-weight: 500;
+        }
+
+        .map-container {
+            display: none;
+            margin-bottom: 25px;
+        }
+
+        .map-container.active {
+            display: block;
+        }
+
+        .map-layout {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            overflow: hidden;
+        }
+
+        .map-layout.large {
+            height: 350px;
+        }
+
+        .map-line {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .map-line:hover {
+            transform: scale(1.05);
+            z-index: 20;
+        }
+
+        /* Linhas Horizontais */
+        .map-line.horizontal .line-bar {
+            width: 80px;
+            height: 6px;
+            border-radius: 3px;
+        }
+
+
+        /* Linhas Verticais */
+        .map-line.vertical .line-bar {
+            width: 10px;
+            height: 180px;
+            border-radius: 5px;
+        }
+
+        .map-line.vertical.left {
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .map-line.vertical.right {
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Layout Pimental - Posicionamento Absoluto */
+        .pimental-layout .map-line {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* Linhas Verticais Pimental */
+        .pimental-vertical {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .pimental-left {
+            left: 10px;
+        }
+
+        .pimental-right {
+            right: 10px;
+        }
+
+        .pimental-vertical .line-bar {
+            width: 8px;
+            height: 160px;
+            border-radius: 4px;
+        }
+
+        .pimental-vertical .line-label {
+            position: absolute;
+            left: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Linhas Horizontais Pimental */
+        .pimental-01 {
+            top: 20px;
+            left: 50px;
+            right: 50px;
+        }
+
+        .pimental-02 {
+            top: 20px;
+            right: 50px;
+            left: 50%;
+            transform: translateX(5px);
+        }
+
+        .pimental-03 {
+            bottom: 20px;
+            left: 50px;
+            right: 50px;
+        }
+
+        .pimental-04 {
+            bottom: 20px;
+            right: 50px;
+            left: 50%;
+            transform: translateX(5px);
+        }
+
+        .pimental-01, .pimental-03 {
+            width: 45%;
+        }
+
+        .pimental-02, .pimental-04 {
+            width: 45%;
+        }
+
+        .pimental-bar {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            min-width: 200px;
+        }
+
+        /* Labels das linhas horizontais Pimental */
+        .pimental-01 .line-label,
+        .pimental-02 .line-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .pimental-03 .line-label,
+        .pimental-04 .line-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Grid para Belo Monte */
+        .line-grid {
+            position: absolute;
+            left: 40px;
+            right: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2px;
+            flex-wrap: wrap;
+        }
+
+        .line-grid.top-grid {
+            top: 20px;
+            height: 60px;
+        }
+
+        .line-grid.bottom-grid {
+            bottom: 20px;
+            height: 60px;
+        }
+
+        .map-line.grid-item {
+            position: relative;
+            flex: 1;
+            min-width: 80px;
+            max-width: 120px;
+        }
+
+        .map-line.grid-item .line-bar.small {
+            width: 100%;
+            height: 8px;
+            min-width: 70px;
+        }
+
+        /* Labels das Linhas */
+        .line-label {
+            position: absolute;
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-align: center;
+            min-width: 20px;
+            z-index: 15;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Labels Belo Monte - Grid Superior */
+        .line-grid.top-grid .map-line .line-label {
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Labels Belo Monte - Grid Inferior */
+        .line-grid.bottom-grid .map-line .line-label {
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Labels Belo Monte - Linhas Verticais */
+        .map-line.vertical.left .line-label {
+            left: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .map-line.vertical.right .line-label {
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Cores de Status */
+        .line-bar.completed {
+            background: var(--success-green);
+        }
+
+        .line-bar.in-progress {
+            background: var(--warning-orange);
+        }
+
+        .line-bar.pending {
+            background: var(--error-red);
+            border: 2px dashed var(--error-red);
+            background-clip: padding-box;
+        }
+
+        .line-label.completed {
+            color: var(--success-green);
+            border-color: var(--success-green);
+        }
+
+        .line-label.in-progress {
+            color: var(--warning-orange);
+            border-color: var(--warning-orange);
+        }
+
+        .line-label.pending {
+            color: var(--error-red);
+            border-color: var(--error-red);
+        }
+
+        /* Legenda */
+        .map-legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            padding: 15px;
+            background: var(--light-gray);
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        .legend-color.completed {
+            background: var(--success-green);
+        }
+
+        .legend-color.in-progress {
+            background: var(--warning-orange);
+        }
+
+        .legend-color.pending {
+            background: var(--error-red);
+            border: 1px dashed var(--error-red);
+            background-clip: padding-box;
+        }
+
+        /* Tooltip do Mapa */
+        .map-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--white);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            max-width: 200px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .map-tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tooltip-content {
+            line-height: 1.4;
+        }
+
+        .tooltip-line {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tooltip-progress {
+            color: var(--success-green);
+            margin-bottom: 2px;
+        }
+
+        .tooltip-status {
+            color: var(--border-gray);
+            font-size: 0.8rem;
+        }
+
+        /* Responsividade do Mapa */
+        @media (max-width: 768px) {
+            .map-layout {
+                height: 250px;
+            }
+
+            .map-layout.large {
+                height: 280px;
+            }
+
+            .map-line.horizontal .line-bar {
+                width: 80px;
+                height: 6px;
+            }
+
+            .map-line.vertical .line-bar {
+                width: 8px;
+                height: 160px;
+            }
+
+            /* Pimental responsivo */
+            .pimental-01, .pimental-02 {
+                top: 15px;
+            }
+
+            .pimental-03, .pimental-04 {
+                bottom: 15px;
+            }
+
+            .pimental-01, .pimental-03 {
+                left: 35px;
+                width: 40%;
+            }
+
+            .pimental-02, .pimental-04 {
+                right: 35px;
+                left: 52%;
+                width: 40%;
+            }
+
+            .pimental-vertical .line-bar {
+                height: 140px;
+            }
+
+            /* Belo Monte responsivo */
+            .line-grid {
+                left: 30px;
+                right: 30px;
+                gap: 2px;
+            }
+
+            .map-line.grid-item {
+                min-width: 60px;
+                max-width: 100px;
+            }
+
+            .map-line.grid-item .line-bar.small {
+                height: 6px;
+            }
+
+            .line-label {
+                font-size: 0.7rem;
+                padding: 2px 4px;
+            }
+
+            .map-stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .map-tabs {
+                flex-direction: column;
+            }
+
+            .map-legend {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .map-layout {
+                height: 200px;
+            }
+
+            .map-layout.large {
+                height: 230px;
+            }
+
+            .map-line.horizontal .line-bar {
+                width: 70px;
+                height: 5px;
+            }
+
+            .map-line.vertical .line-bar {
+                width: 7px;
+                height: 140px;
+            }
+
+            /* Pimental mobile */
+            .pimental-01, .pimental-03 {
+                left: 25px;
+                width: 42%;
+            }
+
+            .pimental-02, .pimental-04 {
+                right: 25px;
+                left: 50%;
+                width: 42%;
+            }
+
+            .pimental-vertical .line-bar {
+                height: 120px;
+            }
+
+            /* Belo Monte mobile */
+            .line-grid {
+                left: 20px;
+                right: 20px;
+                gap: 1px;
+            }
+
+            .map-line.grid-item {
+                min-width: 50px;
+                max-width: 80px;
+            }
+
+            .map-stats-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* Charts section */
         .charts-section {
             display: grid;
@@ -1744,6 +2311,206 @@
                 </div>
             </section>
 
+            <!-- Mapa Interativo -->
+            <section class="map-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-map-marked-alt"></i> Mapa Interativo de Linhas</h2>
+                </div>
+
+                <!-- Abas das Usinas -->
+                <div class="map-tabs">
+                    <button class="map-tab-btn active" onclick="switchMapTab('pimental')">
+                        <i class="fas fa-industry"></i> Pimental
+                    </button>
+                    <button class="map-tab-btn" onclick="switchMapTab('belo-monte')">
+                        <i class="fas fa-industry"></i> Belo Monte
+                    </button>
+                </div>
+
+                <!-- Cards de Estatísticas do Mapa -->
+                <div class="map-stats-cards">
+                    <div class="map-stat-card">
+                        <div class="stat-value" id="mapTotalLines">0</div>
+                        <div class="stat-label">Total de Linhas</div>
+                    </div>
+                    <div class="map-stat-card">
+                        <div class="stat-value" id="mapCompletedLines">0</div>
+                        <div class="stat-label">Linhas Concluídas</div>
+                    </div>
+                    <div class="map-stat-card">
+                        <div class="stat-value" id="mapProgressPercent">0%</div>
+                        <div class="stat-label">Progresso Geral</div>
+                    </div>
+                    <div class="map-stat-card">
+                        <div class="stat-value" id="mapInProgressLines">0</div>
+                        <div class="stat-label">Em Andamento</div>
+                    </div>
+                </div>
+
+                <!-- Container do Mapa Pimental -->
+                <div id="mapPimental" class="map-container active">
+                    <div class="map-layout pimental-layout">
+                        <!-- Linha 05 - Lateral Esquerda -->
+                        <div class="map-line pimental-vertical pimental-left" data-linha="05" data-usina="pimental">
+                            <div class="line-bar vertical"></div>
+                            <div class="line-label">05</div>
+                        </div>
+
+                        <!-- Linha 18 - Lateral Direita -->
+                        <div class="map-line pimental-vertical pimental-right" data-linha="18" data-usina="pimental">
+                            <div class="line-bar vertical"></div>
+                            <div class="line-label">18</div>
+                        </div>
+
+                        <!-- Linha 01 - Superior Esquerda -->
+                        <div class="map-line pimental-01" data-linha="01" data-usina="pimental">
+                            <div class="line-bar horizontal pimental-bar"></div>
+                            <div class="line-label">01</div>
+                        </div>
+
+                        <!-- Linha 02 - Superior Direita -->
+                        <div class="map-line pimental-02" data-linha="02" data-usina="pimental">
+                            <div class="line-bar horizontal pimental-bar"></div>
+                            <div class="line-label">02</div>
+                        </div>
+
+                        <!-- Linha 03 - Inferior Esquerda -->
+                        <div class="map-line pimental-03" data-linha="03" data-usina="pimental">
+                            <div class="line-bar horizontal pimental-bar"></div>
+                            <div class="line-label">03</div>
+                        </div>
+
+                        <!-- Linha 04 - Inferior Direita -->
+                        <div class="map-line pimental-04" data-linha="04" data-usina="pimental">
+                            <div class="line-bar horizontal pimental-bar"></div>
+                            <div class="line-label">04</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Container do Mapa Belo Monte -->
+                <div id="mapBeloMonte" class="map-container">
+                    <div class="map-layout large">
+                        <!-- Linha 19 - Lateral Esquerda -->
+                        <div class="map-line vertical left" data-linha="19" data-usina="belo-monte">
+                            <div class="line-bar vertical"></div>
+                            <div class="line-label">19</div>
+                        </div>
+
+                        <!-- Linha 71 - Lateral Direita -->
+                        <div class="map-line vertical right" data-linha="71" data-usina="belo-monte">
+                            <div class="line-bar vertical"></div>
+                            <div class="line-label">71</div>
+                        </div>
+
+                        <!-- Fileira Superior: Linhas 01-09 -->
+                        <div class="line-grid top-grid">
+                            <div class="map-line grid-item" data-linha="01" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">01</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="02" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">02</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="03" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">03</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="04" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">04</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="05" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">05</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="06" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">06</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="07" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">07</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="08" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">08</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="09" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">09</div>
+                            </div>
+                        </div>
+
+                        <!-- Fileira Inferior: Linhas 10-18 -->
+                        <div class="line-grid bottom-grid">
+                            <div class="map-line grid-item" data-linha="10" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">10</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="11" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">11</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="12" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">12</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="13" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">13</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="14" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">14</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="15" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">15</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="16" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">16</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="17" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">17</div>
+                            </div>
+                            <div class="map-line grid-item" data-linha="18" data-usina="belo-monte">
+                                <div class="line-bar horizontal small"></div>
+                                <div class="line-label">18</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legenda do Mapa -->
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <div class="legend-color completed"></div>
+                        <span>Concluído (100%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color in-progress"></div>
+                        <span>Em Andamento (1-99%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color pending"></div>
+                        <span>Pendente (0%)</span>
+                    </div>
+                </div>
+
+                <!-- Tooltip do Mapa -->
+                <div id="mapTooltip" class="map-tooltip">
+                    <div class="tooltip-content">
+                        <div class="tooltip-line"></div>
+                        <div class="tooltip-progress"></div>
+                        <div class="tooltip-status"></div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Controle de Execução -->
             <section class="execution-control-section">
                 <div class="container">
@@ -2231,6 +2998,9 @@
 
             // Atualizar displays com dados existentes APÓS carregar configurações
             updateAllDisplays();
+
+            // Inicializar mapa interativo
+            initializeMap();
 
             initializeFirebase();
             initializeFilters();
@@ -2908,6 +3678,38 @@
             return completed;
         }
 
+        // Função para calcular progresso percentual de uma linha específica
+        function calculateLineProgress(usinaKey, linha) {
+            if (!projectData[usinaKey] || !projectData[usinaKey].linhas[linha]) {
+                return 0;
+            }
+
+            const linhaData = projectData[usinaKey].linhas[linha];
+            let totalBases = 0;
+            let completedBases = 0;
+
+            // Calcular total de bases da linha
+            for (const tipo in linhaData.bases) {
+                totalBases += linhaData.bases[tipo];
+            }
+
+            // Calcular bases concluídas da linha
+            if (progressData[usinaKey] && progressData[usinaKey][linha]) {
+                for (const tipo in progressData[usinaKey][linha]) {
+                    completedBases += progressData[usinaKey][linha][tipo] || 0;
+                }
+            }
+
+            // Incluir etapas do cabo no cálculo
+            const completedCableSteps = calculateCableStepsCompletedOfLine(usinaKey, linha);
+            const totalCableSteps = 4; // 4 etapas por linha
+
+            const totalItems = totalBases + totalCableSteps;
+            const completedItems = completedBases + completedCableSteps;
+
+            return totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+        }
+
         function updateStatusIndicator(status) {
             const indicator = document.getElementById('statusIndicator');
             indicator.className = `status-indicator status-${status}`;
@@ -3454,12 +4256,228 @@
             tooltip.style.top = top + 'px';
         }
 
+        // ===== FUNÇÕES DO MAPA INTERATIVO =====
+
+        let currentMapTab = 'pimental'; // Tab ativa atual
+
+        // Alternar entre abas das usinas
+        function switchMapTab(usinaKey) {
+            currentMapTab = usinaKey;
+
+            // Atualizar classes das abas
+            document.querySelectorAll('.map-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Mostrar container correto
+            document.querySelectorAll('.map-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            const mapId = usinaKey === 'pimental' ? 'mapPimental' : 'mapBeloMonte';
+            document.getElementById(mapId).classList.add('active');
+
+            // Atualizar estatísticas da aba atual
+            updateMapStats(usinaKey);
+        }
+
+        // Atualizar estatísticas do mapa
+        function updateMapStats(usinaKey = null) {
+            const targetUsina = usinaKey || currentMapTab;
+
+            if (!projectData[targetUsina]) return;
+
+            let totalLines = 0;
+            let completedLines = 0;
+            let inProgressLines = 0;
+            let totalProgress = 0;
+
+            // Calcular estatísticas por linha
+            for (const linha in projectData[targetUsina].linhas) {
+                totalLines++;
+                const progress = calculateLineProgress(targetUsina, linha);
+                totalProgress += progress;
+
+                if (progress === 100) {
+                    completedLines++;
+                } else if (progress > 0) {
+                    inProgressLines++;
+                }
+            }
+
+            const avgProgress = totalLines > 0 ? Math.round(totalProgress / totalLines) : 0;
+
+            // Atualizar elementos da interface
+            document.getElementById('mapTotalLines').textContent = totalLines;
+            document.getElementById('mapCompletedLines').textContent = completedLines;
+            document.getElementById('mapProgressPercent').textContent = `${avgProgress}%`;
+            document.getElementById('mapInProgressLines').textContent = inProgressLines;
+        }
+
+        // Atualizar cores e status das linhas no mapa
+        function updateMapLines(usinaKey = null) {
+            const targetUsina = usinaKey || currentMapTab;
+
+            if (!projectData[targetUsina]) return;
+
+            // Atualizar linhas da usina específica
+            const mapContainer = targetUsina === 'pimental' ?
+                document.getElementById('mapPimental') :
+                document.getElementById('mapBeloMonte');
+
+            const lines = mapContainer.querySelectorAll('.map-line');
+
+            lines.forEach(line => {
+                const linha = line.dataset.linha;
+                const progress = calculateLineProgress(targetUsina, linha);
+
+                // Remover classes de status antigas
+                const lineBar = line.querySelector('.line-bar');
+                const lineLabel = line.querySelector('.line-label');
+
+                lineBar.classList.remove('completed', 'in-progress', 'pending');
+                lineLabel.classList.remove('completed', 'in-progress', 'pending');
+
+                // Aplicar nova classe baseada no progresso
+                let statusClass = '';
+                if (progress === 100) {
+                    statusClass = 'completed';
+                } else if (progress > 0) {
+                    statusClass = 'in-progress';
+                } else {
+                    statusClass = 'pending';
+                }
+
+                lineBar.classList.add(statusClass);
+                lineLabel.classList.add(statusClass);
+            });
+        }
+
+        // Mostrar tooltip do mapa
+        function showMapTooltip(event, usinaKey, linha) {
+            const tooltip = document.getElementById('mapTooltip');
+            const progress = calculateLineProgress(usinaKey, linha);
+
+            let status = '';
+            if (progress === 100) {
+                status = 'Concluído';
+            } else if (progress > 0) {
+                status = 'Em Andamento';
+            } else {
+                status = 'Pendente';
+            }
+
+            const usinaName = projectData[usinaKey].name;
+
+            tooltip.querySelector('.tooltip-line').textContent = `${usinaName} - Linha ${linha}`;
+            tooltip.querySelector('.tooltip-progress').textContent = `Progresso: ${progress}%`;
+            tooltip.querySelector('.tooltip-status').textContent = `Status: ${status}`;
+
+            // Posicionar tooltip
+            const rect = tooltip.getBoundingClientRect();
+            let left = event.pageX + 15;
+            let top = event.pageY - rect.height - 15;
+
+            // Ajustar se sair da tela
+            if (left + rect.width > window.innerWidth + window.pageXOffset) {
+                left = event.pageX - rect.width - 15;
+            }
+            if (top < window.pageYOffset) {
+                top = event.pageY + 15;
+            }
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.classList.add('show');
+        }
+
+        // Esconder tooltip do mapa
+        function hideMapTooltip() {
+            document.getElementById('mapTooltip').classList.remove('show');
+        }
+
+        // Adicionar event listeners para linhas do mapa
+        function initializeMapEvents() {
+            document.querySelectorAll('.map-line').forEach(line => {
+                const usinaKey = line.dataset.usina;
+                const linha = line.dataset.linha;
+
+                // Click para abrir modal
+                line.addEventListener('click', () => {
+                    openLineModal(usinaKey, linha);
+                });
+
+                // Hover para tooltip
+                line.addEventListener('mouseenter', (event) => {
+                    showMapTooltip(event, usinaKey, linha);
+                });
+
+                line.addEventListener('mouseleave', () => {
+                    hideMapTooltip();
+                });
+
+                // Atualizar posição do tooltip durante movimento do mouse
+                line.addEventListener('mousemove', (event) => {
+                    const tooltip = document.getElementById('mapTooltip');
+                    if (tooltip.classList.contains('show')) {
+                        const rect = tooltip.getBoundingClientRect();
+                        let left = event.pageX + 15;
+                        let top = event.pageY - rect.height - 15;
+
+                        if (left + rect.width > window.innerWidth + window.pageXOffset) {
+                            left = event.pageX - rect.width - 15;
+                        }
+                        if (top < window.pageYOffset) {
+                            top = event.pageY + 15;
+                        }
+
+                        tooltip.style.left = left + 'px';
+                        tooltip.style.top = top + 'px';
+                    }
+                });
+            });
+        }
+
+        // Função principal de integração com dados externos
+        function updateMapFromExternalData(externalProgressData) {
+            if (externalProgressData) {
+                // Usar dados externos se fornecidos
+                const originalProgressData = progressData;
+                progressData = externalProgressData;
+
+                // Atualizar ambas as usinas
+                updateMapLines('pimental');
+                updateMapLines('belo-monte');
+                updateMapStats(currentMapTab);
+
+                // Restaurar dados originais
+                progressData = originalProgressData;
+            } else {
+                // Usar dados internos do sistema
+                updateMapLines('pimental');
+                updateMapLines('belo-monte');
+                updateMapStats(currentMapTab);
+            }
+        }
+
+        // Inicializar mapa quando documento carregar
+        function initializeMap() {
+            // Configurar eventos iniciais
+            initializeMapEvents();
+
+            // Atualizar com dados atuais
+            updateMapFromExternalData();
+
+            console.log('🗺️ Mapa interativo inicializado com sucesso!');
+        }
+
         function updateAllDisplays() {
             updateDashboard();
             updateUsinaStats();
             updateTables();
             updateCharts();
             updateChartInfos();
+            updateMapFromExternalData(); // Atualizar mapa interativo
             updateLastUpdateTimestamp();
         }
 
