@@ -3236,23 +3236,32 @@
             // Contar apenas dias úteis entre início do trabalho e data limite
             let workDays = 0;
             const currentDate = new Date(inicioTrabalho);
+            const diasContados = [];
 
             while (currentDate <= dataLimite) {
                 const weekDay = currentDate.getDay();
+                const dayName = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][weekDay];
+                const dateStr = currentDate.toLocaleDateString('pt-BR');
+
                 // Segunda(1) a Sexta(5)
                 if (weekDay >= 1 && weekDay <= 5) {
                     workDays++;
+                    diasContados.push(`✓ ${dateStr} (${dayName})`);
+                } else {
+                    diasContados.push(`✗ ${dateStr} (${dayName}) - fim de semana`);
                 }
                 currentDate.setDate(currentDate.getDate() + 1);
             }
 
-            console.log('Debug calculateWorkDays:', {
-                inicio: inicio,
-                inicioTrabalho: inicioTrabalho,
-                hoje: hoje,
-                dataLimite: dataLimite,
+            console.log('🔍 Debug calculateWorkDays v2:', {
+                inicio: inicio.toLocaleDateString('pt-BR'),
+                inicioTrabalho: inicioTrabalho.toLocaleDateString('pt-BR'),
+                hoje: hoje.toLocaleDateString('pt-BR'),
+                dataLimite: dataLimite.toLocaleDateString('pt-BR'),
                 horaAtual: horaAtual,
-                workDays: workDays
+                workDays: workDays,
+                semana_inicio: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][inicio.getDay()],
+                diasContados: diasContados
             });
 
             return workDays;
