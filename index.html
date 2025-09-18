@@ -3374,8 +3374,19 @@
 
             // Sempre tentar Firebase primeiro, detectando e resolvendo conflitos
             if (db && currentProjectId) {
-                // Detectar e resolver conflitos primeiro
-                const conflictResolved = await detectAndResolveDataConflicts();
+                // Em modo somente leitura, pular detecção de conflitos e carregar direto do Firebase
+                const isReadOnlyMode = !isAuthenticated && (
+                    !localStorage.getItem('linhasVidaProgress') ||
+                    !localStorage.getItem('linhasVidaLineSteps') ||
+                    !localStorage.getItem('linhasVidaTeamConfig')
+                );
+
+                let conflictResolved = false;
+                if (!isReadOnlyMode) {
+                    // Detectar e resolver conflitos apenas se não estiver em modo somente leitura
+                    conflictResolved = await detectAndResolveDataConflicts();
+                }
+
                 if (conflictResolved) {
                     // Dados já foram sincronizados, apenas atualizar displays
                     updateAllDisplays();
@@ -3391,7 +3402,51 @@
                 
                 if (doc.exists) {
                     const data = doc.data();
-                    
+
+                    // Em modo somente leitura, aplicar dados do Firebase diretamente
+                    if (isReadOnlyMode) {
+                        if (data.progressData) {
+                            progressData = data.progressData;
+                        }
+                        if (data.lineStepsStatus) {
+                            lineStepsStatus = data.lineStepsStatus;
+                        }
+                        if (data.executionDates) {
+                            // Validar e aplicar datas
+                            for (const usina in data.executionDates) {
+                                for (const linha in data.executionDates[usina]) {
+                                    for (const step in data.executionDates[usina][linha]) {
+                                        try {
+                                            if (data.executionDates[usina][linha][step]) {
+                                                data.executionDates[usina][linha][step] = new Date(data.executionDates[usina][linha][step]);
+                                            }
+                                        } catch (error) {
+                                            console.warn(`Data inválida ignorada: ${usina}/${linha}/${step}`);
+                                            data.executionDates[usina][linha][step] = null;
+                                        }
+                                    }
+                                }
+                            }
+                            executionDates = data.executionDates;
+                        }
+                        if (data.teamConfig) {
+                            teamConfig = {
+                                ...teamConfig,
+                                ...data.teamConfig,
+                                inicioTrabalhoBruto: new Date(data.teamConfig.inicioTrabalhoBruto),
+                                dataAtual: new Date(data.teamConfig.dataAtual)
+                            };
+                        }
+
+                        // Atualizar displays com dados do Firebase
+                        updateAllDisplays();
+                        initializeCharts();
+                        updateStatusIndicator('online');
+                        setupRealtimeListener();
+                        hideLoading();
+                        return;
+                    }
+
                     // Compatibilidade com sistema v1.0 (produção atual)
                     if (data.version === '1.0' && data.data) {
                         // Converter dados v1.0 para v2.0
