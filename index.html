@@ -3433,8 +3433,8 @@
                             teamConfig = {
                                 ...teamConfig,
                                 ...data.teamConfig,
-                                inicioTrabalhoBruto: new Date(data.teamConfig.inicioTrabalhoBruto),
-                                dataAtual: new Date(data.teamConfig.dataAtual)
+                                inicioTrabalhoBruto: data.teamConfig.inicioTrabalhoBruto ? new Date(data.teamConfig.inicioTrabalhoBruto) : new Date('2025-09-11'),
+                                dataAtual: data.teamConfig.dataAtual ? new Date(data.teamConfig.dataAtual) : new Date()
                             };
                         }
 
