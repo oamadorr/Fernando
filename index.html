@@ -3605,6 +3605,12 @@
                             // Garantir que as datas sejam válidas
                             validateAndFixTeamConfigDates();
                         }
+                        
+                        // IMPORTANTE: Carregar usina ativa do Firebase também quando não está em modo somente leitura
+                        if (data.manualActiveUsina) {
+                            manualActiveUsina = data.manualActiveUsina;
+                            localStorage.setItem('manualActiveUsina', manualActiveUsina);
+                        }
                     }
     
                 } else {
@@ -3770,6 +3776,15 @@
                                     console.warn('Erro ao processar datas de execução:', dateError);
                                 }
                             }
+                            
+                            // IMPORTANTE: Verificar mudanças na usina ativa
+                            if (data.manualActiveUsina !== undefined && data.manualActiveUsina !== manualActiveUsina) {
+                                manualActiveUsina = data.manualActiveUsina;
+                                localStorage.setItem('manualActiveUsina', manualActiveUsina);
+                                hasChanges = true;
+                                console.log('Usina ativa atualizada em tempo real:', manualActiveUsina);
+                            }
+                            
                             if (hasChanges) {
                                 updateAllDisplays();
                                 updateCharts();
@@ -3834,6 +3849,7 @@
                     lineStepsStatus: lineStepsStatus,
                     executionDates: executionDates,
                     teamConfig: teamConfig,
+                    manualActiveUsina: manualActiveUsina,
                     projectData: simplifiedData,
                     
                     // Compatibilidade com v1.0
