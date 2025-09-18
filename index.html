@@ -2987,21 +2987,45 @@
             PROJECT_PASSWORD_HASH = await calculateSHA256("thommen2025");
         }
 
+        // Função centralizada para garantir datas válidas no teamConfig
+        function validateAndFixTeamConfigDates() {
+            // Sempre garantir data de início fixa
+            if (!teamConfig.inicioTrabalhoBruto || !(teamConfig.inicioTrabalhoBruto instanceof Date) || isNaN(teamConfig.inicioTrabalhoBruto.getTime())) {
+                teamConfig.inicioTrabalhoBruto = new Date('2025-09-11');
+            }
+
+            // Data atual sempre deve ser Date válida
+            if (!teamConfig.dataAtual || !(teamConfig.dataAtual instanceof Date) || isNaN(teamConfig.dataAtual.getTime())) {
+                teamConfig.dataAtual = new Date();
+            }
+
+            // Garantir outras propriedades padrão
+            if (typeof teamConfig.pessoas !== 'number' || teamConfig.pessoas <= 0) {
+                teamConfig.pessoas = 4;
+            }
+            if (typeof teamConfig.horasPorDia !== 'number' || teamConfig.horasPorDia <= 0) {
+                teamConfig.horasPorDia = 6;
+            }
+            if (typeof teamConfig.aproveitamento !== 'number' || teamConfig.aproveitamento <= 0 || teamConfig.aproveitamento > 1) {
+                teamConfig.aproveitamento = 0.8;
+            }
+
+            console.log('TeamConfig validado:', teamConfig);
+        }
+
         // Inicialização
         document.addEventListener('DOMContentLoaded', async function() {
             // Inicializar hash da senha
             await initializePasswordHash();
 
             // Garantir que teamConfig tenha datas válidas ANTES de carregar dados
-            if (!teamConfig.inicioTrabalhoBruto || !(teamConfig.inicioTrabalhoBruto instanceof Date)) {
-                teamConfig.inicioTrabalhoBruto = new Date('2025-09-11');
-            }
-            if (!teamConfig.dataAtual || !(teamConfig.dataAtual instanceof Date)) {
-                teamConfig.dataAtual = new Date();
-            }
+            validateAndFixTeamConfigDates();
 
             // Carregar dados locais primeiro para exibição imediata
             loadTeamConfigFromStorage();
+
+            // Validar novamente após carregar do storage
+            validateAndFixTeamConfigDates();
             loadLineStepsFromStorage();
             loadProgressFromStorage();
 
@@ -3350,6 +3374,7 @@
                 updateStatusIndicator('offline');
                 // Fallback para localStorage se Firebase falhar
                 loadTeamConfigFromStorage();
+                validateAndFixTeamConfigDates(); // Garantir datas válidas
                 loadLineStepsFromStorage();
                 loadProgressFromStorage();
                 updateAllDisplays();
@@ -3430,12 +3455,31 @@
                             executionDates = data.executionDates;
                         }
                         if (data.teamConfig) {
+                            // Aplicar dados do Firebase
                             teamConfig = {
                                 ...teamConfig,
-                                ...data.teamConfig,
-                                inicioTrabalhoBruto: data.teamConfig.inicioTrabalhoBruto ? new Date(data.teamConfig.inicioTrabalhoBruto) : new Date('2025-09-11'),
-                                dataAtual: data.teamConfig.dataAtual ? new Date(data.teamConfig.dataAtual) : new Date()
+                                ...data.teamConfig
                             };
+
+                            // Converter strings de data para objetos Date
+                            if (data.teamConfig.inicioTrabalhoBruto) {
+                                try {
+                                    teamConfig.inicioTrabalhoBruto = new Date(data.teamConfig.inicioTrabalhoBruto);
+                                } catch (e) {
+                                    teamConfig.inicioTrabalhoBruto = new Date('2025-09-11');
+                                }
+                            }
+
+                            if (data.teamConfig.dataAtual) {
+                                try {
+                                    teamConfig.dataAtual = new Date(data.teamConfig.dataAtual);
+                                } catch (e) {
+                                    teamConfig.dataAtual = new Date();
+                                }
+                            }
+
+                            // Garantir que as datas sejam válidas
+                            validateAndFixTeamConfigDates();
                         }
 
                         // Atualizar displays com dados do Firebase
@@ -3498,12 +3542,31 @@
                         
                         // Carregar configuração da equipe se disponível
                         if (data.teamConfig) {
-                            // Restaurar datas a partir de strings
+                            // Aplicar dados e converter datas
                             teamConfig = {
-                                ...data.teamConfig,
-                                inicioTrabalhoBruto: new Date(data.teamConfig.inicioTrabalhoBruto),
-                                dataAtual: new Date(data.teamConfig.dataAtual)
+                                ...teamConfig,
+                                ...data.teamConfig
                             };
+
+                            // Converter strings para datas com tratamento de erro
+                            if (data.teamConfig.inicioTrabalhoBruto) {
+                                try {
+                                    teamConfig.inicioTrabalhoBruto = new Date(data.teamConfig.inicioTrabalhoBruto);
+                                } catch (e) {
+                                    teamConfig.inicioTrabalhoBruto = new Date('2025-09-11');
+                                }
+                            }
+
+                            if (data.teamConfig.dataAtual) {
+                                try {
+                                    teamConfig.dataAtual = new Date(data.teamConfig.dataAtual);
+                                } catch (e) {
+                                    teamConfig.dataAtual = new Date();
+                                }
+                            }
+
+                            // Garantir que as datas sejam válidas
+                            validateAndFixTeamConfigDates();
                         }
                     }
     
@@ -5514,19 +5577,36 @@
                 try {
                     const loadedConfig = JSON.parse(stored);
 
-                    // Restaurar datas de forma mais robusta
-                    teamConfig.pessoas = loadedConfig.pessoas || 4;
-                    teamConfig.horasPorDia = loadedConfig.horasPorDia || 6;
-                    teamConfig.aproveitamento = loadedConfig.aproveitamento || 0.8;
+                    // Aplicar dados carregados
+                    teamConfig = {
+                        ...teamConfig,
+                        ...loadedConfig
+                    };
 
-                    // Data de início sempre fixa em 11/09/2025
-                    teamConfig.inicioTrabalhoBruto = new Date('2025-09-11');
-                    teamConfig.dataAtual = new Date();
+                    // Converter datas se necessário
+                    if (loadedConfig.inicioTrabalhoBruto) {
+                        try {
+                            teamConfig.inicioTrabalhoBruto = new Date(loadedConfig.inicioTrabalhoBruto);
+                        } catch (e) {
+                            teamConfig.inicioTrabalhoBruto = new Date('2025-09-11');
+                        }
+                    }
+
+                    if (loadedConfig.dataAtual) {
+                        try {
+                            teamConfig.dataAtual = new Date(loadedConfig.dataAtual);
+                        } catch (e) {
+                            teamConfig.dataAtual = new Date();
+                        }
+                    }
 
                 } catch (error) {
                     console.error('Erro ao carregar config:', error);
                 }
             }
+
+            // Garantir validação final sempre
+            validateAndFixTeamConfigDates();
 
             // Salvar configuração atualizada para garantir persistência
             saveTeamConfigToStorage();
