@@ -3220,42 +3220,27 @@
                 return 0;
             }
 
-            // Usar data atual real, não teamConfig.dataAtual
-            const hoje = new Date();
-            const horaAtual = hoje.getHours();
+            // Ajustar data atual: se for antes das 18h, não contar o dia atual
+            const now = new Date();
+            const horaAtual = now.getHours();
 
-            // Se ainda não passou das 18h, não contar o dia atual como trabalhado
-            let dataLimite = new Date(hoje);
+            // Se ainda não passou das 18h, considerar o dia anterior como último trabalhado
             if (horaAtual < 18) {
-                dataLimite.setDate(dataLimite.getDate() - 1);
+                atual = new Date(now.getTime() - 24 * 60 * 60 * 1000); // Subtrair 1 dia
             }
 
-            // Início do trabalho é 12/09 (dia seguinte ao início do projeto 11/09)
-            const inicioTrabalho = new Date(inicio);
-            inicioTrabalho.setDate(inicioTrabalho.getDate() + 1); // Começou no dia seguinte
+            const diffTime = atual - inicio;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            // Contar apenas dias úteis entre início do trabalho e data limite
+            // Contar apenas dias úteis (seg-sex)
             let workDays = 0;
-            const currentDate = new Date(inicioTrabalho);
-
-            while (currentDate <= dataLimite) {
-                const weekDay = currentDate.getDay();
-                // Segunda(1) a Sexta(5)
+            for (let i = 0; i <= diffDays; i++) {
+                const day = new Date(inicio.getTime() + i * 24 * 60 * 60 * 1000);
+                const weekDay = day.getDay();
                 if (weekDay >= 1 && weekDay <= 5) {
                     workDays++;
                 }
-                currentDate.setDate(currentDate.getDate() + 1);
             }
-
-            console.log('Debug calculateWorkDays:', {
-                inicio: inicio,
-                inicioTrabalho: inicioTrabalho,
-                hoje: hoje,
-                dataLimite: dataLimite,
-                horaAtual: horaAtual,
-                workDays: workDays
-            });
-
             return workDays;
         }
 
