@@ -3279,6 +3279,9 @@
             // Salvar preferência no localStorage
             localStorage.setItem('manualActiveUsina', usinaKey);
 
+            // Salvar no Firebase para sincronização
+            saveProjectData();
+
             // Atualizar interface
             updateActiveUsinaButtons();
             updateAllDisplays();
