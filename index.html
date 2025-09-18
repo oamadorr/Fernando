@@ -3214,33 +3214,34 @@
 
         function calculateWorkDays() {
             const inicio = teamConfig.inicioTrabalhoBruto;
-            let atual = teamConfig.dataAtual;
 
-            if (!inicio || !atual || !(inicio instanceof Date) || !(atual instanceof Date)) {
+            if (!inicio || !(inicio instanceof Date)) {
                 return 0;
             }
 
-            // Ajustar data atual: se for antes das 18h, não contar o dia atual
-            const now = new Date();
-            const horaAtual = now.getHours();
+            // Data atual real
+            const hoje = new Date();
+            const horaAtual = hoje.getHours();
 
-            // Se ainda não passou das 18h, considerar o dia anterior como último trabalhado
+            // Se ainda não passou das 18h, não contar hoje
+            let dataFinal = new Date(hoje);
             if (horaAtual < 18) {
-                atual = new Date(now.getTime() - 24 * 60 * 60 * 1000); // Subtrair 1 dia
+                dataFinal.setDate(dataFinal.getDate() - 1);
             }
 
-            const diffTime = atual - inicio;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            // Contar apenas dias úteis (seg-sex)
+            // Contar dias úteis de 11/09 até data final
             let workDays = 0;
-            for (let i = 0; i <= diffDays; i++) {
-                const day = new Date(inicio.getTime() + i * 24 * 60 * 60 * 1000);
-                const weekDay = day.getDay();
+            const currentDate = new Date(inicio);
+
+            while (currentDate <= dataFinal) {
+                const weekDay = currentDate.getDay();
+                // Segunda(1) a Sexta(5)
                 if (weekDay >= 1 && weekDay <= 5) {
                     workDays++;
                 }
+                currentDate.setDate(currentDate.getDate() + 1);
             }
+
             return workDays;
         }
 
