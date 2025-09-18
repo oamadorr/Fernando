@@ -3230,8 +3230,9 @@
                 dataLimite.setDate(dataLimite.getDate() - 1);
             }
 
-            // Início do trabalho é 11/09 (mesmo dia do início do projeto)
+            // Início do trabalho é 12/09 (dia seguinte ao início do projeto 11/09)
             const inicioTrabalho = new Date(inicio);
+            inicioTrabalho.setDate(inicioTrabalho.getDate() + 1); // Começou no dia seguinte
 
             // Contar apenas dias úteis entre início do trabalho e data limite
             let workDays = 0;
