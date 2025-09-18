@@ -3439,6 +3439,11 @@
                         }
 
                         // Atualizar displays com dados do Firebase
+                        console.log('Modo somente leitura: dados carregados do Firebase', {
+                            progressData: progressData,
+                            lineStepsStatus: lineStepsStatus,
+                            teamConfig: teamConfig
+                        });
                         updateAllDisplays();
                         initializeCharts();
                         updateStatusIndicator('online');
@@ -3900,6 +3905,14 @@
             const progress = calculateProgress();
             const totalBases = calculateTotalBases();
             const completedBases = calculateCompletedBases();
+
+            console.log('updateDashboard debug:', {
+                progress: progress,
+                totalBases: totalBases,
+                completedBases: completedBases,
+                progressData: progressData,
+                projectData: projectData
+            });
             const productivity = calculateProductivity();
             const estimatedCompletion = calculateEstimatedCompletion();
             const workDays = calculateWorkDays();
