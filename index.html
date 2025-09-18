@@ -2557,6 +2557,11 @@
                             <div class="control-help" id="controlHelpText">
                                 <i class="fas fa-info-circle"></i> Clique para alternar a usina ativa. As estimativas serão recalculadas automaticamente.
                             </div>
+                            <div style="margin-top: 15px; text-align: center;">
+                                <button onclick="forceSaveActiveUsina()" class="btn-secondary" style="padding: 8px 16px;">
+                                    <i class="fas fa-save"></i> Salvar Configuração
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3288,6 +3293,23 @@
 
             const usinaName = usinaKey === 'pimental' ? 'Pimental' : 'Belo Monte';
             showToast(`Usina ${usinaName} definida como ativa`, 'success');
+        }
+
+        // Função para forçar salvamento da usina ativa
+        function forceSaveActiveUsina() {
+            if (!isAuthenticated) {
+                pendingAction = () => forceSaveActiveUsina();
+                showPasswordModal();
+                return;
+            }
+
+            if (manualActiveUsina) {
+                saveProjectData();
+                const usinaName = manualActiveUsina === 'pimental' ? 'Pimental' : 'Belo Monte';
+                showToast(`Configuração da usina ${usinaName} salva com sucesso!`, 'success');
+            } else {
+                showToast('Nenhuma usina selecionada para salvar', 'info');
+            }
         }
 
         // Determina qual usina está atualmente ativa
