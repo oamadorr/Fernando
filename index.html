@@ -3483,6 +3483,11 @@
                             validateAndFixTeamConfigDates();
                         }
 
+                        // Carregar usina ativa do Firebase
+                        if (data.manualActiveUsina) {
+                            manualActiveUsina = data.manualActiveUsina;
+                        }
+
                         // Atualizar displays com dados do Firebase
                         console.log('Modo somente leitura: dados carregados do Firebase', {
                             progressData: progressData,
@@ -5544,6 +5549,7 @@
                     lineStepsStatus: lineStepsStatus,
                     executionDates: executionDates,
                     teamConfig: teamConfigForFirebase,
+                    manualActiveUsina: manualActiveUsina,
                     projectData: simplifiedData,
                     
                     // Compatibilidade com v1.0
