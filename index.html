@@ -2918,7 +2918,7 @@
                 "16": { C: 0, F: 0, K: 0 },
                 "17": { C: 0, F: 0, K: 0 },
                 "18": { D: 0, H: 0, K: 0 },
-                "19": { J: 0 },
+                "19": { J: 3 },
                 "71": { J: 0 }
             }
         };
@@ -2952,7 +2952,7 @@
                 "16": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
                 "17": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
                 "18": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "19": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "19": { passagemCabo: true, crimpagemCabo: true, afericaoCrimpagem: true, tensionamentoCabo: true },
                 "71": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false }
             }
         };
@@ -3983,7 +3983,8 @@
             const totalItems = totalBases + totalCableSteps;
             const completedItems = completedBases + completedCableSteps;
 
-            return totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+            const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+            return Math.min(progress, 100); // Limitar a 100% máximo
         }
 
         function updateStatusIndicator(status) {
