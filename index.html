@@ -4051,6 +4051,9 @@
                 document.getElementById('estimativaConclusao').textContent = estimatedCompletion.toLocaleDateString('pt-BR');
                 const remainingDays = Math.ceil((estimatedCompletion - teamConfig.dataAtual) / (1000 * 60 * 60 * 24));
                 document.getElementById('diasRestantes').textContent = `${remainingDays} dias restantes`;
+            } else if (progress >= 100) {
+                document.getElementById('estimativaConclusao').textContent = 'Concluído';
+                document.getElementById('diasRestantes').textContent = 'Projeto finalizado';
             } else {
                 document.getElementById('estimativaConclusao').textContent = 'Calculando...';
                 document.getElementById('diasRestantes').textContent = 'Aguardando dados';
