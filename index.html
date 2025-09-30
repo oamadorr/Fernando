@@ -3036,6 +3036,41 @@
             return normalizeExecutionDateValue(rawValue);
         }
 
+        function sanitizeExecutionDates(raw) {
+            const sanitized = {};
+            if (!raw || typeof raw !== 'object') {
+                return sanitized;
+            }
+
+            for (const usinaKey of Object.keys(raw)) {
+                const linhas = raw[usinaKey];
+                if (!linhas || typeof linhas !== 'object') continue;
+
+                for (const linhaKey of Object.keys(linhas)) {
+                    const normalized = normalizeExecutionDateValue(linhas[linhaKey]);
+                    if (normalized) {
+                        if (!sanitized[usinaKey]) {
+                            sanitized[usinaKey] = {};
+                        }
+                        sanitized[usinaKey][linhaKey] = normalized;
+                    }
+                }
+            }
+
+            return sanitized;
+        }
+
+        function formatExecutionDateForDisplay(value) {
+            const normalized = normalizeExecutionDateValue(value);
+            if (!normalized) return '';
+
+            const parts = normalized.split('-');
+            if (parts.length !== 3) return '';
+
+            const [year, month, day] = parts;
+            return `${day}/${month}/${year}`;
+        }
+
         // Controle manual da usina ativa
         let manualActiveUsina = null; // null = automático, 'pimental' ou 'belo-monte' = manual
 
@@ -3522,22 +3557,7 @@
                             lineStepsStatus = data.lineStepsStatus;
                         }
                         if (data.executionDates) {
-                            // Validar e aplicar datas
-                            for (const usina in data.executionDates) {
-                                for (const linha in data.executionDates[usina]) {
-                                    for (const step in data.executionDates[usina][linha]) {
-                                        try {
-                                            if (data.executionDates[usina][linha][step]) {
-                                                data.executionDates[usina][linha][step] = new Date(data.executionDates[usina][linha][step]);
-                                            }
-                                        } catch (error) {
-                                            console.warn(`Data inválida ignorada: ${usina}/${linha}/${step}`);
-                                            data.executionDates[usina][linha][step] = null;
-                                        }
-                                    }
-                                }
-                            }
-                            executionDates = data.executionDates;
+                            executionDates = sanitizeExecutionDates(data.executionDates);
                         }
                         if (data.teamConfig) {
                             // Aplicar dados do Firebase
@@ -3628,7 +3648,7 @@
                         
                         // Carregar datas de execução se disponível
                         if (data.executionDates) {
-                            executionDates = data.executionDates;
+                            executionDates = sanitizeExecutionDates(data.executionDates);
                         }
                         
                         // Carregar configuração da equipe se disponível
@@ -3727,6 +3747,7 @@
                 const localProgress = localStorage.getItem('linhasVidaProgress');
                 const localSteps = localStorage.getItem('linhasVidaLineSteps');
                 const localTeamConfig = localStorage.getItem('linhasVidaTeamConfig');
+                const localExecutionRaw = localStorage.getItem('linhasVidaExecutionDates');
 
                 if (!localProgress && !localSteps && !localTeamConfig) {
                     return false; // Sem dados locais
@@ -3747,6 +3768,7 @@
                 const firebaseUpdated = firebaseData.updatedAt ? firebaseData.updatedAt.toDate() : new Date(0);
 
                 let localProgressSanitized = sanitizeProgressData(progressData);
+                let localExecutionSanitized = sanitizeExecutionDates(executionDates);
                 if (localProgress) {
                     try {
                         const parsedLocalProgress = JSON.parse(localProgress);
@@ -3758,8 +3780,21 @@
                     }
                 }
 
+                if (localExecutionRaw) {
+                    try {
+                        const parsedExecution = JSON.parse(localExecutionRaw);
+                        localExecutionSanitized = sanitizeExecutionDates(parsedExecution);
+                    } catch (parseError) {
+                        console.warn('Erro ao analisar datas locais, limpando cache...', parseError);
+                        clearLocalData();
+                        localExecutionSanitized = {};
+                    }
+                }
+
                 const firebaseProgressSanitized = firebaseData.progressData ? sanitizeProgressData(firebaseData.progressData) : sanitizeProgressData({});
-                const hasSanitizedDiff = JSON.stringify(localProgressSanitized) !== JSON.stringify(firebaseProgressSanitized);
+                const firebaseExecutionSanitized = firebaseData.executionDates ? sanitizeExecutionDates(firebaseData.executionDates) : {};
+                const hasSanitizedDiff = JSON.stringify(localProgressSanitized) !== JSON.stringify(firebaseProgressSanitized)
+                    || JSON.stringify(localExecutionSanitized) !== JSON.stringify(firebaseExecutionSanitized);
 
                 // Verificar timestamps dos dados locais (se disponível)
                 const localTimestamp = localStorage.getItem('linhasVidaLastUpdate');
@@ -3833,7 +3868,7 @@
                             const data = doc.data();
                             const newProgressData = data.progressData ? sanitizeProgressData(data.progressData) : null;
                             const newLineStepsStatus = data.lineStepsStatus || {};
-                            const newExecutionDates = data.executionDates || {};
+                            const newExecutionDates = sanitizeExecutionDates(data.executionDates || {});
                             
                             // Verificar se houve mudanças nos dados
                             let hasChanges = false;
@@ -3846,22 +3881,8 @@
                                 hasChanges = true;
                             }
                             if (JSON.stringify(newExecutionDates) !== JSON.stringify(executionDates)) {
-                                // Validar datas antes de aplicar
-                                try {
-                                    for (const usina in newExecutionDates) {
-                                        for (const linha in newExecutionDates[usina]) {
-                                            const dateStr = newExecutionDates[usina][linha];
-                                            if (dateStr && isNaN(new Date(dateStr).getTime())) {
-                                                console.warn(`Data inválida encontrada para ${usina} linha ${linha}:`, dateStr);
-                                                delete newExecutionDates[usina][linha];
-                                            }
-                                        }
-                                    }
-                                    executionDates = newExecutionDates;
-                                    hasChanges = true;
-                                } catch (dateError) {
-                                    console.warn('Erro ao processar datas de execução:', dateError);
-                                }
+                                executionDates = newExecutionDates;
+                                hasChanges = true;
                             }
                             
                             // IMPORTANTE: Verificar mudanças na usina ativa
@@ -3925,6 +3946,7 @@
             updateStatusIndicator('saving');
             
             try {
+                executionDates = sanitizeExecutionDates(executionDates);
                 progressData = sanitizeProgressData(progressData);
                 const simplifiedData = {
                     pimental: { progress: calculateProgressOfUsina('pimental') },
@@ -4475,7 +4497,9 @@
                 const completedItems = completedBases + completedCableSteps;
                 const progress = totalItems > 0 ? (completedItems / totalItems * 100) : 0;
                 const status = progress === 100 ? 'Concluído' : progress > 0 ? 'Em Andamento' : 'Pendente';
-                
+                const storedExecutionDate = getExecutionDateForLine(usinaKey, linha);
+                const executionDateDisplay = formatExecutionDateForDisplay(storedExecutionDate);
+
                 row.innerHTML = `
                     <td><strong>Linha ${linha}</strong></td>
                     <td>${linhaData.metragem}m</td>
@@ -4495,13 +4519,8 @@
                         </span>
                     </td>
                     <td class="execution-date-cell">
-                        ${(executionDates[usinaKey] && executionDates[usinaKey][linha]) 
-                            ? (() => {
-                                const dateObj = new Date(executionDates[usinaKey][linha]);
-                                return !isNaN(dateObj.getTime()) 
-                                    ? dateObj.toLocaleDateString('pt-BR')
-                                    : '<span style="color: #ef4444;">Data inválida</span>';
-                            })()
+                        ${executionDateDisplay
+                            ? executionDateDisplay
                             : (completedBases > 0 ? '<span style="color: #6b7280; font-style: italic;">Não informada</span>' : '')}
                     </td>
                     <td>
@@ -5631,6 +5650,7 @@
                     }
                 }
 
+                executionDates = sanitizeExecutionDates(executionDates);
                 localStorage.setItem('linhasVidaExecutionDates', JSON.stringify(executionDates));
             }
             
@@ -5661,7 +5681,7 @@
                 if (hasBaseChanges) message += '\n';
 
                 if (normalizedExecutionDate) {
-                    const displayDate = new Date(normalizedExecutionDate + 'T00:00:00').toLocaleDateString('pt-BR');
+                    const displayDate = formatExecutionDateForDisplay(normalizedExecutionDate) || normalizedExecutionDate;
                     message += `📅 Data de execução: ${displayDate}`;
                 } else if (storedExecutionDate) {
                     message += '📅 Data de execução removida';
@@ -5685,6 +5705,7 @@
             if (!db || !currentProjectId) return;
             
             try {
+                executionDates = sanitizeExecutionDates(executionDates);
                 progressData = sanitizeProgressData(progressData);
                 const simplifiedData = {
                     pimental: { progress: calculateProgressOfUsina('pimental') },
@@ -5804,7 +5825,13 @@
             // Carregar datas de execução
             const storedDates = localStorage.getItem('linhasVidaExecutionDates');
             if (storedDates) {
-                executionDates = JSON.parse(storedDates);
+                try {
+                    const parsedDates = JSON.parse(storedDates);
+                    executionDates = sanitizeExecutionDates(parsedDates);
+                } catch (error) {
+                    console.warn('Erro ao carregar datas de execução do storage, limpando...', error);
+                    executionDates = {};
+                }
             }
             
             // Carregar observações
@@ -6324,16 +6351,9 @@
                     
                     // Obter data de execução
                     let executionDate = '';
-                    if (executionDates[usinaKey] && executionDates[usinaKey][linha]) {
-                        const dateString = executionDates[usinaKey][linha];
-                        const dateObj = new Date(dateString);
-                        
-                        // Validar se a data é válida
-                        if (!isNaN(dateObj.getTime())) {
-                            executionDate = dateObj.toLocaleDateString('pt-BR');
-                        } else {
-                            executionDate = 'Data inválida';
-                        }
+                    const storedDate = getExecutionDateForLine(usinaKey, linha);
+                    if (storedDate) {
+                        executionDate = formatExecutionDateForDisplay(storedDate) || storedDate;
                     } else if (completedBases > 0) {
                         executionDate = 'Não informado';
                     }
