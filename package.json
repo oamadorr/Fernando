@@ -1,0 +1,10 @@
+{
+  "name": "linhas-vida-dashboard",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.55.1"
+  },
+  "scripts": {
+    "test:playwright": "playwright test"
+  }
+}

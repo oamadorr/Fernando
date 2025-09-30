@@ -2892,6 +2892,25 @@
             }
         };
 
+        function sanitizeProgressData(raw) {
+            const sanitized = {};
+            for (const usinaKey of Object.keys(projectData)) {
+                sanitized[usinaKey] = {};
+                const linhas = projectData[usinaKey].linhas;
+                for (const linhaKey of Object.keys(linhas)) {
+                    sanitized[usinaKey][linhaKey] = {};
+                    const allowedBases = linhas[linhaKey].bases;
+                    const rawLine = raw?.[usinaKey]?.[linhaKey] || {};
+                    for (const tipo of Object.keys(allowedBases)) {
+                        const limite = allowedBases[tipo];
+                        const valor = rawLine?.[tipo] ?? 0;
+                        sanitized[usinaKey][linhaKey][tipo] = Math.max(0, Math.min(limite, valor));
+                    }
+                }
+            }
+            return sanitized;
+        }
+
         // Progresso individual por linha - estrutura: usina -> linha -> tipo -> quantidade concluída
         let progressData = {
             pimental: {
@@ -3465,9 +3484,7 @@
 
                     // Em modo somente leitura, aplicar dados do Firebase diretamente
                     if (isReadOnlyMode) {
-                        if (data.progressData) {
-                            progressData = data.progressData;
-                        }
+                        progressData = data.progressData ? sanitizeProgressData(data.progressData) : sanitizeProgressData(progressData);
                         if (data.lineStepsStatus) {
                             lineStepsStatus = data.lineStepsStatus;
                         }
@@ -3528,6 +3545,7 @@
                             lineStepsStatus: lineStepsStatus,
                             teamConfig: teamConfig
                         });
+                        saveProgressToStorage();
                         updateAllDisplays();
                         initializeCharts();
                         updateStatusIndicator('online');
@@ -3568,7 +3586,7 @@
                     }
                     // Adaptar dados detalhados v2.0
                     else if (data.progressData) {
-                        progressData = data.progressData;
+                        progressData = sanitizeProgressData(data.progressData);
                         
                         // Carregar status das etapas do cabo se disponível
                         if (data.lineStepsStatus) {
@@ -3621,6 +3639,7 @@
                     await saveProjectData();
                 }
 
+                saveProgressToStorage();
                 updateAllDisplays();
                 initializeCharts();
                 updateStatusIndicator('online');
@@ -3694,6 +3713,21 @@
                 const firebaseData = doc.data();
                 const firebaseUpdated = firebaseData.updatedAt ? firebaseData.updatedAt.toDate() : new Date(0);
 
+                let localProgressSanitized = sanitizeProgressData(progressData);
+                if (localProgress) {
+                    try {
+                        const parsedLocalProgress = JSON.parse(localProgress);
+                        localProgressSanitized = sanitizeProgressData(migrateProgressDataIfNeeded(parsedLocalProgress));
+                    } catch (parseError) {
+                        console.warn('Erro ao analisar progresso local, limpando cache...', parseError);
+                        clearLocalData();
+                        localProgressSanitized = sanitizeProgressData({});
+                    }
+                }
+
+                const firebaseProgressSanitized = firebaseData.progressData ? sanitizeProgressData(firebaseData.progressData) : sanitizeProgressData({});
+                const hasSanitizedDiff = JSON.stringify(localProgressSanitized) !== JSON.stringify(firebaseProgressSanitized);
+
                 // Verificar timestamps dos dados locais (se disponível)
                 const localTimestamp = localStorage.getItem('linhasVidaLastUpdate');
                 const localUpdated = localTimestamp ? new Date(localTimestamp) : new Date(0);
@@ -3703,18 +3737,35 @@
 
                 if (firebaseUpdated > localUpdated) {
                     // Firebase é mais recente
-                    if (significantDiff) {
-                        console.log('Dados do Firebase são significativamente mais recentes, limpando cache local...');
+                    if (significantDiff || (!isAuthenticated && hasSanitizedDiff)) {
+                        console.log('Dados do Firebase são mais recentes que o cache local, limpando cache...');
                         clearLocalData();
-                        showToast('Carregando dados mais recentes da nuvem', 'info');
+                        if (significantDiff) {
+                            showToast('Carregando dados mais recentes da nuvem', 'info');
+                        } else {
+                            showToast('Dados locais desatualizados foram descartados.', 'info');
+                        }
                     }
                     return false; // Deixa o loadProjectData carregar do Firebase
                 } else if (localUpdated > firebaseUpdated) {
                     // localStorage é mais recente
+                    if (!isAuthenticated && hasSanitizedDiff) {
+                        console.log('Cache local difere do Firebase mas usuário não autenticado; preferindo dados da nuvem.');
+                        clearLocalData();
+                        showToast('Dados locais desatualizados foram descartados.', 'info');
+                        return false;
+                    }
+
                     console.log('Dados locais são mais recentes, sincronizando para Firebase...');
                     await saveProjectData();
                     showToast('Dados locais sincronizados com a nuvem', 'success');
                     return true;
+                }
+
+                if (!isAuthenticated && hasSanitizedDiff) {
+                    console.log('Dados com timestamps iguais mas diferenças detectadas; limpando cache local.');
+                    clearLocalData();
+                    showToast('Dados locais desatualizados foram descartados.', 'info');
                 }
 
                 return false; // Dados estão sincronizados
@@ -3747,13 +3798,13 @@
                     try {
                         if (doc.exists && !doc.metadata.fromCache) {
                             const data = doc.data();
-                            const newProgressData = data.progressData;
+                            const newProgressData = data.progressData ? sanitizeProgressData(data.progressData) : null;
                             const newLineStepsStatus = data.lineStepsStatus || {};
                             const newExecutionDates = data.executionDates || {};
                             
                             // Verificar se houve mudanças nos dados
                             let hasChanges = false;
-                            if (JSON.stringify(newProgressData) !== JSON.stringify(progressData)) {
+                            if (newProgressData && JSON.stringify(newProgressData) !== JSON.stringify(progressData)) {
                                 progressData = newProgressData;
                                 hasChanges = true;
                             }
@@ -3841,6 +3892,7 @@
             updateStatusIndicator('saving');
             
             try {
+                progressData = sanitizeProgressData(progressData);
                 const simplifiedData = {
                     pimental: { progress: calculateProgressOfUsina('pimental') },
                     "belo-monte": { progress: calculateProgressOfUsina('belo-monte') }
@@ -5501,7 +5553,9 @@
 
                 // Aplicar adições
                 for (const tipo in additions) {
-                    progressData[selectedUsina][selectedLinha][tipo] = (progressData[selectedUsina][selectedLinha][tipo] || 0) + additions[tipo];
+                    const totalPermitido = projectData[selectedUsina].linhas[selectedLinha].bases[tipo] || 0;
+                    const atual = progressData[selectedUsina][selectedLinha][tipo] || 0;
+                    progressData[selectedUsina][selectedLinha][tipo] = Math.min(totalPermitido, atual + additions[tipo]);
                 }
 
                 // Aplicar remoções
@@ -5581,6 +5635,7 @@
             if (!db || !currentProjectId) return;
             
             try {
+                progressData = sanitizeProgressData(progressData);
                 const simplifiedData = {
                     pimental: { progress: calculateProgressOfUsina('pimental') },
                     "belo-monte": { progress: calculateProgressOfUsina('belo-monte') }
@@ -5620,6 +5675,7 @@
 
         // Funções de persistência
         function saveProgressToStorage() {
+            progressData = sanitizeProgressData(progressData);
             localStorage.setItem('linhasVidaProgress', JSON.stringify(progressData));
             localStorage.setItem('linhasVidaObservations', JSON.stringify(lineObservations));
             // Salvar timestamp da última atualização
@@ -5692,6 +5748,8 @@
                 // Check if data is in old format (type-based) and migrate to new format (line-based)
                 progressData = migrateProgressDataIfNeeded(loadedData);
             }
+            
+            progressData = sanitizeProgressData(progressData);
             
             // Carregar datas de execução
             const storedDates = localStorage.getItem('linhasVidaExecutionDates');
