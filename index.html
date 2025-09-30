@@ -3003,6 +3003,39 @@
         // Datas de execução das linhas - estrutura: usina -> linha -> data
         let executionDates = {};
 
+        function normalizeExecutionDateValue(rawValue) {
+            if (!rawValue) return '';
+
+            if (rawValue instanceof Date) {
+                return !isNaN(rawValue) ? rawValue.toISOString().split('T')[0] : '';
+            }
+
+            if (typeof rawValue === 'string') {
+                const trimmed = rawValue.trim();
+                if (!trimmed) return '';
+
+                // Se já estiver no formato ISO simples, usar diretamente
+                if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+                    return trimmed;
+                }
+
+                const parsed = new Date(trimmed);
+                if (!isNaN(parsed.getTime())) {
+                    return parsed.toISOString().split('T')[0];
+                }
+
+                return '';
+            }
+
+            return '';
+        }
+
+        function getExecutionDateForLine(usinaKey, linhaKey) {
+            if (!executionDates[usinaKey]) return '';
+            const rawValue = executionDates[usinaKey][linhaKey];
+            return normalizeExecutionDateValue(rawValue);
+        }
+
         // Controle manual da usina ativa
         let manualActiveUsina = null; // null = automático, 'pimental' ou 'belo-monte' = manual
 
@@ -5418,6 +5451,7 @@
             const linhaSelect = document.getElementById('linhaSelect');
             const basesContainer = document.getElementById('basesCheckboxes');
             const removeBasesContainer = document.getElementById('removeBasesCheckboxes');
+            const executionDateInput = document.getElementById('executionDate');
             
             basesContainer.innerHTML = '';
             removeBasesContainer.innerHTML = '';
@@ -5425,10 +5459,18 @@
             // Resetar os checkboxes "selecionar todas"
             document.getElementById('selectAllBases').checked = false;
             document.getElementById('selectAllRemoveBases').checked = false;
+
+            if (executionDateInput) {
+                executionDateInput.value = '';
+            }
             
             if (usinaSelect.value && linhaSelect.value) {
                 const usinaKey = usinaSelect.value;
                 const linhaData = projectData[usinaKey].linhas[linhaSelect.value];
+                
+                if (executionDateInput) {
+                    executionDateInput.value = getExecutionDateForLine(usinaKey, linhaSelect.value);
+                }
                 
                 for (const tipo in linhaData.bases) {
                     const quantidade = linhaData.bases[tipo];
@@ -5504,6 +5546,8 @@
             const selectedUsina = usinaSelect.value;
             const selectedLinha = linhaSelect.value;
             const executionDate = executionDateInput.value;
+            const normalizedExecutionDate = executionDate ? executionDate.trim() : '';
+            const storedExecutionDate = getExecutionDateForLine(selectedUsina, selectedLinha);
             
             if (!selectedUsina) {
                 showToast('Por favor, selecione uma usina.', 'warning');
@@ -5535,7 +5579,7 @@
             
             // Verificar se há algo para processar (bases ou data)
             const hasBaseChanges = Object.keys(additions).length > 0 || Object.keys(removals).length > 0;
-            const hasDateChange = executionDate && executionDate.trim() !== '';
+            const hasDateChange = normalizedExecutionDate !== storedExecutionDate;
 
             if (!hasBaseChanges && !hasDateChange) {
                 showToast('Selecione pelo menos uma base para adicionar/remover ou defina uma data de execução.', 'warning');
@@ -5570,23 +5614,23 @@
                 if (!executionDates[selectedUsina]) {
                     executionDates[selectedUsina] = {};
                 }
-                // Usar data informada ou data atual
-                let dateToSave;
-                if (executionDate && executionDate.trim() !== '') {
-                    // Validar se a data informada é válida
-                    const testDate = new Date(executionDate);
+
+                if (normalizedExecutionDate) {
+                    const testDate = new Date(normalizedExecutionDate);
                     if (!isNaN(testDate.getTime())) {
-                        dateToSave = executionDate;
+                        executionDates[selectedUsina][selectedLinha] = normalizedExecutionDate;
                     } else {
-                        dateToSave = new Date().toISOString().split('T')[0];
-                        console.warn('Data inválida fornecida, usando data atual:', executionDate);
+                        const fallbackDate = new Date().toISOString().split('T')[0];
+                        console.warn('Data inválida fornecida, usando data atual:', normalizedExecutionDate);
+                        executionDates[selectedUsina][selectedLinha] = fallbackDate;
                     }
                 } else {
-                    dateToSave = new Date().toISOString().split('T')[0];
+                    delete executionDates[selectedUsina][selectedLinha];
+                    if (Object.keys(executionDates[selectedUsina]).length === 0) {
+                        delete executionDates[selectedUsina];
+                    }
                 }
-                executionDates[selectedUsina][selectedLinha] = dateToSave;
-                
-                // Salvar no localStorage
+
                 localStorage.setItem('linhasVidaExecutionDates', JSON.stringify(executionDates));
             }
             
@@ -5615,7 +5659,13 @@
 
             if (hasDateChange) {
                 if (hasBaseChanges) message += '\n';
-                message += `📅 Data de execução: ${executionDate}`;
+
+                if (normalizedExecutionDate) {
+                    const displayDate = new Date(normalizedExecutionDate + 'T00:00:00').toLocaleDateString('pt-BR');
+                    message += `📅 Data de execução: ${displayDate}`;
+                } else if (storedExecutionDate) {
+                    message += '📅 Data de execução removida';
+                }
             }
 
             showToast(message, 'success');
