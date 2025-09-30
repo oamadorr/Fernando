@@ -257,6 +257,19 @@
             position: relative;
         }
 
+        .table-progress-bar {
+            width: 160px;
+            max-width: 100%;
+            height: 8px;
+            margin: 0 0 6px 0;
+        }
+
+        .table-progress-text {
+            font-size: 0.85em;
+            color: var(--medium-gray);
+            white-space: nowrap;
+        }
+
         .progress-bar::before {
             content: '';
             position: absolute;
@@ -1650,6 +1663,15 @@
             .filter-results {
                 margin-left: 0;
                 text-align: center;
+            }
+
+            .table-progress-bar {
+                width: 100%;
+                max-width: 220px;
+            }
+
+            .table-progress-text {
+                white-space: normal;
             }
         }
 
@@ -4506,10 +4528,10 @@
                     <td>${basesText.join(', ')}</td>
                     <td>${completedBases}/${totalBases}</td>
                     <td>
-                        <div class="progress-bar" style="width: ${Math.max(20, totalBases * 8)}px; height: 8px;">
+                        <div class="progress-bar table-progress-bar">
                             <div class="progress-fill" style="width: ${progress}%"></div>
                         </div>
-                        <div style="font-size: 0.85em; margin-top: 2px;">
+                        <div class="table-progress-text">
                             ${progress.toFixed(1)}% (${totalBases} bases)
                         </div>
                     </td>
