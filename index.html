@@ -1060,6 +1060,99 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
+        /* Layout da Oficina */
+        .oficina-layout {
+            position: relative;
+            height: 250px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .oficina-layout .map-line {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* Linhas Verticais Oficina */
+        .oficina-vertical {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .oficina-left {
+            left: 10px;
+        }
+
+        .oficina-right {
+            right: 10px;
+        }
+
+        .oficina-vertical .line-bar {
+            width: 8px;
+            height: 160px;
+            border-radius: 4px;
+        }
+
+        .oficina-vertical .line-label {
+            position: absolute;
+            left: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+        }
+
+        .oficina-left .line-label {
+            left: 10px;
+        }
+
+        .oficina-right .line-label {
+            right: 10px;
+            left: auto;
+        }
+
+        /* Linha Horizontal 73 */
+        .oficina-73 {
+            top: 20%;
+            left: 50px;
+            right: 50px;
+            transform: translateY(-50%);
+        }
+
+        .oficina-73-bar {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            min-width: 300px;
+        }
+
+        .oficina-73 .line-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+        }
+
         /* Grid para Belo Monte */
         .line-grid {
             position: absolute;
@@ -1108,6 +1201,7 @@
             min-width: 20px;
             z-index: 15;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
         }
 
         /* Labels Belo Monte - Grid Superior */
@@ -2349,6 +2443,24 @@
                         </div>
                     </div>
                 </div>
+                <div class="chart-container">
+                    <h3 class="chart-title">Progresso Oficina</h3>
+                    <div id="chartOficina" class="horizontal-bars-chart"></div>
+                    <div class="chart-info" id="chartOficinaInfo">
+                        <div class="info-row">
+                            <span class="info-label">📊 Total de bases:</span>
+                            <span class="info-value" id="oficinaTotalBases">10</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🏗️ Linhas ativas:</span>
+                            <span class="info-value">3 linhas</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📏 Extensão total:</span>
+                            <span class="info-value">75,2m</span>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Mapa Interativo -->
@@ -2364,6 +2476,9 @@
                     </button>
                     <button class="map-tab-btn" onclick="switchMapTab('belo-monte')">
                         <i class="fas fa-industry"></i> Belo Monte
+                    </button>
+                    <button class="map-tab-btn" onclick="switchMapTab('oficina')">
+                        <i class="fas fa-tools"></i> Oficina
                     </button>
                 </div>
 
@@ -2521,6 +2636,29 @@
                                 <div class="line-bar horizontal small"></div>
                                 <div class="line-label">18</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Container do Mapa Oficina -->
+                <div id="mapOficina" class="map-container">
+                    <div class="map-layout oficina-layout">
+                        <!-- Linha 72 - Lateral Esquerda (Preta) -->
+                        <div class="map-line oficina-vertical oficina-left" data-linha="72" data-usina="oficina">
+                            <div class="line-bar vertical oficina-72"></div>
+                            <div class="line-label">72</div>
+                        </div>
+
+                        <!-- Linha 74 - Lateral Direita (Vermelha) -->
+                        <div class="map-line oficina-vertical oficina-right" data-linha="74" data-usina="oficina">
+                            <div class="line-bar vertical oficina-74"></div>
+                            <div class="line-label">74</div>
+                        </div>
+
+                        <!-- Linha 73 - Horizontal Central (Azul) -->
+                        <div class="map-line oficina-73" data-linha="73" data-usina="oficina">
+                            <div class="line-bar horizontal oficina-73-bar"></div>
+                            <div class="line-label">73</div>
                         </div>
                     </div>
                 </div>
@@ -2723,6 +2861,72 @@
                     </table>
                 </div>
             </section>
+
+            <!-- Seção Oficina -->
+            <section class="usina-section">
+                <div class="usina-header">
+                    <h2 class="usina-title">
+                        <i class="fas fa-tools"></i> Oficina
+                    </h2>
+                    <div class="usina-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="oficinaLinhas">3</div>
+                            <div class="stat-label">Linhas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="oficinaBases">0</div>
+                            <div class="stat-label">Bases</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="oficinaMetros">0</div>
+                            <div class="stat-label">Metros</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="oficinaProgresso">0%</div>
+                            <div class="stat-label">Progresso</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros para Oficina -->
+                <div class="table-filters">
+                    <div class="filter-group">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="filterOficinaSearch" placeholder="Buscar por linha..." class="filter-search">
+                    </div>
+                    <div class="filter-group">
+                        <i class="fas fa-filter"></i>
+                        <select id="filterOficinaStatus" class="filter-select">
+                            <option value="">Todos os status</option>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Em Andamento">Em Andamento</option>
+                            <option value="Concluído">Concluído</option>
+                        </select>
+                    </div>
+                    <div class="filter-results">
+                        <span id="oficinaFilterResults">Mostrando 3 de 3 linhas</span>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="tableOficina">
+                        <thead>
+                            <tr>
+                                <th>Linha</th>
+                                <th>Metragem</th>
+                                <th>Bases</th>
+                                <th>Concluídas</th>
+                                <th>Progresso</th>
+                                <th>Status</th>
+                                <th>Data Execução</th>
+                                <th>Etapas do Cabo</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
         </div>
     </main>
 
@@ -2743,6 +2947,7 @@
                         <option value="">Selecione uma usina</option>
                         <option value="pimental">Pimental</option>
                         <option value="belo-monte">Belo Monte</option>
+                        <option value="oficina">Oficina</option>
                     </select>
                 </div>
                 
@@ -2911,6 +3116,14 @@
                     "19": { metragem: 31.9, bases: { J: 3 } },
                     "71": { metragem: 31.9, bases: { J: 3 } }
                 }
+            },
+            oficina: {
+                name: "Oficina",
+                linhas: {
+                    "72": { metragem: 6.18, bases: { M: 1, B: 1 } },
+                    "73": { metragem: 62.80, bases: { K: 6 } },
+                    "74": { metragem: 6.18, bases: { B: 1, H: 1 } }
+                }
             }
         };
 
@@ -2964,6 +3177,11 @@
                 "18": { D: 0, H: 0, K: 0 },
                 "19": { J: 3 },
                 "71": { J: 0 }
+            },
+            oficina: {
+                "72": { M: 0, B: 0 },
+                "73": { K: 0 },
+                "74": { B: 0, H: 0 }
             }
         };
 
@@ -2998,6 +3216,11 @@
                 "18": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
                 "19": { passagemCabo: true, crimpagemCabo: true, afericaoCrimpagem: true, tensionamentoCabo: true },
                 "71": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false }
+            },
+            oficina: {
+                "72": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "73": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
+                "74": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false }
             }
         };
 
@@ -3007,9 +3230,12 @@
                 "01": "", "02": "", "03": "", "04": "", "05": "", "18": ""
             },
             "belo-monte": {
-                "01": "", "02": "", "03": "", "04": "", "05": "", "06": "", "07": "", "08": "", 
-                "09": "", "10": "", "11": "", "12": "", "13": "", "14": "", "15": "", "16": "", 
+                "01": "", "02": "", "03": "", "04": "", "05": "", "06": "", "07": "", "08": "",
+                "09": "", "10": "", "11": "", "12": "", "13": "", "14": "", "15": "", "16": "",
                 "17": "", "18": "", "19": "", "71": ""
+            },
+            oficina: {
+                "72": "", "73": "", "74": ""
             }
         };
 
@@ -4235,13 +4461,19 @@
                 document.getElementById('beloMonteEstimativa').textContent = 'Calculando...';
             }
 
+            // Oficina
+            const oficinaStats = calculateUsinaStats('oficina');
+            document.getElementById('oficinaBases').textContent = oficinaStats.totalBases;
+            document.getElementById('oficinaMetros').textContent = oficinaStats.totalMetros.toFixed(1) + 'm';
+            document.getElementById('oficinaProgresso').textContent = oficinaStats.progress.toFixed(1) + '%';
+
             // Indicar qual usina está ativa
             const activeUsina = getActiveUsina();
-            updateActiveUsinaIndicators(activeUsina, pimentalStats.progress, beloMonteStats.progress);
+            updateActiveUsinaIndicators(activeUsina, pimentalStats.progress, beloMonteStats.progress, oficinaStats.progress);
             updateActiveUsinaButtons();
         }
 
-        function updateActiveUsinaIndicators(activeUsina, pimentalProgress, beloMonteProgress) {
+        function updateActiveUsinaIndicators(activeUsina, pimentalProgress, beloMonteProgress, oficinaProgress) {
             // Resetar todas as indicações
             document.querySelectorAll('.usina-title').forEach(title => {
                 title.classList.remove('usina-active', 'usina-completed', 'usina-pending');
@@ -4250,6 +4482,7 @@
             // Aplicar indicadores baseados no status e usina ativa
             const pimentalTitle = document.querySelector('#tablePimental').closest('.usina-section').querySelector('.usina-title');
             const beloMonteTitle = document.querySelector('#tableBeloMonte').closest('.usina-section').querySelector('.usina-title');
+            const oficinaTitle = document.querySelector('#tableOficina').closest('.usina-section').querySelector('.usina-title');
 
             if (pimentalProgress >= 100) {
                 pimentalTitle.classList.add('usina-completed');
@@ -4271,6 +4504,17 @@
             } else {
                 beloMonteTitle.classList.add('usina-pending');
                 beloMonteTitle.innerHTML = '<i class="fas fa-clock"></i> Usina Belo Monte <span class="status-text">(Aguardando)</span>';
+            }
+
+            if (oficinaProgress >= 100) {
+                oficinaTitle.classList.add('usina-completed');
+                oficinaTitle.innerHTML = '<i class="fas fa-check-circle"></i> Oficina <span class="status-text">(Concluída)</span>';
+            } else if (activeUsina === 'oficina') {
+                oficinaTitle.classList.add('usina-active');
+                oficinaTitle.innerHTML = '<i class="fas fa-cog fa-spin"></i> Oficina <span class="status-text">(Em Execução)</span>';
+            } else {
+                oficinaTitle.classList.add('usina-pending');
+                oficinaTitle.innerHTML = '<i class="fas fa-clock"></i> Oficina <span class="status-text">(Aguardando)</span>';
             }
         }
 
@@ -4421,6 +4665,7 @@
         function updateTables() {
             updateTable('pimental', 'tablePimental');
             updateTable('belo-monte', 'tableBeloMonte');
+            updateTable('oficina', 'tableOficina');
         }
 
         // Sistema de Filtros
@@ -4440,13 +4685,25 @@
             document.getElementById('filterBeloMonteStatus').addEventListener('change', () => {
                 filterTable('belo-monte');
             });
+
+            // Filtros Oficina
+            document.getElementById('filterOficinaSearch').addEventListener('input', () => {
+                filterTable('oficina');
+            });
+            document.getElementById('filterOficinaStatus').addEventListener('change', () => {
+                filterTable('oficina');
+            });
         }
 
         function filterTable(usinaKey) {
-            const tableId = usinaKey === 'pimental' ? 'tablePimental' : 'tableBeloMonte';
-            const searchId = usinaKey === 'pimental' ? 'filterPimentalSearch' : 'filterBeloMonteSearch';
-            const statusId = usinaKey === 'pimental' ? 'filterPimentalStatus' : 'filterBeloMonteStatus';
-            const resultId = usinaKey === 'pimental' ? 'pimentalFilterResults' : 'beloMonteFilterResults';
+            const tableId = usinaKey === 'pimental' ? 'tablePimental' :
+                           usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
+            const searchId = usinaKey === 'pimental' ? 'filterPimentalSearch' :
+                            usinaKey === 'belo-monte' ? 'filterBeloMonteSearch' : 'filterOficinaSearch';
+            const statusId = usinaKey === 'pimental' ? 'filterPimentalStatus' :
+                            usinaKey === 'belo-monte' ? 'filterBeloMonteStatus' : 'filterOficinaStatus';
+            const resultId = usinaKey === 'pimental' ? 'pimentalFilterResults' :
+                            usinaKey === 'belo-monte' ? 'beloMonteFilterResults' : 'oficinaFilterResults';
             
             const searchTerm = document.getElementById(searchId).value.toLowerCase();
             const statusFilter = document.getElementById(statusId).value;
@@ -4693,7 +4950,8 @@
             document.querySelectorAll('.map-container').forEach(container => {
                 container.classList.remove('active');
             });
-            const mapId = usinaKey === 'pimental' ? 'mapPimental' : 'mapBeloMonte';
+            const mapId = usinaKey === 'pimental' ? 'mapPimental' :
+                         usinaKey === 'belo-monte' ? 'mapBeloMonte' : 'mapOficina';
             document.getElementById(mapId).classList.add('active');
 
             // Atualizar estatísticas da aba atual
@@ -4742,7 +5000,8 @@
             // Atualizar linhas da usina específica
             const mapContainer = targetUsina === 'pimental' ?
                 document.getElementById('mapPimental') :
-                document.getElementById('mapBeloMonte');
+                targetUsina === 'belo-monte' ? document.getElementById('mapBeloMonte') :
+                document.getElementById('mapOficina');
 
             const lines = mapContainer.querySelectorAll('.map-line');
 
@@ -4792,17 +5051,28 @@
             tooltip.querySelector('.tooltip-progress').textContent = `Progresso: ${progress}%`;
             tooltip.querySelector('.tooltip-status').textContent = `Status: ${status}`;
 
-            // Posicionar tooltip
-            const rect = tooltip.getBoundingClientRect();
-            let left = event.pageX + 15;
-            let top = event.pageY - rect.height - 15;
+            // Posicionar tooltip fixo em relação ao elemento
+            const lineElement = event.currentTarget;
+            const lineRect = lineElement.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
 
-            // Ajustar se sair da tela
-            if (left + rect.width > window.innerWidth + window.pageXOffset) {
-                left = event.pageX - rect.width - 15;
+            // Posição preferencial: acima e centralizado no elemento
+            let left = lineRect.left + (lineRect.width / 2) - (tooltipRect.width / 2) + window.pageXOffset;
+            let top = lineRect.top - tooltipRect.height - 10 + window.pageYOffset;
+
+            // Ajustar se sair da tela pela esquerda
+            if (left < 10) {
+                left = 10;
             }
-            if (top < window.pageYOffset) {
-                top = event.pageY + 15;
+
+            // Ajustar se sair da tela pela direita
+            if (left + tooltipRect.width > window.innerWidth - 10) {
+                left = window.innerWidth - tooltipRect.width - 10;
+            }
+
+            // Se não couber acima, mostrar abaixo
+            if (top < window.pageYOffset + 10) {
+                top = lineRect.bottom + 10 + window.pageYOffset;
             }
 
             tooltip.style.left = left + 'px';
@@ -4834,26 +5104,6 @@
                 line.addEventListener('mouseleave', () => {
                     hideMapTooltip();
                 });
-
-                // Atualizar posição do tooltip durante movimento do mouse
-                line.addEventListener('mousemove', (event) => {
-                    const tooltip = document.getElementById('mapTooltip');
-                    if (tooltip.classList.contains('show')) {
-                        const rect = tooltip.getBoundingClientRect();
-                        let left = event.pageX + 15;
-                        let top = event.pageY - rect.height - 15;
-
-                        if (left + rect.width > window.innerWidth + window.pageXOffset) {
-                            left = event.pageX - rect.width - 15;
-                        }
-                        if (top < window.pageYOffset) {
-                            top = event.pageY + 15;
-                        }
-
-                        tooltip.style.left = left + 'px';
-                        tooltip.style.top = top + 'px';
-                    }
-                });
             });
         }
 
@@ -4864,9 +5114,10 @@
                 const originalProgressData = progressData;
                 progressData = externalProgressData;
 
-                // Atualizar ambas as usinas
+                // Atualizar todas as usinas
                 updateMapLines('pimental');
                 updateMapLines('belo-monte');
+                updateMapLines('oficina');
                 updateMapStats(currentMapTab);
 
                 // Restaurar dados originais
@@ -4875,6 +5126,7 @@
                 // Usar dados internos do sistema
                 updateMapLines('pimental');
                 updateMapLines('belo-monte');
+                updateMapLines('oficina');
                 updateMapStats(currentMapTab);
             }
         }
@@ -4941,28 +5193,48 @@
 
         function initChartConclusaoGeral() {
             const ctx = document.getElementById('chartConclusaoGeral').getContext('2d');
-            
+
             // Calcular progresso APENAS das bases (sem etapas do cabo) por usina
             const pimentalBasesCompleted = calculateCompletedBasesOfUsina('pimental');
             const pimentalBasesTotal = calculateTotalBasesOfUsina('pimental');
             const pimentalPending = pimentalBasesTotal - pimentalBasesCompleted;
-            
+
             const beloMonteBasesCompleted = calculateCompletedBasesOfUsina('belo-monte');
             const beloMonteBasesTotal = calculateTotalBasesOfUsina('belo-monte');
             const beloMontePending = beloMonteBasesTotal - beloMonteBasesCompleted;
-            
-            
+
+            const oficinaBasesCompleted = calculateCompletedBasesOfUsina('oficina');
+            const oficinaBasesTotal = calculateTotalBasesOfUsina('oficina');
+            const oficinaPending = oficinaBasesTotal - oficinaBasesCompleted;
+
+
             chartConclusaoGeral = new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: ['Pimental Concluído', 'Pimental Pendente', 'Belo Monte Concluído', 'Belo Monte Pendente'],
+                    labels: [
+                        'Pimental Concluído',
+                        'Pimental Pendente',
+                        'Belo Monte Concluído',
+                        'Belo Monte Pendente',
+                        'Oficina Concluído',
+                        'Oficina Pendente'
+                    ],
                     datasets: [{
-                        data: [pimentalBasesCompleted, pimentalPending, beloMonteBasesCompleted, beloMontePending],
+                        data: [
+                            pimentalBasesCompleted,
+                            pimentalPending,
+                            beloMonteBasesCompleted,
+                            beloMontePending,
+                            oficinaBasesCompleted,
+                            oficinaPending
+                        ],
                         backgroundColor: [
                             '#3b82f6', // Azul para Pimental Concluído
                             '#bfdbfe', // Azul claro para Pimental Pendente
                             '#10b981', // Verde para Belo Monte Concluído
-                            '#bbf7d0'  // Verde claro para Belo Monte Pendente
+                            '#bbf7d0', // Verde claro para Belo Monte Pendente
+                            '#f59e0b', // Laranja para Oficina Concluído
+                            '#fde68a'  // Laranja claro para Oficina Pendente
                         ],
                         borderWidth: 2,
                         borderColor: '#ffffff'
@@ -5158,6 +5430,74 @@
             });
         }
 
+        function initChartOficina() {
+            const container = document.getElementById('chartOficina');
+
+            const usinaKey = 'oficina';
+            const tipos = ['M', 'B', 'K', 'H'];
+
+            // Calcular totais por tipo para Oficina
+            const totalByType = {};
+            const completedByType = {};
+
+            for (const tipo of tipos) {
+                totalByType[tipo] = 0;
+                completedByType[tipo] = 0;
+            }
+
+            // Calcular totais de Oficina
+            if (projectData[usinaKey]) {
+                for (const linha in projectData[usinaKey].linhas) {
+                    const bases = projectData[usinaKey].linhas[linha].bases;
+                    for (const tipo in bases) {
+                        totalByType[tipo] = (totalByType[tipo] || 0) + bases[tipo];
+                    }
+                }
+            }
+
+            // Calcular totais concluídos de Oficina
+            if (progressData[usinaKey]) {
+                for (const linha in progressData[usinaKey]) {
+                    for (const tipo in progressData[usinaKey][linha]) {
+                        completedByType[tipo] = (completedByType[tipo] || 0) + (progressData[usinaKey][linha][tipo] || 0);
+                    }
+                }
+            }
+
+            // Filtrar apenas tipos que existem em Oficina
+            const tiposComBases = tipos.filter(tipo => totalByType[tipo] > 0);
+
+            // Encontrar o máximo para escala proporcional
+            const maxBases = Math.max(...tiposComBases.map(tipo => totalByType[tipo]));
+
+            // Limpar container
+            container.innerHTML = '';
+
+            // Criar barras horizontais
+            tiposComBases.forEach(tipo => {
+                const total = totalByType[tipo];
+                const completed = completedByType[tipo] || 0;
+                const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+                const barWidth = (total / maxBases) * 100; // Largura proporcional
+
+                const barItem = document.createElement('div');
+                barItem.className = 'bar-item';
+
+                const progressGradient = getProgressGradient(percentage);
+
+                barItem.innerHTML = `
+                    <div class="bar-label">Tipo ${tipo}</div>
+                    <div class="bar-container" style="width: ${barWidth}%;">
+                        <div class="bar-fill" style="width: ${percentage}%; background: ${progressGradient};"></div>
+                        <div class="bar-text">${completed}/${total}</div>
+                    </div>
+                    <div class="bar-percentage">${percentage}%</div>
+                `;
+
+                container.appendChild(barItem);
+            });
+        }
+
         function updateCharts() {
             if (chartConclusaoGeral) {
                 chartConclusaoGeral.destroy();
@@ -5165,6 +5505,7 @@
             }
             initChartPimental();
             initChartBeloMonte();
+            initChartOficina();
         }
 
         // Funções do modal
@@ -6070,7 +6411,7 @@
             
             doc.setFontSize(14);
             doc.setFont('helvetica', 'normal');
-            doc.text('Usinas Hidrelétricas Belo Monte e Pimental', 20, currentY);
+            doc.text('Usinas Hidrelétricas Belo Monte, Pimental e Oficina', 20, currentY);
             currentY += 10;
             
             doc.setFontSize(12);
@@ -6125,12 +6466,13 @@
             
             const pimentalStats = calculateUsinaStats('pimental');
             const beloMonteStats = calculateUsinaStats('belo-monte');
-            
+            const oficinaStats = calculateUsinaStats('oficina');
+
             // Pimental
             doc.setFontSize(14);
             doc.text('2.1 Usina Pimental', 25, currentY);
             currentY += 10;
-            
+
             doc.setFontSize(11);
             doc.setFont('helvetica', 'normal');
             doc.text(`• Progresso: ${pimentalStats.progress.toFixed(1)}%`, 30, currentY);
@@ -6141,14 +6483,14 @@
             currentY += 8;
             doc.text(`• Extensão Total: 395,7m`, 30, currentY);
             currentY += 12;
-            
+
             // Belo Monte
             checkPageBreak(40);
             doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
             doc.text('2.2 Usina Belo Monte', 25, currentY);
             currentY += 10;
-            
+
             doc.setFontSize(11);
             doc.setFont('helvetica', 'normal');
             doc.text(`• Progresso: ${beloMonteStats.progress.toFixed(1)}%`, 30, currentY);
@@ -6158,6 +6500,24 @@
             doc.text(`• Linhas Ativas: 20 linhas`, 30, currentY);
             currentY += 8;
             doc.text(`• Extensão Total: 1.738,9m`, 30, currentY);
+            currentY += 12;
+
+            // Oficina
+            checkPageBreak(40);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('2.3 Oficina', 25, currentY);
+            currentY += 10;
+
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`• Progresso: ${oficinaStats.progress.toFixed(1)}%`, 30, currentY);
+            currentY += 8;
+            doc.text(`• Bases: ${oficinaStats.completedBases}/${oficinaStats.totalBases} concluídas`, 30, currentY);
+            currentY += 8;
+            doc.text(`• Linhas Ativas: 3 linhas`, 30, currentY);
+            currentY += 8;
+            doc.text(`• Extensão Total: 75,2m`, 30, currentY);
             currentY += 15;
             
             // Análise por tipo de base
@@ -6228,31 +6588,69 @@
             doc.setFont('helvetica', 'bold');
             doc.text('4.2 Belo Monte - Detalhamento', 25, currentY);
             currentY += 10;
-            
+
             for (const linha in projectData['belo-monte'].linhas) {
                 checkPageBreak(25);
                 const linhaData = projectData['belo-monte'].linhas[linha];
                 let totalLinea = 0;
                 let completedLinea = 0;
-                
+
                 for (const tipo in linhaData.bases) {
                     totalLinea += linhaData.bases[tipo];
                     if (progressData['belo-monte'] && progressData['belo-monte'][linha] && progressData['belo-monte'][linha][tipo]) {
                         completedLinea += progressData['belo-monte'][linha][tipo];
                     }
                 }
-                
+
                 const progressLinea = totalLinea > 0 ? (completedLinea / totalLinea) * 100 : 0;
-                
+
                 doc.setFontSize(11);
                 doc.setFont('helvetica', 'normal');
                 doc.text(`Linha ${linha}: ${completedLinea}/${totalLinea} bases (${progressLinea.toFixed(1)}%) - ${linhaData.metragem}m`, 30, currentY);
                 currentY += 8;
-                
+
                 // Tipos de base da linha
                 for (const tipo in linhaData.bases) {
                     if (linhaData.bases[tipo] > 0) {
                         const completedTipo = (progressData['belo-monte'] && progressData['belo-monte'][linha] && progressData['belo-monte'][linha][tipo]) ? progressData['belo-monte'][linha][tipo] : 0;
+                        doc.text(`  └ ${tipo}: ${completedTipo}/${linhaData.bases[tipo]}`, 35, currentY);
+                        currentY += 6;
+                    }
+                }
+                currentY += 3;
+            }
+
+            // Oficina
+            checkPageBreak(80);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('4.3 Oficina - Detalhamento', 25, currentY);
+            currentY += 10;
+
+            for (const linha in projectData.oficina.linhas) {
+                checkPageBreak(25);
+                const linhaData = projectData.oficina.linhas[linha];
+                let totalLinea = 0;
+                let completedLinea = 0;
+
+                for (const tipo in linhaData.bases) {
+                    totalLinea += linhaData.bases[tipo];
+                    if (progressData.oficina && progressData.oficina[linha] && progressData.oficina[linha][tipo]) {
+                        completedLinea += progressData.oficina[linha][tipo];
+                    }
+                }
+
+                const progressLinea = totalLinea > 0 ? (completedLinea / totalLinea) * 100 : 0;
+
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Linha ${linha}: ${completedLinea}/${totalLinea} bases (${progressLinea.toFixed(1)}%) - ${linhaData.metragem}m`, 30, currentY);
+                currentY += 8;
+
+                // Tipos de base da linha
+                for (const tipo in linhaData.bases) {
+                    if (linhaData.bases[tipo] > 0) {
+                        const completedTipo = (progressData.oficina && progressData.oficina[linha] && progressData.oficina[linha][tipo]) ? progressData.oficina[linha][tipo] : 0;
                         doc.text(`  └ ${tipo}: ${completedTipo}/${linhaData.bases[tipo]}`, 35, currentY);
                         currentY += 6;
                     }
