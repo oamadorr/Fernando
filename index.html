@@ -2716,6 +2716,14 @@
                                     </div>
                                     <div class="btn-status" id="statusBeloMonte">Disponível</div>
                                 </button>
+                                <button id="btnActiveOficina" class="btn-usina-wide" onclick="setActiveUsina('oficina')">
+                                    <div class="btn-icon"><i class="fas fa-tools"></i></div>
+                                    <div class="btn-content">
+                                        <div class="btn-title">Oficina</div>
+                                        <div class="btn-subtitle">3 linhas • 10 bases</div>
+                                    </div>
+                                    <div class="btn-status" id="statusOficina">Disponível</div>
+                                </button>
                             </div>
                             <div class="control-help" id="controlHelpText">
                                 <i class="fas fa-info-circle"></i> Clique para alternar a usina ativa. As estimativas serão recalculadas automaticamente.
@@ -3660,9 +3668,10 @@
         function getActiveUsina() {
             const pimentalStats = calculateUsinaStats('pimental');
             const beloMonteStats = calculateUsinaStats('belo-monte');
+            const oficinaStats = calculateUsinaStats('oficina');
 
-            // Se ambas estão 100% concluídas, retorna null
-            if (pimentalStats.progress >= 100 && beloMonteStats.progress >= 100) {
+            // Se todas estão 100% concluídas, retorna null
+            if (pimentalStats.progress >= 100 && beloMonteStats.progress >= 100 && oficinaStats.progress >= 100) {
                 return null;
             }
 
@@ -3674,45 +3683,62 @@
                 if (manualActiveUsina === 'belo-monte' && beloMonteStats.progress < 100) {
                     return 'belo-monte';
                 }
+                if (manualActiveUsina === 'oficina' && oficinaStats.progress < 100) {
+                    return 'oficina';
+                }
                 // Se a seleção manual não é mais válida, resetar
                 manualActiveUsina = null;
                 localStorage.removeItem('manualActiveUsina');
             }
 
-            // Lógica automática: Se uma está 100% concluída, a outra é a ativa
-            if (pimentalStats.progress >= 100) {
-                return 'belo-monte';
-            }
-            if (beloMonteStats.progress >= 100) {
+            // Lógica automática: Retornar primeira usina incompleta na ordem: Pimental -> Belo Monte -> Oficina
+            if (pimentalStats.progress < 100) {
                 return 'pimental';
             }
-
-            // Se ambas têm progresso, determina a ativa pela que tem maior progresso
-            if (pimentalStats.progress > 0 || beloMonteStats.progress > 0) {
-                return beloMonteStats.progress >= pimentalStats.progress ? 'belo-monte' : 'pimental';
+            if (beloMonteStats.progress < 100) {
+                return 'belo-monte';
+            }
+            if (oficinaStats.progress < 100) {
+                return 'oficina';
             }
 
-            // Se nenhuma tem progresso, por padrão começar com Belo Monte
-            return 'belo-monte';
+            // Todas completas (redundante, mas por segurança)
+            return null;
         }
 
         function calculateEstimatedCompletion() {
             const activeUsina = getActiveUsina();
-            if (!activeUsina) return null; // Ambas concluídas
+            if (!activeUsina) return null; // Todas concluídas
 
             const productivity = calculateProductivity();
             if (productivity <= 0) return null;
 
-            // Calcular estimativa sequencial
-            const activeStats = calculateUsinaStats(activeUsina);
-            const otherUsinaKey = activeUsina === 'pimental' ? 'belo-monte' : 'pimental';
-            const otherStats = calculateUsinaStats(otherUsinaKey);
+            // Calcular bases restantes de todas as usinas
+            const pimentalStats = calculateUsinaStats('pimental');
+            const beloMonteStats = calculateUsinaStats('belo-monte');
+            const oficinaStats = calculateUsinaStats('oficina');
 
-            const activeRemainingBases = activeStats.totalBases - activeStats.completedBases;
-            const otherRemainingBases = otherStats.totalBases - otherStats.completedBases;
+            const pimentalRemaining = pimentalStats.totalBases - pimentalStats.completedBases;
+            const beloMonteRemaining = beloMonteStats.totalBases - beloMonteStats.completedBases;
+            const oficinaRemaining = oficinaStats.totalBases - oficinaStats.completedBases;
 
-            // Total de bases restantes (sequencial)
-            const totalRemainingBases = activeRemainingBases + otherRemainingBases;
+            // Calcular total sequencial baseado na usina ativa
+            let totalRemainingBases = 0;
+
+            if (activeUsina === 'pimental') {
+                // Pimental em execução -> Pimental + Belo Monte + Oficina
+                totalRemainingBases = pimentalRemaining + beloMonteRemaining + oficinaRemaining;
+            } else if (activeUsina === 'belo-monte') {
+                // Belo Monte em execução -> Belo Monte + Pimental (se pendente) + Oficina (se pendente)
+                totalRemainingBases = beloMonteRemaining +
+                    (pimentalRemaining > 0 ? pimentalRemaining : 0) +
+                    (oficinaRemaining > 0 ? oficinaRemaining : 0);
+            } else if (activeUsina === 'oficina') {
+                // Oficina em execução -> Oficina + pendentes
+                totalRemainingBases = oficinaRemaining +
+                    (pimentalRemaining > 0 ? pimentalRemaining : 0) +
+                    (beloMonteRemaining > 0 ? beloMonteRemaining : 0);
+            }
 
             const daysNeeded = Math.ceil(totalRemainingBases / productivity);
             const completionDate = new Date(teamConfig.dataAtual);
@@ -4521,15 +4547,19 @@
         function updateActiveUsinaButtons() {
             const pimentalBtn = document.getElementById('btnActivePimental');
             const beloBtn = document.getElementById('btnActiveBelo');
+            const oficinaBtn = document.getElementById('btnActiveOficina');
             const statusPimental = document.getElementById('statusPimental');
             const statusBeloMonte = document.getElementById('statusBeloMonte');
+            const statusOficina = document.getElementById('statusOficina');
             const pimentalStats = calculateUsinaStats('pimental');
             const beloMonteStats = calculateUsinaStats('belo-monte');
+            const oficinaStats = calculateUsinaStats('oficina');
             const activeUsina = getActiveUsina();
 
             // Resetar classes
             pimentalBtn.className = 'btn-usina-wide';
             beloBtn.className = 'btn-usina-wide';
+            oficinaBtn.className = 'btn-usina-wide';
 
             // Atualizar texto de ajuda baseado na autenticação
             if (!isAuthenticated) {
@@ -4541,6 +4571,7 @@
             // Sempre manter os botões habilitados para permitir clique (a verificação de senha é na função setActiveUsina)
             pimentalBtn.disabled = false;
             beloBtn.disabled = false;
+            oficinaBtn.disabled = false;
 
             // Aplicar estados baseados no progresso e seleção - Pimental
             if (pimentalStats.progress >= 100) {
@@ -4549,7 +4580,6 @@
                 statusPimental.textContent = 'Concluída';
                 statusPimental.className = 'btn-status completed';
             } else {
-                // Sempre mostrar status real, independente de autenticação
                 if (activeUsina === 'pimental') {
                     pimentalBtn.classList.add('active');
                     statusPimental.textContent = 'Em Execução';
@@ -4567,7 +4597,6 @@
                 statusBeloMonte.textContent = 'Concluída';
                 statusBeloMonte.className = 'btn-status completed';
             } else {
-                // Sempre mostrar status real, independente de autenticação
                 if (activeUsina === 'belo-monte') {
                     beloBtn.classList.add('active');
                     statusBeloMonte.textContent = 'Em Execução';
@@ -4575,6 +4604,23 @@
                 } else {
                     statusBeloMonte.textContent = 'Aguardando';
                     statusBeloMonte.className = 'btn-status awaiting';
+                }
+            }
+
+            // Aplicar estados baseados no progresso e seleção - Oficina
+            if (oficinaStats.progress >= 100) {
+                oficinaBtn.classList.add('completed');
+                oficinaBtn.disabled = true;
+                statusOficina.textContent = 'Concluída';
+                statusOficina.className = 'btn-status completed';
+            } else {
+                if (activeUsina === 'oficina') {
+                    oficinaBtn.classList.add('active');
+                    statusOficina.textContent = 'Em Execução';
+                    statusOficina.className = 'btn-status executing';
+                } else {
+                    statusOficina.textContent = 'Aguardando';
+                    statusOficina.className = 'btn-status awaiting';
                 }
             }
         }
