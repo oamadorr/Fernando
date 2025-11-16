@@ -1345,6 +1345,72 @@
             font-size: 0.8rem;
         }
 
+        /* Linhas Transversais - Grupos Verticais */
+        .transversal-group {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+
+        .transversal-group:hover {
+            transform: scale(1.1);
+            z-index: 25;
+        }
+
+        .transversal-line-mini {
+            width: 8px;
+            height: 25px;
+            border-radius: 4px;
+            background: var(--border-gray);
+            transition: all 0.2s ease;
+        }
+
+        .transversal-line-mini.completed {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+        }
+
+        .transversal-line-mini.in-progress {
+            background: linear-gradient(135deg, #ff9800 0%, #ffa726 100%);
+        }
+
+        .transversal-line-mini.pending {
+            background: var(--border-gray);
+        }
+
+        .transversal-group-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Belo Monte - Posicionamento dos Grupos Transversais */
+        .bm-transversal-01-10 { left: 12%; top: 50%; transform: translateY(-50%); }
+        .bm-transversal-02-11 { left: 23%; top: 50%; transform: translateY(-50%); }
+        .bm-transversal-03-12 { left: 34%; top: 50%; transform: translateY(-50%); }
+        .bm-transversal-04-13 { left: 45%; top: 50%; transform: translateY(-50%); }
+        .bm-transversal-05-14 { left: 56%; top: 50%; transform: translateY(-50%); }
+        .bm-transversal-06-15 { left: 67%; top: 50%; transform: translateY(-50%); }
+        .bm-transversal-07-16 { left: 78%; top: 50%; transform: translateY(-50%); }
+        .bm-transversal-08-17 { left: 89%; top: 50%; transform: translateY(-50%); }
+        .bm-transversal-09-18 { left: 95%; top: 50%; transform: translateY(-50%); }
+
+        /* Pimental - Posicionamento dos Grupos Transversais */
+        .pm-transversal-01 { left: 25%; top: 30%; transform: translateY(-50%); }
+        .pm-transversal-02 { left: 25%; top: 70%; transform: translateY(-50%); }
+
         /* Responsividade do Mapa */
         @media (max-width: 768px) {
             .map-layout {
@@ -2544,6 +2610,27 @@
                             <div class="line-bar horizontal pimental-bar"></div>
                             <div class="line-label">04</div>
                         </div>
+
+                        <!-- Grupos Transversais Pimental -->
+                        <div class="transversal-group pm-transversal-01" data-grupo="06-10" data-usina="pimental" onclick="showTransversalDetails('pimental', '06-10')">
+                            <div class="transversal-line-mini" data-linha="06"></div>
+                            <div class="transversal-line-mini" data-linha="07"></div>
+                            <div class="transversal-line-mini" data-linha="08"></div>
+                            <div class="transversal-line-mini" data-linha="09"></div>
+                            <div class="transversal-line-mini" data-linha="10"></div>
+                            <div class="transversal-group-label">06-10</div>
+                        </div>
+
+                        <div class="transversal-group pm-transversal-02" data-grupo="11-17" data-usina="pimental" onclick="showTransversalDetails('pimental', '11-17')">
+                            <div class="transversal-line-mini" data-linha="11"></div>
+                            <div class="transversal-line-mini" data-linha="12"></div>
+                            <div class="transversal-line-mini" data-linha="13"></div>
+                            <div class="transversal-line-mini" data-linha="14"></div>
+                            <div class="transversal-line-mini" data-linha="15"></div>
+                            <div class="transversal-line-mini" data-linha="16"></div>
+                            <div class="transversal-line-mini" data-linha="17"></div>
+                            <div class="transversal-group-label">11-17</div>
+                        </div>
                     </div>
                 </div>
 
@@ -2640,6 +2727,94 @@
                                 <div class="line-bar horizontal small"></div>
                                 <div class="line-label">18</div>
                             </div>
+                        </div>
+
+                        <!-- Grupos Transversais Belo Monte -->
+                        <div class="transversal-group bm-transversal-01-10" data-grupo="20-25" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '20-25')">
+                            <div class="transversal-line-mini" data-linha="20"></div>
+                            <div class="transversal-line-mini" data-linha="21"></div>
+                            <div class="transversal-line-mini" data-linha="22"></div>
+                            <div class="transversal-line-mini" data-linha="23"></div>
+                            <div class="transversal-line-mini" data-linha="24"></div>
+                            <div class="transversal-line-mini" data-linha="25"></div>
+                            <div class="transversal-group-label">20-25</div>
+                        </div>
+
+                        <div class="transversal-group bm-transversal-02-11" data-grupo="26-31" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '26-31')">
+                            <div class="transversal-line-mini" data-linha="26"></div>
+                            <div class="transversal-line-mini" data-linha="27"></div>
+                            <div class="transversal-line-mini" data-linha="28"></div>
+                            <div class="transversal-line-mini" data-linha="29"></div>
+                            <div class="transversal-line-mini" data-linha="30"></div>
+                            <div class="transversal-line-mini" data-linha="31"></div>
+                            <div class="transversal-group-label">26-31</div>
+                        </div>
+
+                        <div class="transversal-group bm-transversal-03-12" data-grupo="32-37" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '32-37')">
+                            <div class="transversal-line-mini" data-linha="32"></div>
+                            <div class="transversal-line-mini" data-linha="33"></div>
+                            <div class="transversal-line-mini" data-linha="34"></div>
+                            <div class="transversal-line-mini" data-linha="35"></div>
+                            <div class="transversal-line-mini" data-linha="36"></div>
+                            <div class="transversal-line-mini" data-linha="37"></div>
+                            <div class="transversal-group-label">32-37</div>
+                        </div>
+
+                        <div class="transversal-group bm-transversal-04-13" data-grupo="38-43" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '38-43')">
+                            <div class="transversal-line-mini" data-linha="38"></div>
+                            <div class="transversal-line-mini" data-linha="39"></div>
+                            <div class="transversal-line-mini" data-linha="40"></div>
+                            <div class="transversal-line-mini" data-linha="41"></div>
+                            <div class="transversal-line-mini" data-linha="42"></div>
+                            <div class="transversal-line-mini" data-linha="43"></div>
+                            <div class="transversal-group-label">38-43</div>
+                        </div>
+
+                        <div class="transversal-group bm-transversal-05-14" data-grupo="44-49" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '44-49')">
+                            <div class="transversal-line-mini" data-linha="44"></div>
+                            <div class="transversal-line-mini" data-linha="45"></div>
+                            <div class="transversal-line-mini" data-linha="46"></div>
+                            <div class="transversal-line-mini" data-linha="47"></div>
+                            <div class="transversal-line-mini" data-linha="48"></div>
+                            <div class="transversal-line-mini" data-linha="49"></div>
+                            <div class="transversal-group-label">44-49</div>
+                        </div>
+
+                        <div class="transversal-group bm-transversal-06-15" data-grupo="50-55" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '50-55')">
+                            <div class="transversal-line-mini" data-linha="50"></div>
+                            <div class="transversal-line-mini" data-linha="51"></div>
+                            <div class="transversal-line-mini" data-linha="52"></div>
+                            <div class="transversal-line-mini" data-linha="53"></div>
+                            <div class="transversal-line-mini" data-linha="54"></div>
+                            <div class="transversal-line-mini" data-linha="55"></div>
+                            <div class="transversal-group-label">50-55</div>
+                        </div>
+
+                        <div class="transversal-group bm-transversal-07-16" data-grupo="56-61" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '56-61')">
+                            <div class="transversal-line-mini" data-linha="56"></div>
+                            <div class="transversal-line-mini" data-linha="57"></div>
+                            <div class="transversal-line-mini" data-linha="58"></div>
+                            <div class="transversal-line-mini" data-linha="59"></div>
+                            <div class="transversal-line-mini" data-linha="60"></div>
+                            <div class="transversal-line-mini" data-linha="61"></div>
+                            <div class="transversal-group-label">56-61</div>
+                        </div>
+
+                        <div class="transversal-group bm-transversal-08-17" data-grupo="62-67" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '62-67')">
+                            <div class="transversal-line-mini" data-linha="62"></div>
+                            <div class="transversal-line-mini" data-linha="63"></div>
+                            <div class="transversal-line-mini" data-linha="64"></div>
+                            <div class="transversal-line-mini" data-linha="65"></div>
+                            <div class="transversal-line-mini" data-linha="66"></div>
+                            <div class="transversal-line-mini" data-linha="67"></div>
+                            <div class="transversal-group-label">62-67</div>
+                        </div>
+
+                        <div class="transversal-group bm-transversal-09-18" data-grupo="68-70" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '68-70')">
+                            <div class="transversal-line-mini" data-linha="68"></div>
+                            <div class="transversal-line-mini" data-linha="69"></div>
+                            <div class="transversal-line-mini" data-linha="70"></div>
+                            <div class="transversal-group-label">68-70</div>
                         </div>
                     </div>
                 </div>
@@ -3069,6 +3244,47 @@
         </div>
     </div>
 
+    <!-- Modal para Detalhamento de Linhas Transversais -->
+    <div id="transversalModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title">🔍 Detalhamento de Linhas Transversais</h2>
+                <button class="close-btn" onclick="closeTransversalModal()">&times;</button>
+            </div>
+            <div>
+                <div class="form-group">
+                    <label class="form-label" id="transversalGroupLabel">Grupo:</label>
+                    <p style="font-weight: bold; color: var(--primary-blue);" id="transversalGroupInfo"></p>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="data-table" id="transversalLinesTable">
+                        <thead>
+                            <tr>
+                                <th>Linha</th>
+                                <th>Metragem</th>
+                                <th>Bases J</th>
+                                <th>Concluídas</th>
+                                <th>Progresso</th>
+                                <th>Passagem</th>
+                                <th>Crimpagem</th>
+                                <th>Aferição</th>
+                                <th>Tensionamento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transversalLinesBody">
+                            <!-- Preenchido dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeTransversalModal()">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -3101,6 +3317,18 @@
                     "03": { metragem: 88.63, bases: { B: 1, D: 5, F: 1, K: 6 } },
                     "04": { metragem: 90.63, bases: { D: 6, H: 1, K: 6 } },
                     "05": { metragem: 18.585, bases: { J: 1 } },
+                    "06": { metragem: 31.9, bases: { J: 1 } },
+                    "07": { metragem: 31.9, bases: { J: 1 } },
+                    "08": { metragem: 31.9, bases: { J: 1 } },
+                    "09": { metragem: 31.9, bases: { J: 1 } },
+                    "10": { metragem: 31.9, bases: { J: 1 } },
+                    "11": { metragem: 31.9, bases: { J: 1 } },
+                    "12": { metragem: 31.9, bases: { J: 1 } },
+                    "13": { metragem: 31.9, bases: { J: 1 } },
+                    "14": { metragem: 31.9, bases: { J: 1 } },
+                    "15": { metragem: 31.9, bases: { J: 1 } },
+                    "16": { metragem: 31.9, bases: { J: 1 } },
+                    "17": { metragem: 31.9, bases: { J: 1 } },
                     "18": { metragem: 18.585, bases: { J: 1 } }
                 }
             },
@@ -3126,6 +3354,57 @@
                     "17": { metragem: 98.777, bases: { C: 5, F: 1, K: 6 } },
                     "18": { metragem: 64.514, bases: { D: 3, H: 1, K: 3 } },
                     "19": { metragem: 31.9, bases: { J: 3 } },
+                    "20": { metragem: 31.9, bases: { J: 3 } },
+                    "21": { metragem: 31.9, bases: { J: 3 } },
+                    "22": { metragem: 31.9, bases: { J: 3 } },
+                    "23": { metragem: 31.9, bases: { J: 3 } },
+                    "24": { metragem: 31.9, bases: { J: 3 } },
+                    "25": { metragem: 31.9, bases: { J: 3 } },
+                    "26": { metragem: 31.9, bases: { J: 3 } },
+                    "27": { metragem: 31.9, bases: { J: 3 } },
+                    "28": { metragem: 31.9, bases: { J: 3 } },
+                    "29": { metragem: 31.9, bases: { J: 3 } },
+                    "30": { metragem: 31.9, bases: { J: 3 } },
+                    "31": { metragem: 31.9, bases: { J: 3 } },
+                    "32": { metragem: 31.9, bases: { J: 3 } },
+                    "33": { metragem: 31.9, bases: { J: 3 } },
+                    "34": { metragem: 31.9, bases: { J: 3 } },
+                    "35": { metragem: 31.9, bases: { J: 3 } },
+                    "36": { metragem: 31.9, bases: { J: 3 } },
+                    "37": { metragem: 31.9, bases: { J: 3 } },
+                    "38": { metragem: 31.9, bases: { J: 3 } },
+                    "39": { metragem: 31.9, bases: { J: 3 } },
+                    "40": { metragem: 31.9, bases: { J: 3 } },
+                    "41": { metragem: 31.9, bases: { J: 3 } },
+                    "42": { metragem: 31.9, bases: { J: 3 } },
+                    "43": { metragem: 31.9, bases: { J: 3 } },
+                    "44": { metragem: 31.9, bases: { J: 3 } },
+                    "45": { metragem: 31.9, bases: { J: 3 } },
+                    "46": { metragem: 31.9, bases: { J: 3 } },
+                    "47": { metragem: 31.9, bases: { J: 3 } },
+                    "48": { metragem: 31.9, bases: { J: 3 } },
+                    "49": { metragem: 31.9, bases: { J: 3 } },
+                    "50": { metragem: 31.9, bases: { J: 3 } },
+                    "51": { metragem: 31.9, bases: { J: 3 } },
+                    "52": { metragem: 31.9, bases: { J: 3 } },
+                    "53": { metragem: 31.9, bases: { J: 3 } },
+                    "54": { metragem: 31.9, bases: { J: 3 } },
+                    "55": { metragem: 31.9, bases: { J: 3 } },
+                    "56": { metragem: 31.9, bases: { J: 3 } },
+                    "57": { metragem: 31.9, bases: { J: 3 } },
+                    "58": { metragem: 31.9, bases: { J: 3 } },
+                    "59": { metragem: 31.9, bases: { J: 3 } },
+                    "60": { metragem: 31.9, bases: { J: 3 } },
+                    "61": { metragem: 31.9, bases: { J: 3 } },
+                    "62": { metragem: 31.9, bases: { J: 3 } },
+                    "63": { metragem: 31.9, bases: { J: 3 } },
+                    "64": { metragem: 31.9, bases: { J: 3 } },
+                    "65": { metragem: 31.9, bases: { J: 3 } },
+                    "66": { metragem: 31.9, bases: { J: 3 } },
+                    "67": { metragem: 31.9, bases: { J: 3 } },
+                    "68": { metragem: 31.9, bases: { J: 3 } },
+                    "69": { metragem: 31.9, bases: { J: 3 } },
+                    "70": { metragem: 31.9, bases: { J: 3 } },
                     "71": { metragem: 31.9, bases: { J: 3 } }
                 }
             },
@@ -5199,6 +5478,7 @@
             updateCharts();
             updateChartInfos();
             updateMapFromExternalData(); // Atualizar mapa interativo
+            updateTransversalVisuals(); // Atualizar grupos transversais
             updateLastUpdateTimestamp();
         }
 
@@ -5671,6 +5951,85 @@
             textarea.style.height = 'auto';
             const newHeight = Math.max(140, textarea.scrollHeight);
             textarea.style.height = newHeight + 'px';
+        }
+
+        // Funções para Modal de Linhas Transversais
+        function showTransversalDetails(usinaKey, grupo) {
+            const [startLine, endLine] = grupo.split('-').map(Number);
+            const linhas = [];
+
+            for (let i = startLine; i <= endLine; i++) {
+                const linhaStr = String(i).padStart(2, '0');
+                if (projectData[usinaKey].linhas[linhaStr]) {
+                    linhas.push(linhaStr);
+                }
+            }
+
+            // Atualizar informações do grupo
+            const usinaName = projectData[usinaKey].name;
+            document.getElementById('transversalGroupInfo').textContent =
+                `${usinaName} - Linhas ${grupo} (${linhas.length} linhas transversais)`;
+
+            // Popular tabela
+            const tbody = document.getElementById('transversalLinesBody');
+            tbody.innerHTML = '';
+
+            linhas.forEach(linha => {
+                const linhaData = projectData[usinaKey].linhas[linha];
+                const progress = calculateLineProgress(usinaKey, linha);
+                const steps = lineStepsStatus[usinaKey]?.[linha] || {};
+                const completed = progressData[usinaKey]?.[linha]?.J || 0;
+                const total = linhaData.bases.J || 0;
+
+                const statusClass = progress === 100 ? 'completed' : progress > 0 ? 'in-progress' : 'pending';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight: bold; color: var(--primary-blue);">${linha}</td>
+                    <td>${linhaData.metragem}m</td>
+                    <td>${total}</td>
+                    <td>${completed}</td>
+                    <td>
+                        <div class="progress-bar" style="margin: 0;">
+                            <div class="progress-fill ${statusClass}" style="width: ${progress}%"></div>
+                            <span class="progress-text">${progress}%</span>
+                        </div>
+                    </td>
+                    <td>${steps.passagemCabo ? '✅' : '❌'}</td>
+                    <td>${steps.crimpagemCabo ? '✅' : '❌'}</td>
+                    <td>${steps.afericaoCrimpagem ? '✅' : '❌'}</td>
+                    <td>${steps.tensionamentoCabo ? '✅' : '❌'}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+
+            // Abrir modal
+            document.getElementById('transversalModal').style.display = 'flex';
+        }
+
+        function closeTransversalModal() {
+            document.getElementById('transversalModal').style.display = 'none';
+        }
+
+        // Atualizar visuais dos grupos transversais no mapa
+        function updateTransversalVisuals() {
+            document.querySelectorAll('.transversal-line-mini').forEach(mini => {
+                const linha = mini.dataset.linha;
+                const group = mini.closest('.transversal-group');
+                const usinaKey = group.dataset.usina;
+
+                const progress = calculateLineProgress(usinaKey, linha);
+
+                mini.classList.remove('completed', 'in-progress', 'pending');
+                if (progress === 100) {
+                    mini.classList.add('completed');
+                } else if (progress > 0) {
+                    mini.classList.add('in-progress');
+                } else {
+                    mini.classList.add('pending');
+                }
+            });
         }
 
         function toggleAllBases(checkbox) {
