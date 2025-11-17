@@ -2105,6 +2105,40 @@
             display: none;
         }
 
+        /* Modal de Linhas Transversais */
+        .transversal-modal-content {
+            max-width: 95%;
+            width: 1100px;
+        }
+
+        .transversal-table-wrapper {
+            overflow-x: auto;
+            margin: 0 -10px;
+            padding: 0 10px;
+        }
+
+        #transversalLinesTable th,
+        #transversalLinesTable td {
+            padding: 8px 10px;
+            font-size: 0.9rem;
+        }
+
+        #transversalLinesTable th {
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .transversal-modal-content {
+                width: 95%;
+            }
+
+            #transversalLinesTable th,
+            #transversalLinesTable td {
+                padding: 6px 8px;
+                font-size: 0.85rem;
+            }
+        }
+
         .read-only-notice {
             background: var(--light-blue);
             padding: 15px;
@@ -3257,7 +3291,7 @@
 
     <!-- Modal para Detalhamento de Linhas Transversais -->
     <div id="transversalModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-content transversal-modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">🔍 Detalhamento de Linhas Transversais</h2>
                 <button class="close-btn" onclick="closeTransversalModal()">&times;</button>
@@ -3268,7 +3302,7 @@
                     <p style="font-weight: bold; color: var(--primary-blue);" id="transversalGroupInfo"></p>
                 </div>
 
-                <div class="table-wrapper">
+                <div class="transversal-table-wrapper">
                     <table class="data-table" id="transversalLinesTable">
                         <thead>
                             <tr>
