@@ -3417,38 +3417,14 @@
                 </div>
 
                 <div class="transversal-table-wrapper">
-                    <table class="data-table" id="lineDetailsTable">
-                        <thead>
-                            <tr>
-                                <th>Tipo Base</th>
-                                <th>Total</th>
-                                <th>Concluídas</th>
-                                <th>Progresso</th>
-                            </tr>
+                    <table class="data-table transversal-details-table" id="lineDetailsTable">
+                        <thead id="lineDetailsTableHead">
+                            <!-- Cabeçalho preenchido dinamicamente -->
                         </thead>
                         <tbody id="lineDetailsBody">
                             <!-- Preenchido dinamicamente -->
                         </tbody>
                     </table>
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <h3 style="font-size: 1rem; margin-bottom: 10px; color: var(--dark-gray);">Etapas do Cabo</h3>
-                    <div class="transversal-table-wrapper">
-                        <table class="data-table" id="lineStepsTable">
-                            <thead>
-                                <tr>
-                                    <th>Passagem</th>
-                                    <th>Crimpagem</th>
-                                    <th>Aferição</th>
-                                    <th>Tensionamento</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lineStepsBody">
-                                <!-- Preenchido dinamicamente -->
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
 
                 <div id="lineDetailsViewButtons" style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
@@ -6536,53 +6512,70 @@
             document.getElementById('lineDetailsInfo').textContent =
                 `${usinaName} - Linha ${linha} (${linhaData.metragem}m)`;
 
-            // Popular tabela de bases
+            // Criar cabeçalho da tabela (formato horizontal como transversais)
+            const thead = document.getElementById('lineDetailsTableHead');
+            const baseTipos = Object.keys(linhaData.bases);
+
+            let headerHTML = '<tr><th>Linha</th><th>Metragem</th>';
+
+            // Adicionar colunas para cada tipo de base
+            baseTipos.forEach(tipo => {
+                headerHTML += `<th>Bases ${tipo}</th><th>Concluídas</th>`;
+            });
+
+            headerHTML += '<th>Progresso</th><th>Passagem</th><th>Crimpagem</th><th>Aferição</th><th>Tensionamento</th></tr>';
+            thead.innerHTML = headerHTML;
+
+            // Popular corpo da tabela com uma única linha
             const tbody = document.getElementById('lineDetailsBody');
-            tbody.innerHTML = '';
-
-            for (const tipo in linhaData.bases) {
-                const total = linhaData.bases[tipo];
-                const completed = progressData[usinaKey]?.[linha]?.[tipo] || 0;
-                const progress = total > 0 ? (completed / total * 100) : 0;
-                const statusClass = progress === 100 ? 'completed' : progress > 0 ? 'in-progress' : 'pending';
-
-                const row = document.createElement('tr');
-                row.dataset.tipo = tipo;
-                row.dataset.total = total;
-                row.innerHTML = `
-                    <td style="font-weight: bold;">${tipo}</td>
-                    <td>${total}</td>
-                    <td class="editable-completed-cell">
-                        <span class="completed-display">${completed}</span>
-                        <input type="number" class="completed-input" value="${completed}" min="0" max="${total}" style="display: none; width: 60px; text-align: center; padding: 4px; border: 2px solid var(--primary-blue); border-radius: 4px;">
-                    </td>
-                    <td>
-                        <div class="progress-bar" style="margin: 0;">
-                            <div class="progress-fill ${statusClass}" style="width: ${progress}%"></div>
-                            <span class="progress-text">${progress.toFixed(0)}%</span>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            }
-
-            // Popular etapas do cabo
-            const stepsBody = document.getElementById('lineStepsBody');
-            stepsBody.innerHTML = '';
             const steps = lineStepsStatus[usinaKey]?.[linha] || {};
 
-            const stepsRow = document.createElement('tr');
-            stepsRow.innerHTML = `
+            let rowHTML = `<tr><td style="font-weight: bold; color: var(--primary-blue);">${linha}</td><td>${linhaData.metragem}m</td>`;
+
+            // Adicionar células para cada tipo de base
+            let totalCompleted = 0;
+            let totalBases = 0;
+            baseTipos.forEach(tipo => {
+                const total = linhaData.bases[tipo];
+                const completed = progressData[usinaKey]?.[linha]?.[tipo] || 0;
+                totalCompleted += completed;
+                totalBases += total;
+
+                rowHTML += `
+                    <td>${total}</td>
+                    <td class="editable-completed-cell" data-tipo="${tipo}" data-total="${total}">
+                        <span class="completed-display">${completed}</span>
+                        <input type="number" class="completed-input" value="${completed}" min="0" max="${total}"
+                               style="display: none; width: 60px; text-align: center; padding: 4px; border: 2px solid var(--primary-blue); border-radius: 4px;">
+                    </td>
+                `;
+            });
+
+            // Adicionar progresso geral
+            const progress = totalBases > 0 ? (totalCompleted / totalBases * 100) : 0;
+            const statusClass = progress === 100 ? 'completed' : progress > 0 ? 'in-progress' : 'pending';
+
+            rowHTML += `
+                <td>
+                    <div class="progress-bar" style="margin: 0;">
+                        <div class="progress-fill ${statusClass}" style="width: ${progress}%"></div>
+                        <span class="progress-text">${progress.toFixed(0)}%</span>
+                    </div>
+                </td>
+            `;
+
+            // Adicionar etapas do cabo
+            rowHTML += `
                 <td class="editable-step" data-step="passagemCabo">${steps.passagemCabo ? '✅' : '❌'}</td>
                 <td class="editable-step" data-step="crimpagemCabo">${steps.crimpagemCabo ? '✅' : '❌'}</td>
                 <td class="editable-step" data-step="afericaoCrimpagem">${steps.afericaoCrimpagem ? '✅' : '❌'}</td>
                 <td class="editable-step" data-step="tensionamentoCabo">${steps.tensionamentoCabo ? '✅' : '❌'}</td>
-            `;
-            stepsBody.appendChild(stepsRow);
+            </tr>`;
+
+            tbody.innerHTML = rowHTML;
 
             // Resetar modo de visualização
             document.getElementById('lineDetailsTable').classList.remove('edit-mode');
-            document.getElementById('lineStepsTable').classList.remove('edit-mode');
             document.getElementById('lineDetailsViewButtons').style.display = 'flex';
             document.getElementById('lineDetailsEditButtons').style.display = 'none';
 
@@ -6610,7 +6603,6 @@
 
             // Ativar modo de edição
             document.getElementById('lineDetailsTable').classList.add('edit-mode');
-            document.getElementById('lineStepsTable').classList.add('edit-mode');
 
             // Mostrar inputs de bases
             document.querySelectorAll('#lineDetailsBody .completed-display').forEach(span => {
@@ -6621,7 +6613,7 @@
             });
 
             // Adicionar event listeners nas etapas
-            document.querySelectorAll('#lineStepsBody .editable-step').forEach(cell => {
+            document.querySelectorAll('#lineDetailsBody .editable-step').forEach(cell => {
                 cell.addEventListener('click', toggleLineDetailsStep);
             });
 
@@ -6656,10 +6648,9 @@
 
             // Desativar modo de edição
             document.getElementById('lineDetailsTable').classList.remove('edit-mode');
-            document.getElementById('lineStepsTable').classList.remove('edit-mode');
 
             // Remover event listeners
-            document.querySelectorAll('#lineStepsBody .editable-step').forEach(cell => {
+            document.querySelectorAll('#lineDetailsBody .editable-step').forEach(cell => {
                 cell.removeEventListener('click', toggleLineDetailsStep);
             });
 
@@ -6675,13 +6666,13 @@
                 const { usinaKey, linha } = currentLineDetails;
 
                 // Atualizar progressData com valores dos inputs
-                document.querySelectorAll('#lineDetailsBody tr').forEach(row => {
-                    const tipo = row.dataset.tipo;
-                    const input = row.querySelector('.completed-input');
-                    const completedValue = parseInt(input.value) || 0;
+                if (!progressData[usinaKey]) progressData[usinaKey] = {};
+                if (!progressData[usinaKey][linha]) progressData[usinaKey][linha] = {};
 
-                    if (!progressData[usinaKey]) progressData[usinaKey] = {};
-                    if (!progressData[usinaKey][linha]) progressData[usinaKey][linha] = {};
+                document.querySelectorAll('#lineDetailsBody .editable-completed-cell').forEach(cell => {
+                    const tipo = cell.dataset.tipo;
+                    const input = cell.querySelector('.completed-input');
+                    const completedValue = parseInt(input.value) || 0;
 
                     progressData[usinaKey][linha][tipo] = completedValue;
                 });
@@ -6703,10 +6694,9 @@
 
                 // Desativar modo de edição
                 document.getElementById('lineDetailsTable').classList.remove('edit-mode');
-                document.getElementById('lineStepsTable').classList.remove('edit-mode');
 
                 // Remover event listeners
-                document.querySelectorAll('#lineStepsBody .editable-step').forEach(cell => {
+                document.querySelectorAll('#lineDetailsBody .editable-step').forEach(cell => {
                     cell.removeEventListener('click', toggleLineDetailsStep);
                 });
 
