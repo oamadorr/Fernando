@@ -2191,8 +2191,15 @@
         }
 
         /* Modal de detalhes de linha individual */
+        #lineDetailsTable .editable-step,
+        #lineStepsTable .editable-step {
+            pointer-events: none;
+            cursor: default;
+        }
+
         #lineDetailsTable.edit-mode .editable-step,
         #lineStepsTable.edit-mode .editable-step {
+            pointer-events: auto;
             cursor: pointer;
             transition: all 0.2s ease;
             user-select: none;
