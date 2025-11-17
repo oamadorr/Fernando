@@ -1667,6 +1667,59 @@
             text-align: right;
         }
 
+        /* Tooltip para barras de progresso */
+        .bar-item {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-tooltip {
+            position: absolute;
+            background: rgba(30, 30, 30, 0.95);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            line-height: 1.5;
+        }
+
+        .progress-tooltip.show {
+            opacity: 1;
+        }
+
+        .progress-tooltip .tooltip-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 6px;
+        }
+
+        .progress-tooltip .tooltip-section {
+            margin-top: 8px;
+        }
+
+        .progress-tooltip .tooltip-section-title {
+            font-weight: 600;
+            color: #10b981;
+            margin-bottom: 4px;
+        }
+
+        .progress-tooltip .tooltip-section-title.pending {
+            color: #f59e0b;
+        }
+
+        .progress-tooltip .tooltip-lines {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px;
+        }
+
         .bar-numbers {
             color: var(--medium-gray);
             font-size: 12px;
@@ -5859,6 +5912,70 @@
             }
         }
 
+        // Função para adicionar tooltip com detalhes de progresso nas barras
+        function addProgressTooltip(barElement, tipo, linesInfo, usinaKey) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'progress-tooltip';
+
+            // Nome da usina
+            const usinaName = usinaKey === 'pimental' ? 'Pimental' :
+                            usinaKey === 'belo-monte' ? 'Belo Monte' : 'Oficina';
+
+            // Ordenar linhas numericamente
+            const sortedCompleted = linesInfo.completed.sort((a, b) => {
+                const numA = parseInt(a);
+                const numB = parseInt(b);
+                return numA - numB;
+            });
+
+            const sortedPending = linesInfo.pending.sort((a, b) => {
+                const numA = parseInt(a);
+                const numB = parseInt(b);
+                return numA - numB;
+            });
+
+            // Construir conteúdo do tooltip
+            let tooltipContent = `<div class="tooltip-title">Tipo ${tipo} - ${usinaName}</div>`;
+
+            if (sortedCompleted.length > 0) {
+                tooltipContent += `
+                    <div class="tooltip-section">
+                        <div class="tooltip-section-title">✅ Linhas concluídas (${sortedCompleted.length})</div>
+                        <div class="tooltip-lines">Linhas: ${sortedCompleted.join(', ')}</div>
+                    </div>
+                `;
+            }
+
+            if (sortedPending.length > 0) {
+                tooltipContent += `
+                    <div class="tooltip-section">
+                        <div class="tooltip-section-title pending">⏳ Linhas pendentes (${sortedPending.length})</div>
+                        <div class="tooltip-lines">Linhas: ${sortedPending.join(', ')}</div>
+                    </div>
+                `;
+            }
+
+            tooltip.innerHTML = tooltipContent;
+            document.body.appendChild(tooltip);
+
+            // Event listeners para mostrar/ocultar tooltip
+            barElement.addEventListener('mouseenter', (e) => {
+                const rect = barElement.getBoundingClientRect();
+                tooltip.style.left = `${rect.left + window.scrollX}px`;
+                tooltip.style.top = `${rect.top + window.scrollY - tooltip.offsetHeight - 10}px`;
+                tooltip.classList.add('show');
+            });
+
+            barElement.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('show');
+            });
+
+            // Remover tooltip quando o elemento pai for destruído
+            barElement.addEventListener('DOMNodeRemovedFromDocument', () => {
+                tooltip.remove();
+            });
+        }
+
         function initChartPimental() {
             const container = document.getElementById('chartPimental');
 
@@ -5868,10 +5985,12 @@
             // Calcular totais por tipo para Pimental
             const totalByType = {};
             const completedByType = {};
+            const linesByType = {}; // Rastrear quais linhas têm cada tipo
 
             for (const tipo of tipos) {
                 totalByType[tipo] = 0;
                 completedByType[tipo] = 0;
+                linesByType[tipo] = { completed: [], pending: [] };
             }
 
             // Calcular totais de Pimental
@@ -5879,16 +5998,20 @@
                 for (const linha in projectData[usinaKey].linhas) {
                     const bases = projectData[usinaKey].linhas[linha].bases;
                     for (const tipo in bases) {
-                        totalByType[tipo] = (totalByType[tipo] || 0) + bases[tipo];
-                    }
-                }
-            }
+                        const totalBases = bases[tipo];
+                        const completedBases = (progressData[usinaKey] && progressData[usinaKey][linha])
+                            ? (progressData[usinaKey][linha][tipo] || 0)
+                            : 0;
 
-            // Calcular totais concluídos de Pimental
-            if (progressData[usinaKey]) {
-                for (const linha in progressData[usinaKey]) {
-                    for (const tipo in progressData[usinaKey][linha]) {
-                        completedByType[tipo] = (completedByType[tipo] || 0) + (progressData[usinaKey][linha][tipo] || 0);
+                        totalByType[tipo] = (totalByType[tipo] || 0) + totalBases;
+                        completedByType[tipo] = (completedByType[tipo] || 0) + completedBases;
+
+                        // Determinar se a linha está completa ou pendente para este tipo
+                        if (completedBases >= totalBases) {
+                            linesByType[tipo].completed.push(linha);
+                        } else {
+                            linesByType[tipo].pending.push(linha);
+                        }
                     }
                 }
             }
@@ -5923,6 +6046,9 @@
                     <div class="bar-percentage">${percentage}%</div>
                 `;
 
+                // Adicionar tooltip com detalhes
+                addProgressTooltip(barItem, tipo, linesByType[tipo], usinaKey);
+
                 container.appendChild(barItem);
             });
         }
@@ -5936,10 +6062,12 @@
             // Calcular totais por tipo para Belo Monte
             const totalByType = {};
             const completedByType = {};
+            const linesByType = {}; // Rastrear quais linhas têm cada tipo
 
             for (const tipo of tipos) {
                 totalByType[tipo] = 0;
                 completedByType[tipo] = 0;
+                linesByType[tipo] = { completed: [], pending: [] };
             }
 
             // Calcular totais de Belo Monte
@@ -5947,16 +6075,20 @@
                 for (const linha in projectData[usinaKey].linhas) {
                     const bases = projectData[usinaKey].linhas[linha].bases;
                     for (const tipo in bases) {
-                        totalByType[tipo] = (totalByType[tipo] || 0) + bases[tipo];
-                    }
-                }
-            }
+                        const totalBases = bases[tipo];
+                        const completedBases = (progressData[usinaKey] && progressData[usinaKey][linha])
+                            ? (progressData[usinaKey][linha][tipo] || 0)
+                            : 0;
 
-            // Calcular totais concluídos de Belo Monte
-            if (progressData[usinaKey]) {
-                for (const linha in progressData[usinaKey]) {
-                    for (const tipo in progressData[usinaKey][linha]) {
-                        completedByType[tipo] = (completedByType[tipo] || 0) + (progressData[usinaKey][linha][tipo] || 0);
+                        totalByType[tipo] = (totalByType[tipo] || 0) + totalBases;
+                        completedByType[tipo] = (completedByType[tipo] || 0) + completedBases;
+
+                        // Determinar se a linha está completa ou pendente para este tipo
+                        if (completedBases >= totalBases) {
+                            linesByType[tipo].completed.push(linha);
+                        } else {
+                            linesByType[tipo].pending.push(linha);
+                        }
                     }
                 }
             }
@@ -5991,6 +6123,9 @@
                     <div class="bar-percentage">${percentage}%</div>
                 `;
 
+                // Adicionar tooltip com detalhes
+                addProgressTooltip(barItem, tipo, linesByType[tipo], usinaKey);
+
                 container.appendChild(barItem);
             });
         }
@@ -6004,10 +6139,12 @@
             // Calcular totais por tipo para Oficina
             const totalByType = {};
             const completedByType = {};
+            const linesByType = {}; // Rastrear quais linhas têm cada tipo
 
             for (const tipo of tipos) {
                 totalByType[tipo] = 0;
                 completedByType[tipo] = 0;
+                linesByType[tipo] = { completed: [], pending: [] };
             }
 
             // Calcular totais de Oficina
@@ -6015,16 +6152,20 @@
                 for (const linha in projectData[usinaKey].linhas) {
                     const bases = projectData[usinaKey].linhas[linha].bases;
                     for (const tipo in bases) {
-                        totalByType[tipo] = (totalByType[tipo] || 0) + bases[tipo];
-                    }
-                }
-            }
+                        const totalBases = bases[tipo];
+                        const completedBases = (progressData[usinaKey] && progressData[usinaKey][linha])
+                            ? (progressData[usinaKey][linha][tipo] || 0)
+                            : 0;
 
-            // Calcular totais concluídos de Oficina
-            if (progressData[usinaKey]) {
-                for (const linha in progressData[usinaKey]) {
-                    for (const tipo in progressData[usinaKey][linha]) {
-                        completedByType[tipo] = (completedByType[tipo] || 0) + (progressData[usinaKey][linha][tipo] || 0);
+                        totalByType[tipo] = (totalByType[tipo] || 0) + totalBases;
+                        completedByType[tipo] = (completedByType[tipo] || 0) + completedBases;
+
+                        // Determinar se a linha está completa ou pendente para este tipo
+                        if (completedBases >= totalBases) {
+                            linesByType[tipo].completed.push(linha);
+                        } else {
+                            linesByType[tipo].pending.push(linha);
+                        }
                     }
                 }
             }
@@ -6058,6 +6199,9 @@
                     </div>
                     <div class="bar-percentage">${percentage}%</div>
                 `;
+
+                // Adicionar tooltip com detalhes
+                addProgressTooltip(barItem, tipo, linesByType[tipo], usinaKey);
 
                 container.appendChild(barItem);
             });
