@@ -161,6 +161,12 @@ lineStepsStatus = {
 - **Manual:** Upload `index.html` + logo files to any static host
 - **URL:** https://linhasdevida.vercel.app
 
+**Git Workflow:**
+- **IMPORTANTE:** Todas as mensagens de commit devem ser em **português**
+- Formato: Descrição clara da mudança em português
+- Exemplo: `git commit -m "Adicionar modal de detalhes para linhas individuais"`
+- Evitar commits em inglês
+
 ## Project Structure
 
 ```
