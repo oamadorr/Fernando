@@ -935,6 +935,12 @@
             transform: translateY(-50%);
         }
 
+        .map-line.vertical.left:hover,
+        .map-line.vertical.right:hover {
+            transform: translateY(-50%) scale(1.1);
+            z-index: 25;
+        }
+
         /* Layout Pimental - Posicionamento Absoluto */
         .pimental-layout .map-line {
             position: absolute;
