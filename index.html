@@ -725,7 +725,7 @@
             font-size: 0.65rem;
             border-radius: 16px;
             border: none;
-            cursor: pointer;
+            cursor: not-allowed;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-weight: 600;
             text-transform: uppercase;
@@ -737,6 +737,15 @@
             gap: 4px;
             min-width: 80px;
             justify-content: center;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        /* Modo de edição ativo */
+        .data-table.edit-mode .step-toggle {
+            cursor: pointer;
+            pointer-events: auto;
+            opacity: 1;
         }
 
         .step-toggle::before {
@@ -3024,7 +3033,23 @@
                         <span id="pimentalFilterResults">Mostrando 6 de 6 linhas</span>
                     </div>
                 </div>
-                
+
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
+                    <div id="pimentalViewButtons">
+                        <button type="button" class="btn btn-primary btn-small" onclick="enableTableEdit('pimental')">
+                            <i class="fas fa-edit"></i> Editar Etapas
+                        </button>
+                    </div>
+                    <div id="pimentalEditButtons" style="display: none; gap: 10px;">
+                        <button type="button" class="btn btn-primary btn-small" onclick="saveTableEdit('pimental')">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="cancelTableEdit('pimental')">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+
                 <div class="table-container">
                     <table class="data-table" id="tablePimental">
                         <thead>
@@ -3090,7 +3115,23 @@
                         <span id="beloMonteFilterResults">Mostrando 20 de 20 linhas</span>
                     </div>
                 </div>
-                
+
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
+                    <div id="beloMonteViewButtons">
+                        <button type="button" class="btn btn-primary btn-small" onclick="enableTableEdit('belo-monte')">
+                            <i class="fas fa-edit"></i> Editar Etapas
+                        </button>
+                    </div>
+                    <div id="beloMonteEditButtons" style="display: none; gap: 10px;">
+                        <button type="button" class="btn btn-primary btn-small" onclick="saveTableEdit('belo-monte')">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="cancelTableEdit('belo-monte')">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+
                 <div class="table-container">
                     <table class="data-table" id="tableBeloMonte">
                         <thead>
@@ -3154,6 +3195,22 @@
                     </div>
                     <div class="filter-results">
                         <span id="oficinaFilterResults">Mostrando 3 de 3 linhas</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
+                    <div id="oficinaViewButtons">
+                        <button type="button" class="btn btn-primary btn-small" onclick="enableTableEdit('oficina')">
+                            <i class="fas fa-edit"></i> Editar Etapas
+                        </button>
+                    </div>
+                    <div id="oficinaEditButtons" style="display: none; gap: 10px;">
+                        <button type="button" class="btn btn-primary btn-small" onclick="saveTableEdit('oficina')">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="cancelTableEdit('oficina')">
+                            Cancelar
+                        </button>
                     </div>
                 </div>
 
@@ -6214,6 +6271,85 @@
                     mini.classList.add('pending');
                 }
             });
+        }
+
+        // Funções para modo de edição das tabelas principais
+        let tableEditBackup = null;
+
+        function enableTableEdit(usinaKey) {
+            // Fazer backup do estado atual
+            tableEditBackup = JSON.parse(JSON.stringify(lineStepsStatus));
+
+            // Ativar modo de edição na tabela
+            const tableId = usinaKey === 'pimental' ? 'tablePimental' :
+                           usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
+            const table = document.getElementById(tableId);
+            table.classList.add('edit-mode');
+
+            // Alternar botões
+            const buttonPrefix = usinaKey === 'pimental' ? 'pimental' :
+                                usinaKey === 'belo-monte' ? 'beloMonte' : 'oficina';
+            document.getElementById(`${buttonPrefix}ViewButtons`).style.display = 'none';
+            document.getElementById(`${buttonPrefix}EditButtons`).style.display = 'flex';
+        }
+
+        function cancelTableEdit(usinaKey) {
+            // Restaurar backup
+            if (tableEditBackup) {
+                lineStepsStatus = JSON.parse(JSON.stringify(tableEditBackup));
+                tableEditBackup = null;
+            }
+
+            // Desativar modo de edição
+            const tableId = usinaKey === 'pimental' ? 'tablePimental' :
+                           usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
+            const table = document.getElementById(tableId);
+            table.classList.remove('edit-mode');
+
+            // Alternar botões
+            const buttonPrefix = usinaKey === 'pimental' ? 'pimental' :
+                                usinaKey === 'belo-monte' ? 'beloMonte' : 'oficina';
+            document.getElementById(`${buttonPrefix}ViewButtons`).style.display = 'block';
+            document.getElementById(`${buttonPrefix}EditButtons`).style.display = 'none';
+
+            // Recarregar tabela com dados originais
+            updateTable(usinaKey, tableId);
+        }
+
+        async function saveTableEdit(usinaKey) {
+            try {
+                // Salvar no localStorage
+                saveLineStepsToStorage();
+
+                // Salvar no Firebase se configurado
+                if (typeof db !== 'undefined') {
+                    await saveLineStepsToFirebase();
+                }
+
+                // Limpar backup
+                tableEditBackup = null;
+
+                // Atualizar displays
+                updateAllDisplays();
+                updateTransversalVisuals();
+
+                // Desativar modo de edição
+                const tableId = usinaKey === 'pimental' ? 'tablePimental' :
+                               usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
+                const table = document.getElementById(tableId);
+                table.classList.remove('edit-mode');
+
+                // Alternar botões
+                const buttonPrefix = usinaKey === 'pimental' ? 'pimental' :
+                                    usinaKey === 'belo-monte' ? 'beloMonte' : 'oficina';
+                document.getElementById(`${buttonPrefix}ViewButtons`).style.display = 'block';
+                document.getElementById(`${buttonPrefix}EditButtons`).style.display = 'none';
+
+                showToast('Progresso atualizado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                showToast('Erro ao salvar progresso', 'error');
+            }
         }
 
         function toggleAllBases(checkbox) {
