@@ -6151,6 +6151,13 @@
         let transversalEditBackup = null;
 
         function enableTransversalEdit() {
+            // Verificar autenticação antes de permitir edição
+            if (!isAuthenticated) {
+                pendingAction = () => enableTransversalEdit();
+                showPasswordModal();
+                return;
+            }
+
             // Fazer backup do estado atual
             transversalEditBackup = JSON.parse(JSON.stringify(lineStepsStatus));
 
@@ -6277,6 +6284,13 @@
         let tableEditBackup = null;
 
         function enableTableEdit(usinaKey) {
+            // Verificar autenticação antes de permitir edição
+            if (!isAuthenticated) {
+                pendingAction = () => enableTableEdit(usinaKey);
+                showPasswordModal();
+                return;
+            }
+
             // Fazer backup do estado atual
             tableEditBackup = JSON.parse(JSON.stringify(lineStepsStatus));
 
@@ -6487,12 +6501,19 @@
 
         // Função para alternar status das etapas do cabo
         function toggleStep(usinaKey, linha, step) {
-            if (!isAuthenticated) {
+            // Verificar se está em modo de edição
+            const tableId = usinaKey === 'pimental' ? 'tablePimental' :
+                           usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
+            const table = document.getElementById(tableId);
+            const isEditMode = table && table.classList.contains('edit-mode');
+
+            // Se NÃO estiver em modo de edição, pedir autenticação
+            if (!isEditMode && !isAuthenticated) {
                 pendingAction = () => toggleStep(usinaKey, linha, step);
                 showPasswordModal();
                 return;
             }
-            
+
             // Garantir que a estrutura existe
             if (!lineStepsStatus[usinaKey]) {
                 lineStepsStatus[usinaKey] = {};
@@ -6500,15 +6521,25 @@
             if (!lineStepsStatus[usinaKey][linha]) {
                 lineStepsStatus[usinaKey][linha] = { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false };
             }
-            
+
             // Alternar o status
             const oldValue = lineStepsStatus[usinaKey][linha][step];
             lineStepsStatus[usinaKey][linha][step] = !lineStepsStatus[usinaKey][linha][step];
             const newValue = lineStepsStatus[usinaKey][linha][step];
-            
+
+            // Se estiver em modo de edição, apenas atualizar visual
+            if (isEditMode) {
+                // Atualizar apenas o visual do botão
+                const tableIdForUpdate = usinaKey === 'pimental' ? 'tablePimental' :
+                                        usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
+                updateTable(usinaKey, tableIdForUpdate);
+                return;
+            }
+
+            // Caso contrário, salvar normalmente
             // Salvar no localStorage sempre
             saveLineStepsToStorage();
-            
+
             // Salvar no Firebase se disponível
             if (db && currentProjectId) {
                 try {
@@ -6519,16 +6550,16 @@
                     if (!teamConfig.dataAtual || !(teamConfig.dataAtual instanceof Date) || isNaN(teamConfig.dataAtual)) {
                         teamConfig.dataAtual = new Date();
                     }
-                    
+
                     saveProgressToFirebase();
                 } catch (error) {
                     console.error('Erro ao salvar no Firebase:', error);
                 }
             }
-            
+
             // Atualizar as tabelas
             updateAllDisplays();
-            
+
         }
 
 
