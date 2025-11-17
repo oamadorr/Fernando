@@ -5750,8 +5750,128 @@
             document.getElementById('mapTooltip').classList.remove('show');
         }
 
+        // Mostrar tooltip para grupos transversais
+        function showTransversalTooltip(event, usinaKey, grupo) {
+            const tooltip = document.getElementById('mapTooltip');
+            const usinaName = projectData[usinaKey].name;
+
+            // Extrair números das linhas do grupo (ex: "06-10" -> [06, 07, 08, 09, 10])
+            const [inicio, fim] = grupo.split('-').map(n => n.padStart(2, '0'));
+            const linhas = [];
+            for (let i = parseInt(inicio); i <= parseInt(fim); i++) {
+                linhas.push(i.toString().padStart(2, '0'));
+            }
+
+            // Calcular progresso agregado do grupo
+            let totalBases = 0;
+            let completedBases = 0;
+            const basesByType = {};
+
+            linhas.forEach(linha => {
+                const linhaData = projectData[usinaKey]?.linhas[linha];
+                if (!linhaData) return;
+
+                for (const tipo in linhaData.bases) {
+                    const total = linhaData.bases[tipo];
+                    const completed = (progressData[usinaKey]?.[linha]?.[tipo]) || 0;
+
+                    totalBases += total;
+                    completedBases += completed;
+
+                    if (!basesByType[tipo]) {
+                        basesByType[tipo] = { total: 0, completed: 0 };
+                    }
+                    basesByType[tipo].total += total;
+                    basesByType[tipo].completed += completed;
+                }
+            });
+
+            const progress = totalBases > 0 ? Math.round((completedBases / totalBases) * 100) : 0;
+
+            let status = '';
+            if (progress === 100) {
+                status = 'Concluído';
+            } else if (progress > 0) {
+                status = 'Em Andamento';
+            } else {
+                status = 'Pendente';
+            }
+
+            // Separar bases completas e pendentes
+            const basesCompleted = [];
+            const basesPending = [];
+
+            for (const tipo in basesByType) {
+                const { total, completed } = basesByType[tipo];
+                if (completed >= total) {
+                    basesCompleted.push(`${tipo} (${completed}/${total})`);
+                } else if (completed > 0) {
+                    basesPending.push(`${tipo} (${completed}/${total})`);
+                } else {
+                    basesPending.push(`${tipo} (0/${total})`);
+                }
+            }
+
+            // Construir conteúdo do tooltip
+            let tooltipHTML = `
+                <div class="tooltip-line">${usinaName} - Linhas ${grupo}</div>
+                <div class="tooltip-progress">Progresso: ${progress}% (${completedBases}/${totalBases} bases)</div>
+                <div class="tooltip-status">Status: ${status}</div>
+            `;
+
+            if (basesCompleted.length > 0) {
+                tooltipHTML += `
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <div style="color: #10b981; font-weight: 600; font-size: 0.75rem; margin-bottom: 4px;">✅ Concluídas:</div>
+                        <div style="color: rgba(255,255,255,0.9); font-size: 0.75rem;">${basesCompleted.join(', ')}</div>
+                    </div>
+                `;
+            }
+
+            if (basesPending.length > 0) {
+                tooltipHTML += `
+                    <div style="margin-top: 6px;">
+                        <div style="color: #f59e0b; font-weight: 600; font-size: 0.75rem; margin-bottom: 4px;">⏳ Pendentes:</div>
+                        <div style="color: rgba(255,255,255,0.9); font-size: 0.75rem;">${basesPending.join(', ')}</div>
+                    </div>
+                `;
+            }
+
+            tooltip.querySelector('.tooltip-content').innerHTML = tooltipHTML;
+
+            // Posicionar tooltip
+            const groupElement = event.currentTarget;
+            const groupRect = groupElement.getBoundingClientRect();
+
+            tooltip.style.visibility = 'hidden';
+            tooltip.classList.add('show');
+            const tooltipRect = tooltip.getBoundingClientRect();
+            tooltip.classList.remove('show');
+            tooltip.style.visibility = 'visible';
+
+            let left = groupRect.left + (groupRect.width / 2) - (tooltipRect.width / 2) + window.pageXOffset;
+            let top = groupRect.top - tooltipRect.height - 10 + window.pageYOffset;
+
+            if (left < 10) {
+                left = 10;
+            }
+
+            if (left + tooltipRect.width > window.innerWidth - 10) {
+                left = window.innerWidth - tooltipRect.width - 10;
+            }
+
+            if (top < window.pageYOffset + 10) {
+                top = groupRect.bottom + 10 + window.pageYOffset;
+            }
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.classList.add('show');
+        }
+
         // Adicionar event listeners para linhas do mapa
         function initializeMapEvents() {
+            // Event listeners para linhas individuais
             document.querySelectorAll('.map-line').forEach(line => {
                 const usinaKey = line.dataset.usina;
                 const linha = line.dataset.linha;
@@ -5769,6 +5889,21 @@
                 });
 
                 line.addEventListener('mouseleave', () => {
+                    hideMapTooltip();
+                });
+            });
+
+            // Event listeners para grupos transversais
+            document.querySelectorAll('.transversal-group').forEach(group => {
+                const usinaKey = group.dataset.usina;
+                const grupo = group.dataset.grupo;
+
+                // Hover para tooltip
+                group.addEventListener('mouseenter', (event) => {
+                    showTransversalTooltip(event, usinaKey, grupo);
+                });
+
+                group.addEventListener('mouseleave', () => {
                     hideMapTooltip();
                 });
             });
