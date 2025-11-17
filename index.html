@@ -5651,10 +5651,12 @@
                 const usinaKey = line.dataset.usina;
                 const linha = line.dataset.linha;
 
-                // Click para abrir modal
-                line.addEventListener('click', () => {
-                    openLineModal(usinaKey, linha);
-                });
+                // Click para abrir modal - só se não tiver onclick definido
+                if (!line.hasAttribute('onclick')) {
+                    line.addEventListener('click', () => {
+                        openLineModal(usinaKey, linha);
+                    });
+                }
 
                 // Hover para tooltip
                 line.addEventListener('mouseenter', (event) => {
