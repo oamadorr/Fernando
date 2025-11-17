@@ -6527,15 +6527,15 @@
             document.getElementById('lineDetailsInfo').textContent =
                 `${usinaName} - Linha ${linha} (${linhaData.metragem}m)`;
 
-            // Criar cabeçalho da tabela (formato horizontal como transversais)
+            // Criar cabeçalho da tabela (formato horizontal compacto)
             const thead = document.getElementById('lineDetailsTableHead');
             const baseTipos = Object.keys(linhaData.bases);
 
             let headerHTML = '<tr><th>Linha</th><th>Metragem</th>';
 
-            // Adicionar colunas para cada tipo de base
+            // Adicionar uma coluna para cada tipo de base (formato X/Y)
             baseTipos.forEach(tipo => {
-                headerHTML += `<th>Bases ${tipo}</th><th>Concluídas</th>`;
+                headerHTML += `<th>${tipo}</th>`;
             });
 
             headerHTML += '<th>Progresso</th><th>Passagem</th><th>Crimpagem</th><th>Aferição</th><th>Tensionamento</th></tr>';
@@ -6547,7 +6547,7 @@
 
             let rowHTML = `<tr><td style="font-weight: bold; color: var(--primary-blue);">${linha}</td><td>${linhaData.metragem}m</td>`;
 
-            // Adicionar células para cada tipo de base
+            // Adicionar células para cada tipo de base (formato X/Y)
             let totalCompleted = 0;
             let totalBases = 0;
             baseTipos.forEach(tipo => {
@@ -6557,11 +6557,11 @@
                 totalBases += total;
 
                 rowHTML += `
-                    <td>${total}</td>
                     <td class="editable-completed-cell" data-tipo="${tipo}" data-total="${total}">
-                        <span class="completed-display">${completed}</span>
+                        <span class="completed-display">${completed}/${total}</span>
                         <input type="number" class="completed-input" value="${completed}" min="0" max="${total}"
-                               style="display: none; width: 60px; text-align: center; padding: 4px; border: 2px solid var(--primary-blue); border-radius: 4px;">
+                               style="display: none; width: 50px; text-align: center; padding: 4px; border: 2px solid var(--primary-blue); border-radius: 4px;">
+                        <span class="total-display" style="display: none;">/${total}</span>
                     </td>
                 `;
             });
@@ -6619,12 +6619,15 @@
             // Ativar modo de edição
             document.getElementById('lineDetailsTable').classList.add('edit-mode');
 
-            // Mostrar inputs de bases
+            // Mostrar inputs de bases (formato X/Y -> input/Y)
             document.querySelectorAll('#lineDetailsBody .completed-display').forEach(span => {
                 span.style.display = 'none';
             });
             document.querySelectorAll('#lineDetailsBody .completed-input').forEach(input => {
                 input.style.display = 'inline-block';
+            });
+            document.querySelectorAll('#lineDetailsBody .total-display').forEach(span => {
+                span.style.display = 'inline';
             });
 
             // Adicionar event listeners nas etapas
