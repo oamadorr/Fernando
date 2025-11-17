@@ -1331,15 +1331,15 @@
             position: absolute;
             background: rgba(0, 0, 0, 0.9);
             color: var(--white);
-            padding: 10px 12px;
-            border-radius: 6px;
+            padding: 12px 16px;
+            border-radius: 8px;
             font-size: 0.85rem;
             z-index: 1000;
             pointer-events: none;
             opacity: 0;
             transform: translateY(10px);
             transition: all 0.2s ease;
-            max-width: 200px;
+            max-width: 350px;
             box-shadow: var(--shadow-lg);
         }
 
@@ -5662,14 +5662,64 @@
 
             const usinaName = projectData[usinaKey].name;
 
-            tooltip.querySelector('.tooltip-line').textContent = `${usinaName} - Linha ${linha}`;
-            tooltip.querySelector('.tooltip-progress').textContent = `Progresso: ${progress}%`;
-            tooltip.querySelector('.tooltip-status').textContent = `Status: ${status}`;
+            // Obter informações das bases para esta linha
+            const linhaData = projectData[usinaKey]?.linhas[linha];
+            if (!linhaData) return;
+
+            const basesCompleted = [];
+            const basesPending = [];
+
+            // Verificar cada tipo de base nesta linha
+            for (const tipo in linhaData.bases) {
+                const total = linhaData.bases[tipo];
+                const completed = (progressData[usinaKey]?.[linha]?.[tipo]) || 0;
+
+                if (completed >= total) {
+                    basesCompleted.push(`${tipo} (${completed}/${total})`);
+                } else if (completed > 0) {
+                    basesPending.push(`${tipo} (${completed}/${total})`);
+                } else {
+                    basesPending.push(`${tipo} (0/${total})`);
+                }
+            }
+
+            // Construir conteúdo do tooltip
+            let tooltipHTML = `
+                <div class="tooltip-line">${usinaName} - Linha ${linha}</div>
+                <div class="tooltip-progress">Progresso: ${progress}%</div>
+                <div class="tooltip-status">Status: ${status}</div>
+            `;
+
+            if (basesCompleted.length > 0) {
+                tooltipHTML += `
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <div style="color: #10b981; font-weight: 600; font-size: 0.75rem; margin-bottom: 4px;">✅ Concluídas:</div>
+                        <div style="color: rgba(255,255,255,0.9); font-size: 0.75rem;">${basesCompleted.join(', ')}</div>
+                    </div>
+                `;
+            }
+
+            if (basesPending.length > 0) {
+                tooltipHTML += `
+                    <div style="margin-top: 6px;">
+                        <div style="color: #f59e0b; font-weight: 600; font-size: 0.75rem; margin-bottom: 4px;">⏳ Pendentes:</div>
+                        <div style="color: rgba(255,255,255,0.9); font-size: 0.75rem;">${basesPending.join(', ')}</div>
+                    </div>
+                `;
+            }
+
+            tooltip.querySelector('.tooltip-content').innerHTML = tooltipHTML;
 
             // Posicionar tooltip fixo em relação ao elemento
             const lineElement = event.currentTarget;
             const lineRect = lineElement.getBoundingClientRect();
+
+            // Mostrar tooltip temporariamente para obter suas dimensões
+            tooltip.style.visibility = 'hidden';
+            tooltip.classList.add('show');
             const tooltipRect = tooltip.getBoundingClientRect();
+            tooltip.classList.remove('show');
+            tooltip.style.visibility = 'visible';
 
             // Posição preferencial: acima e centralizado no elemento
             let left = lineRect.left + (lineRect.width / 2) - (tooltipRect.width / 2) + window.pageXOffset;
