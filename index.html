@@ -742,7 +742,9 @@
         }
 
         /* Modo de edição ativo */
-        .data-table.edit-mode .step-toggle {
+        .data-table.edit-mode .step-toggle,
+        .data-table.edit-mode .step-toggle.step-done,
+        .data-table.edit-mode .step-toggle.step-pending {
             cursor: pointer !important;
             pointer-events: auto !important;
             opacity: 1 !important;
@@ -6457,6 +6459,14 @@
             const table = document.getElementById(tableId);
             table.classList.add('edit-mode');
 
+            // Habilitar botões de etapas explicitamente
+            const buttons = table.querySelectorAll('.step-toggle');
+            buttons.forEach(btn => {
+                btn.style.pointerEvents = 'auto';
+                btn.style.cursor = 'pointer';
+                btn.style.opacity = '1';
+            });
+
             // Alternar botões
             const buttonPrefix = usinaKey === 'pimental' ? 'pimental' :
                                 usinaKey === 'belo-monte' ? 'beloMonte' : 'oficina';
@@ -6476,6 +6486,14 @@
                            usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
             const table = document.getElementById(tableId);
             table.classList.remove('edit-mode');
+
+            // Desabilitar botões de etapas explicitamente
+            const buttons = table.querySelectorAll('.step-toggle');
+            buttons.forEach(btn => {
+                btn.style.pointerEvents = '';
+                btn.style.cursor = '';
+                btn.style.opacity = '';
+            });
 
             // Alternar botões
             const buttonPrefix = usinaKey === 'pimental' ? 'pimental' :
@@ -6510,6 +6528,14 @@
                                usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
                 const table = document.getElementById(tableId);
                 table.classList.remove('edit-mode');
+
+                // Desabilitar botões de etapas explicitamente
+                const buttons = table.querySelectorAll('.step-toggle');
+                buttons.forEach(btn => {
+                    btn.style.pointerEvents = '';
+                    btn.style.cursor = '';
+                    btn.style.opacity = '';
+                });
 
                 // Alternar botões
                 const buttonPrefix = usinaKey === 'pimental' ? 'pimental' :
@@ -6917,6 +6943,14 @@
                 const tableIdForUpdate = usinaKey === 'pimental' ? 'tablePimental' :
                                         usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
                 updateTable(usinaKey, tableIdForUpdate);
+
+                // Re-habilitar botões após regenerar tabela
+                const buttons = table.querySelectorAll('.step-toggle');
+                buttons.forEach(btn => {
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.cursor = 'pointer';
+                    btn.style.opacity = '1';
+                });
                 return;
             }
 
