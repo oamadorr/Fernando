@@ -2121,14 +2121,29 @@
 
         /* Modal de Linhas Transversais */
         .transversal-modal-content {
-            max-width: 95%;
-            width: 1100px;
+            max-width: 98%;
+            width: 1400px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .transversal-table-wrapper {
             overflow-x: auto;
             margin: 0 -10px;
             padding: 0 10px;
+            width: 100%;
+        }
+
+        .transversal-details-table {
+            min-width: 100%;
+            width: max-content;
+        }
+
+        .transversal-details-table th,
+        .transversal-details-table td {
+            white-space: nowrap;
+            padding: 8px 10px;
+            font-size: 0.85rem;
         }
 
         #transversalLinesTable th,
