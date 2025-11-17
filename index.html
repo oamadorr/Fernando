@@ -6279,8 +6279,7 @@
                 saveProgressToStorage();
 
                 // Salvar no Firebase se configurado
-                if (typeof db !== 'undefined') {
-                    await saveLineStepsToFirebase();
+                if (db && currentProjectId) {
                     await saveProgressToFirebase();
                 }
 
@@ -6403,10 +6402,11 @@
             try {
                 // Salvar no localStorage
                 saveLineStepsToStorage();
+                saveProgressToStorage();
 
                 // Salvar no Firebase se configurado
-                if (typeof db !== 'undefined') {
-                    await saveLineStepsToFirebase();
+                if (db && currentProjectId) {
+                    await saveProgressToFirebase();
                 }
 
                 // Limpar backup
