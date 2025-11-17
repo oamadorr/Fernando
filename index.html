@@ -6443,22 +6443,13 @@
         let tableEditBackup = null;
 
         function enableTableEdit(usinaKey) {
-            console.log('🔧 enableTableEdit chamado com usinaKey:', usinaKey);
-            console.log('🔧 isAuthenticated:', isAuthenticated);
-
             // Verificar autenticação antes de permitir edição
             if (!isAuthenticated) {
-                console.log('🔧 Não autenticado, definindo pendingAction e mostrando modal');
-                pendingAction = () => {
-                    console.log('🔧 pendingAction executando agora!');
-                    enableTableEdit(usinaKey);
-                };
-                console.log('🔧 pendingAction definido:', typeof pendingAction);
+                pendingAction = () => enableTableEdit(usinaKey);
                 showPasswordModal();
                 return;
             }
 
-            console.log('🔧 Autenticado! Continuando com enableTableEdit');
             // Fazer backup do estado atual
             tableEditBackup = JSON.parse(JSON.stringify(lineStepsStatus));
 
@@ -6882,12 +6873,10 @@
             const passwordHash = await calculateSHA256(password);
 
             if (passwordHash === PROJECT_PASSWORD_HASH) {
-                console.log('🔐 Senha correta! Autenticando...');
                 isAuthenticated = true;
 
                 // Salvar pendingAction ANTES de fechar o modal (que reseta para null)
                 const actionToExecute = pendingAction;
-                console.log('🔐 pendingAction salvo:', typeof actionToExecute);
 
                 // Fechar modal e limpar estado
                 closePasswordModal();
@@ -6895,17 +6884,11 @@
 
                 // Executar ação pendente DEPOIS de fechar modal
                 if (actionToExecute) {
-                    console.log('🔐 Executando ação pendente...');
                     if (typeof actionToExecute === 'function') {
-                        console.log('🔐 Executando função...');
                         actionToExecute();
-                        console.log('🔐 Função executada!');
                     } else if (actionToExecute === 'openUpdate') {
-                        console.log('🔐 Abrindo modal de atualização');
                         document.getElementById('updateModal').style.display = 'block';
                     }
-                } else {
-                    console.log('🔐 Nenhuma ação pendente para executar');
                 }
                 
                 // Autenticação expira em 10 minutos
