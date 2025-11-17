@@ -6443,13 +6443,22 @@
         let tableEditBackup = null;
 
         function enableTableEdit(usinaKey) {
+            console.log('🔧 enableTableEdit chamado com usinaKey:', usinaKey);
+            console.log('🔧 isAuthenticated:', isAuthenticated);
+
             // Verificar autenticação antes de permitir edição
             if (!isAuthenticated) {
-                pendingAction = () => enableTableEdit(usinaKey);
+                console.log('🔧 Não autenticado, definindo pendingAction e mostrando modal');
+                pendingAction = () => {
+                    console.log('🔧 pendingAction executando agora!');
+                    enableTableEdit(usinaKey);
+                };
+                console.log('🔧 pendingAction definido:', typeof pendingAction);
                 showPasswordModal();
                 return;
             }
 
+            console.log('🔧 Autenticado! Continuando com enableTableEdit');
             // Fazer backup do estado atual
             tableEditBackup = JSON.parse(JSON.stringify(lineStepsStatus));
 
@@ -6873,18 +6882,26 @@
             const passwordHash = await calculateSHA256(password);
 
             if (passwordHash === PROJECT_PASSWORD_HASH) {
+                console.log('🔐 Senha correta! Autenticando...');
                 isAuthenticated = true;
                 closePasswordModal();
                 hideReadOnlyNotice();
-                
+
+                console.log('🔐 Verificando pendingAction:', typeof pendingAction);
                 // Executar ação pendente
                 if (pendingAction) {
+                    console.log('🔐 pendingAction existe! Tipo:', typeof pendingAction);
                     if (typeof pendingAction === 'function') {
+                        console.log('🔐 Executando pendingAction...');
                         pendingAction();
+                        console.log('🔐 pendingAction executado!');
                     } else if (pendingAction === 'openUpdate') {
+                        console.log('🔐 pendingAction é openUpdate');
                         document.getElementById('updateModal').style.display = 'block';
                     }
                     pendingAction = null;
+                } else {
+                    console.log('🔐 Nenhuma pendingAction para executar');
                 }
                 
                 // Autenticação expira em 10 minutos
