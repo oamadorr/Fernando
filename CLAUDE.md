@@ -167,6 +167,71 @@ lineStepsStatus = {
 - Exemplo: `git commit -m "Adicionar modal de detalhes para linhas individuais"`
 - Evitar commits em inglês
 
+## Testing Strategy
+
+**Quando usar Playwright (via Node.js):**
+
+Use testes automatizados com Playwright para:
+- ✅ Bugs de interação complexa (modais, autenticação, estados assíncronos)
+- ✅ Problemas que envolvem múltiplos componentes interagindo
+- ✅ Quando logs do console são necessários para debug
+- ✅ Fluxos completos de usuário (login → ação → salvamento)
+- ✅ Bugs sutis onde o problema não é óbvio no código
+- ✅ Quando preciso verificar comportamento visual ou timing
+
+**Quando NÃO usar Playwright:**
+
+Para mudanças simples, apenas leia código e edite:
+- ⚡ Correções de CSS/estilo óbvias
+- ⚡ Mudanças de texto ou conteúdo
+- ⚡ Bugs de lógica simples visíveis no código
+- ⚡ Refatorações onde sei exatamente o que mudar
+
+**Estrutura de teste Playwright:**
+
+```javascript
+const { chromium } = require('playwright');
+
+(async () => {
+  const browser = await chromium.launch({ headless: false }); // Visual
+  const page = await browser.newPage();
+
+  // Capturar logs do console
+  page.on('console', msg => {
+    const text = msg.text();
+    if (text.includes('🔧') || text.includes('🔐')) {
+      console.log(`[CONSOLE] ${text}`);
+    }
+  });
+
+  await page.goto('https://linhasdevida.vercel.app');
+  await page.waitForTimeout(2000);
+
+  // Testes aqui...
+  const result = await page.evaluate(() => {
+    // JavaScript no contexto do browser
+    return { ... };
+  });
+
+  console.log('Resultado:', result);
+  await browser.close();
+})();
+```
+
+**Setup:**
+```bash
+cd /tmp
+npm install playwright
+npx playwright install chromium
+node test_script.js
+```
+
+**Exemplo de caso resolvido com Playwright:**
+- Bug: Botões de etapas não clicáveis após autenticação
+- Descoberta via logs: `pendingAction` era `function` mas virava `null` antes de executar
+- Causa: `closePasswordModal()` resetava `pendingAction` antes de `checkPassword()` executá-la
+- Solução: Salvar `pendingAction` em variável local antes de fechar modal
+
 ## Project Structure
 
 ```
