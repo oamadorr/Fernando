@@ -6897,6 +6897,13 @@
             const table = document.getElementById(tableId);
             const isEditMode = table && table.classList.contains('edit-mode');
 
+            // Se NÃO estiver autenticado e NÃO estiver em modo de edição, pedir senha
+            if (!isAuthenticated && !isEditMode) {
+                pendingAction = () => toggleStep(usinaKey, linha, step);
+                showPasswordModal();
+                return;
+            }
+
             // Garantir que a estrutura existe
             if (!lineStepsStatus[usinaKey]) {
                 lineStepsStatus[usinaKey] = {};
