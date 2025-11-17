@@ -2128,6 +2128,22 @@
             white-space: nowrap;
         }
 
+        /* Células editáveis no modo de edição */
+        #transversalLinesTable.edit-mode .editable-step {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        #transversalLinesTable.edit-mode .editable-step:hover {
+            background-color: var(--light-blue);
+            transform: scale(1.1);
+        }
+
+        #transversalLinesTable.edit-mode .editable-step:active {
+            transform: scale(0.95);
+        }
+
         @media (max-width: 768px) {
             .transversal-modal-content {
                 width: 95%;
@@ -3324,8 +3340,17 @@
                     </table>
                 </div>
 
-                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                <div id="transversalViewButtons" style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-primary" onclick="enableTransversalEdit()">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
                     <button type="button" class="btn btn-secondary" onclick="closeTransversalModal()">Fechar</button>
+                </div>
+                <div id="transversalEditButtons" style="display: none; gap: 15px; justify-content: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-primary" onclick="saveTransversalEdit()">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelTransversalEdit()">Cancelar</button>
                 </div>
             </div>
         </div>
@@ -6030,6 +6055,8 @@
                 const statusClass = progress === 100 ? 'completed' : progress > 0 ? 'in-progress' : 'pending';
 
                 const row = document.createElement('tr');
+                row.dataset.usina = usinaKey;
+                row.dataset.linha = linha;
                 row.innerHTML = `
                     <td style="font-weight: bold; color: var(--primary-blue);">${linha}</td>
                     <td>${linhaData.metragem}m</td>
@@ -6041,14 +6068,19 @@
                             <span class="progress-text">${progress}%</span>
                         </div>
                     </td>
-                    <td>${steps.passagemCabo ? '✅' : '❌'}</td>
-                    <td>${steps.crimpagemCabo ? '✅' : '❌'}</td>
-                    <td>${steps.afericaoCrimpagem ? '✅' : '❌'}</td>
-                    <td>${steps.tensionamentoCabo ? '✅' : '❌'}</td>
+                    <td class="editable-step" data-step="passagemCabo">${steps.passagemCabo ? '✅' : '❌'}</td>
+                    <td class="editable-step" data-step="crimpagemCabo">${steps.crimpagemCabo ? '✅' : '❌'}</td>
+                    <td class="editable-step" data-step="afericaoCrimpagem">${steps.afericaoCrimpagem ? '✅' : '❌'}</td>
+                    <td class="editable-step" data-step="tensionamentoCabo">${steps.tensionamentoCabo ? '✅' : '❌'}</td>
                 `;
 
                 tbody.appendChild(row);
             });
+
+            // Resetar modo de visualização
+            document.getElementById('transversalLinesTable').classList.remove('edit-mode');
+            document.getElementById('transversalViewButtons').style.display = 'flex';
+            document.getElementById('transversalEditButtons').style.display = 'none';
 
             // Abrir modal
             document.getElementById('transversalModal').style.display = 'flex';
@@ -6056,6 +6088,112 @@
 
         function closeTransversalModal() {
             document.getElementById('transversalModal').style.display = 'none';
+        }
+
+        // Variável para armazenar estado original antes da edição
+        let transversalEditBackup = null;
+
+        function enableTransversalEdit() {
+            // Fazer backup do estado atual
+            transversalEditBackup = JSON.parse(JSON.stringify(lineStepsStatus));
+
+            // Ativar modo de edição
+            const table = document.getElementById('transversalLinesTable');
+            table.classList.add('edit-mode');
+
+            // Adicionar event listeners nas células editáveis
+            document.querySelectorAll('.editable-step').forEach(cell => {
+                cell.addEventListener('click', toggleStepStatus);
+            });
+
+            // Alternar botões
+            document.getElementById('transversalViewButtons').style.display = 'none';
+            document.getElementById('transversalEditButtons').style.display = 'flex';
+        }
+
+        function toggleStepStatus(event) {
+            const cell = event.currentTarget;
+            const row = cell.closest('tr');
+            const usinaKey = row.dataset.usina;
+            const linha = row.dataset.linha;
+            const step = cell.dataset.step;
+
+            // Inicializar estrutura se não existir
+            if (!lineStepsStatus[usinaKey]) lineStepsStatus[usinaKey] = {};
+            if (!lineStepsStatus[usinaKey][linha]) lineStepsStatus[usinaKey][linha] = {};
+
+            // Toggle status
+            const currentStatus = lineStepsStatus[usinaKey][linha][step] || false;
+            lineStepsStatus[usinaKey][linha][step] = !currentStatus;
+
+            // Atualizar visual
+            cell.textContent = lineStepsStatus[usinaKey][linha][step] ? '✅' : '❌';
+        }
+
+        function cancelTransversalEdit() {
+            // Restaurar backup
+            if (transversalEditBackup) {
+                lineStepsStatus = JSON.parse(JSON.stringify(transversalEditBackup));
+                transversalEditBackup = null;
+            }
+
+            // Desativar modo de edição
+            const table = document.getElementById('transversalLinesTable');
+            table.classList.remove('edit-mode');
+
+            // Remover event listeners
+            document.querySelectorAll('.editable-step').forEach(cell => {
+                cell.removeEventListener('click', toggleStepStatus);
+            });
+
+            // Alternar botões e recarregar dados
+            document.getElementById('transversalViewButtons').style.display = 'flex';
+            document.getElementById('transversalEditButtons').style.display = 'none';
+
+            // Recarregar modal com dados originais
+            const usinaKey = document.querySelector('#transversalLinesBody tr').dataset.usina;
+            const grupoText = document.getElementById('transversalGroupInfo').textContent;
+            const grupoMatch = grupoText.match(/Linhas (\d+-\d+)/);
+            if (grupoMatch) {
+                showTransversalDetails(usinaKey, grupoMatch[1]);
+            }
+        }
+
+        async function saveTransversalEdit() {
+            try {
+                // Salvar no localStorage
+                saveLineStepsToStorage();
+
+                // Salvar no Firebase se configurado
+                if (typeof db !== 'undefined') {
+                    await saveLineStepsToFirebase();
+                }
+
+                // Limpar backup
+                transversalEditBackup = null;
+
+                // Atualizar displays
+                updateAllDisplays();
+                updateTransversalVisuals();
+
+                // Desativar modo de edição
+                const table = document.getElementById('transversalLinesTable');
+                table.classList.remove('edit-mode');
+
+                // Remover event listeners
+                document.querySelectorAll('.editable-step').forEach(cell => {
+                    cell.removeEventListener('click', toggleStepStatus);
+                });
+
+                // Alternar botões
+                document.getElementById('transversalViewButtons').style.display = 'flex';
+                document.getElementById('transversalEditButtons').style.display = 'none';
+
+                showToast('Progresso atualizado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                showToast('Erro ao salvar progresso', 'error');
+            }
         }
 
         // Atualizar visuais dos grupos transversais no mapa
