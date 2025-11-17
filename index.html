@@ -2153,6 +2153,22 @@
             transform: scale(0.95);
         }
 
+        /* Estilo para células de bases concluídas */
+        .editable-completed-cell {
+            position: relative;
+        }
+
+        .completed-input {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .completed-input:focus {
+            outline: none;
+            border-color: var(--success-green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
         @media (max-width: 768px) {
             .transversal-modal-content {
                 width: 95%;
@@ -6114,12 +6130,16 @@
                 const row = document.createElement('tr');
                 row.dataset.usina = usinaKey;
                 row.dataset.linha = linha;
+                row.dataset.total = total;
                 row.innerHTML = `
                     <td style="font-weight: bold; color: var(--primary-blue);">${linha}</td>
                     <td>${linhaData.metragem}m</td>
                     <td>${total}</td>
-                    <td>${completed}</td>
-                    <td>
+                    <td class="editable-completed-cell">
+                        <span class="completed-display">${completed}</span>
+                        <input type="number" class="completed-input" value="${completed}" min="0" max="${total}" style="display: none; width: 60px; text-align: center; padding: 4px; border: 2px solid var(--primary-blue); border-radius: 4px;">
+                    </td>
+                    <td class="progress-cell">
                         <div class="progress-bar" style="margin: 0;">
                             <div class="progress-fill ${statusClass}" style="width: ${progress}%"></div>
                             <span class="progress-text">${progress}%</span>
@@ -6158,16 +6178,27 @@
                 return;
             }
 
-            // Fazer backup do estado atual
-            transversalEditBackup = JSON.parse(JSON.stringify(lineStepsStatus));
+            // Fazer backup do estado atual (incluindo progressData)
+            transversalEditBackup = {
+                steps: JSON.parse(JSON.stringify(lineStepsStatus)),
+                progress: JSON.parse(JSON.stringify(progressData))
+            };
 
             // Ativar modo de edição
             const table = document.getElementById('transversalLinesTable');
             table.classList.add('edit-mode');
 
-            // Adicionar event listeners nas células editáveis
+            // Adicionar event listeners nas células editáveis das etapas
             document.querySelectorAll('.editable-step').forEach(cell => {
                 cell.addEventListener('click', toggleStepStatus);
+            });
+
+            // Mostrar inputs de bases concluídas e esconder displays
+            document.querySelectorAll('.completed-display').forEach(span => {
+                span.style.display = 'none';
+            });
+            document.querySelectorAll('.completed-input').forEach(input => {
+                input.style.display = 'inline-block';
             });
 
             // Alternar botões
@@ -6197,7 +6228,8 @@
         function cancelTransversalEdit() {
             // Restaurar backup
             if (transversalEditBackup) {
-                lineStepsStatus = JSON.parse(JSON.stringify(transversalEditBackup));
+                lineStepsStatus = JSON.parse(JSON.stringify(transversalEditBackup.steps));
+                progressData = JSON.parse(JSON.stringify(transversalEditBackup.progress));
                 transversalEditBackup = null;
             }
 
@@ -6215,7 +6247,9 @@
             document.getElementById('transversalEditButtons').style.display = 'none';
 
             // Recarregar modal com dados originais
-            const usinaKey = document.querySelector('#transversalLinesBody tr').dataset.usina;
+            const usinaKey = document.querySelector('#transversalLinesBody tr')?.dataset.usina;
+            if (!usinaKey) return;
+
             const grupoText = document.getElementById('transversalGroupInfo').textContent;
             const grupoMatch = grupoText.match(/Linhas (\d+-\d+)/);
             if (grupoMatch) {
@@ -6225,12 +6259,29 @@
 
         async function saveTransversalEdit() {
             try {
+                // Atualizar progressData com os valores dos inputs
+                document.querySelectorAll('#transversalLinesBody tr').forEach(row => {
+                    const usinaKey = row.dataset.usina;
+                    const linha = row.dataset.linha;
+                    const input = row.querySelector('.completed-input');
+                    const completedValue = parseInt(input.value) || 0;
+
+                    // Inicializar estrutura se não existir
+                    if (!progressData[usinaKey]) progressData[usinaKey] = {};
+                    if (!progressData[usinaKey][linha]) progressData[usinaKey][linha] = {};
+
+                    // Atualizar bases J concluídas
+                    progressData[usinaKey][linha].J = completedValue;
+                });
+
                 // Salvar no localStorage
                 saveLineStepsToStorage();
+                saveProgressToStorage();
 
                 // Salvar no Firebase se configurado
                 if (typeof db !== 'undefined') {
                     await saveLineStepsToFirebase();
+                    await saveProgressToFirebase();
                 }
 
                 // Limpar backup
@@ -6249,9 +6300,27 @@
                     cell.removeEventListener('click', toggleStepStatus);
                 });
 
+                // Esconder inputs e mostrar displays
+                document.querySelectorAll('.completed-display').forEach(span => {
+                    span.style.display = 'inline-block';
+                });
+                document.querySelectorAll('.completed-input').forEach(input => {
+                    input.style.display = 'none';
+                });
+
                 // Alternar botões
                 document.getElementById('transversalViewButtons').style.display = 'flex';
                 document.getElementById('transversalEditButtons').style.display = 'none';
+
+                // Recarregar modal com dados atualizados
+                const usinaKey = document.querySelector('#transversalLinesBody tr')?.dataset.usina;
+                if (usinaKey) {
+                    const grupoText = document.getElementById('transversalGroupInfo').textContent;
+                    const grupoMatch = grupoText.match(/Linhas (\d+-\d+)/);
+                    if (grupoMatch) {
+                        showTransversalDetails(usinaKey, grupoMatch[1]);
+                    }
+                }
 
                 showToast('Progresso atualizado com sucesso!', 'success');
             } catch (error) {
