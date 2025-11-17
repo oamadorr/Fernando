@@ -6887,10 +6887,13 @@
                 closePasswordModal();
                 hideReadOnlyNotice();
 
-                console.log('🔐 Verificando pendingAction:', typeof pendingAction);
+                console.log('🔐 Verificando pendingAction:');
+                console.log('🔐 - typeof:', typeof pendingAction);
+                console.log('🔐 - toString:', pendingAction ? pendingAction.toString().substring(0, 100) : 'null');
+
                 // Executar ação pendente
                 if (pendingAction) {
-                    console.log('🔐 pendingAction existe! Tipo:', typeof pendingAction);
+                    console.log('🔐 pendingAction existe!');
                     if (typeof pendingAction === 'function') {
                         console.log('🔐 Executando pendingAction...');
                         pendingAction();
@@ -6898,6 +6901,14 @@
                     } else if (pendingAction === 'openUpdate') {
                         console.log('🔐 pendingAction é openUpdate');
                         document.getElementById('updateModal').style.display = 'block';
+                    } else {
+                        console.log('🔐 ERRO: pendingAction tipo inesperado:', typeof pendingAction);
+                        console.log('🔐 Tentando executar mesmo assim...');
+                        try {
+                            if (pendingAction.call) pendingAction();
+                        } catch (e) {
+                            console.error('🔐 Erro ao executar:', e);
+                        }
                     }
                     pendingAction = null;
                 } else {
