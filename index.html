@@ -5506,13 +5506,13 @@
                             <div class="step-item">
                                 <span class="step-label">Lacre Tensionador:</span>
                                 <span class="seal-display seal-editable" data-usina="${usinaKey}" data-linha="${linha}" data-field="lacreTensionador">
-                                    ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].lacreTensionador) ? '🔖 ' + lineStepsStatus[usinaKey][linha].lacreTensionador : '-'}
+                                    ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].lacreTensionador) || '-'}
                                 </span>
                             </div>
                             <div class="step-item">
                                 <span class="step-label">Lacre Loop Abs:</span>
                                 <span class="seal-display seal-editable" data-usina="${usinaKey}" data-linha="${linha}" data-field="lacreLoopAbs">
-                                    ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].lacreLoopAbs) ? '🔖 ' + lineStepsStatus[usinaKey][linha].lacreLoopAbs : '-'}
+                                    ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].lacreLoopAbs) || '-'}
                                 </span>
                             </div>
                         </div>
@@ -7020,8 +7020,8 @@
                 <td class="editable-step" data-step="crimpagemCabo">${steps.crimpagemCabo ? '✅' : '❌'}</td>
                 <td class="editable-step" data-step="afericaoCrimpagem">${steps.afericaoCrimpagem ? '✅' : '❌'}</td>
                 <td class="editable-step" data-step="tensionamentoCabo">${steps.tensionamentoCabo ? '✅' : '❌'}</td>
-                <td class="editable-seal" data-seal="lacreTensionador">${steps.lacreTensionador ? '🔖 ' + steps.lacreTensionador : '-'}</td>
-                <td class="editable-seal" data-seal="lacreLoopAbs">${steps.lacreLoopAbs ? '🔖 ' + steps.lacreLoopAbs : '-'}</td>
+                <td class="editable-seal" data-seal="lacreTensionador">${steps.lacreTensionador || '-'}</td>
+                <td class="editable-seal" data-seal="lacreLoopAbs">${steps.lacreLoopAbs || '-'}</td>
             </tr>`;
 
             tbody.innerHTML = rowHTML;
