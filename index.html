@@ -2281,6 +2281,29 @@
             transform: scale(0.95);
         }
 
+        /* Células de lacre */
+        #lineDetailsTable .editable-seal,
+        #lineStepsTable .editable-seal {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+        }
+
+        #lineDetailsTable.edit-mode .editable-seal,
+        #lineStepsTable.edit-mode .editable-seal {
+            background-color: var(--light-blue);
+        }
+
+        .seal-input {
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .seal-input:focus {
+            outline: none;
+            border-color: var(--primary-green) !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
         @media (max-width: 768px) {
             .transversal-modal-content {
                 width: 95%;
@@ -3775,39 +3798,39 @@
         // Status das etapas por linha - estrutura: usina -> linha -> etapa -> status (true/false)
         let lineStepsStatus = {
             pimental: {
-                "01": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "02": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "03": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "04": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "05": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "18": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false }
+                "01": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "02": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "03": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "04": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "05": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "18": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" }
             },
             "belo-monte": {
-                "01": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "02": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "03": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "04": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "05": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "06": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "07": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "08": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "09": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "10": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "11": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "12": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "13": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "14": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "15": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "16": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "17": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "18": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "19": { passagemCabo: true, crimpagemCabo: true, afericaoCrimpagem: true, tensionamentoCabo: true },
-                "71": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false }
+                "01": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "02": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "03": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "04": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "05": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "06": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "07": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "08": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "09": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "10": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "11": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "12": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "13": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "14": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "15": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "16": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "17": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "18": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "19": { passagemCabo: true, crimpagemCabo: true, afericaoCrimpagem: true, tensionamentoCabo: true, lacreTensionador: "", lacreLoopAbs: "" },
+                "71": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" }
             },
             oficina: {
-                "72": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "73": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false },
-                "74": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false }
+                "72": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "73": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" },
+                "74": { passagemCabo: false, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false, lacreTensionador: "", lacreLoopAbs: "" }
             }
         };
 
@@ -6889,7 +6912,7 @@
                 headerHTML += `<th>${tipo}</th>`;
             });
 
-            headerHTML += '<th>Progresso</th><th>Passagem</th><th>Crimpagem</th><th>Aferição</th><th>Tensionamento</th></tr>';
+            headerHTML += '<th>Progresso</th><th>Passagem</th><th>Crimpagem</th><th>Aferição</th><th>Tensionamento</th><th>Lacre Tensionador</th><th>Lacre Loop Abs</th></tr>';
             thead.innerHTML = headerHTML;
 
             // Popular corpo da tabela com uma única linha
@@ -6936,6 +6959,8 @@
                 <td class="editable-step" data-step="crimpagemCabo">${steps.crimpagemCabo ? '✅' : '❌'}</td>
                 <td class="editable-step" data-step="afericaoCrimpagem">${steps.afericaoCrimpagem ? '✅' : '❌'}</td>
                 <td class="editable-step" data-step="tensionamentoCabo">${steps.tensionamentoCabo ? '✅' : '❌'}</td>
+                <td class="editable-seal" data-seal="lacreTensionador">${steps.lacreTensionador ? '🔖 ' + steps.lacreTensionador : '-'}</td>
+                <td class="editable-seal" data-seal="lacreLoopAbs">${steps.lacreLoopAbs ? '🔖 ' + steps.lacreLoopAbs : '-'}</td>
             </tr>`;
 
             tbody.innerHTML = rowHTML;
@@ -6984,6 +7009,17 @@
             // Adicionar event listeners nas etapas
             document.querySelectorAll('#lineDetailsBody .editable-step').forEach(cell => {
                 cell.addEventListener('click', toggleLineDetailsStep);
+            });
+
+            // Converter células de lacre em inputs editáveis
+            const { usinaKey, linha } = currentLineDetails;
+            const steps = lineStepsStatus[usinaKey]?.[linha] || {};
+
+            document.querySelectorAll('#lineDetailsBody .editable-seal').forEach(cell => {
+                const sealType = cell.dataset.seal;
+                const currentValue = steps[sealType] || '';
+
+                cell.innerHTML = `<input type="text" class="seal-input" value="${currentValue}" maxlength="15" placeholder="Digite o lacre" style="width: 120px; padding: 4px; text-align: center; border: 2px solid var(--primary-blue); border-radius: 4px;">`;
             });
 
             // Alternar botões
@@ -7044,6 +7080,18 @@
                     const completedValue = parseInt(input.value) || 0;
 
                     progressData[usinaKey][linha][tipo] = completedValue;
+                });
+
+                // Atualizar lacres com valores dos inputs
+                if (!lineStepsStatus[usinaKey]) lineStepsStatus[usinaKey] = {};
+                if (!lineStepsStatus[usinaKey][linha]) lineStepsStatus[usinaKey][linha] = {};
+
+                document.querySelectorAll('#lineDetailsBody .editable-seal').forEach(cell => {
+                    const sealType = cell.dataset.seal;
+                    const input = cell.querySelector('.seal-input');
+                    const sealValue = input ? input.value.trim() : '';
+
+                    lineStepsStatus[usinaKey][linha][sealType] = sealValue;
                 });
 
                 // Salvar
