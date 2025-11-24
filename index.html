@@ -2315,6 +2315,18 @@
             display: inline-block;
         }
 
+        /* Input de lacre editável na tabela principal */
+        .seal-input-table {
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+
+        .seal-input-table:focus {
+            outline: none;
+            border-color: var(--primary-green) !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
         @media (max-width: 768px) {
             .transversal-modal-content {
                 width: 95%;
@@ -5493,11 +5505,15 @@
                             </div>
                             <div class="step-item">
                                 <span class="step-label">Lacre Tensionador:</span>
-                                <span class="seal-display">${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].lacreTensionador) ? '🔖 ' + lineStepsStatus[usinaKey][linha].lacreTensionador : '-'}</span>
+                                <span class="seal-display seal-editable" data-usina="${usinaKey}" data-linha="${linha}" data-field="lacreTensionador">
+                                    ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].lacreTensionador) ? '🔖 ' + lineStepsStatus[usinaKey][linha].lacreTensionador : '-'}
+                                </span>
                             </div>
                             <div class="step-item">
                                 <span class="step-label">Lacre Loop Abs:</span>
-                                <span class="seal-display">${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].lacreLoopAbs) ? '🔖 ' + lineStepsStatus[usinaKey][linha].lacreLoopAbs : '-'}</span>
+                                <span class="seal-display seal-editable" data-usina="${usinaKey}" data-linha="${linha}" data-field="lacreLoopAbs">
+                                    ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].lacreLoopAbs) ? '🔖 ' + lineStepsStatus[usinaKey][linha].lacreLoopAbs : '-'}
+                                </span>
                             </div>
                         </div>
                     </td>
@@ -6840,6 +6856,17 @@
             const table = document.getElementById(tableId);
             table.classList.add('edit-mode');
 
+            // Converter campos de lacre em inputs editáveis
+            const sealDisplays = table.querySelectorAll('.seal-editable');
+            sealDisplays.forEach(seal => {
+                const usina = seal.dataset.usina;
+                const linha = seal.dataset.linha;
+                const field = seal.dataset.field;
+                const currentValue = (lineStepsStatus[usina] && lineStepsStatus[usina][linha] && lineStepsStatus[usina][linha][field]) || '';
+
+                seal.innerHTML = `<input type="text" class="seal-input-table" value="${currentValue}" maxlength="15" placeholder="Digite o lacre" data-usina="${usina}" data-linha="${linha}" data-field="${field}" style="width: 120px; padding: 4px; text-align: center; border: 2px solid var(--primary-blue); border-radius: 4px; background: white;">`;
+            });
+
             // Alternar botões
             const buttonPrefix = usinaKey === 'pimental' ? 'pimental' :
                                 usinaKey === 'belo-monte' ? 'beloMonte' : 'oficina';
@@ -6872,6 +6899,24 @@
 
         async function saveTableEdit(usinaKey) {
             try {
+                // Capturar valores dos lacres dos inputs antes de salvar
+                const tableId = usinaKey === 'pimental' ? 'tablePimental' :
+                               usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
+                const table = document.getElementById(tableId);
+                const sealInputs = table.querySelectorAll('.seal-input-table');
+
+                sealInputs.forEach(input => {
+                    const usina = input.dataset.usina;
+                    const linha = input.dataset.linha;
+                    const field = input.dataset.field;
+                    const value = input.value.trim();
+
+                    if (!lineStepsStatus[usina]) lineStepsStatus[usina] = {};
+                    if (!lineStepsStatus[usina][linha]) lineStepsStatus[usina][linha] = {};
+
+                    lineStepsStatus[usina][linha][field] = value;
+                });
+
                 // Salvar no localStorage
                 saveLineStepsToStorage();
                 saveProgressToStorage();
@@ -6889,9 +6934,6 @@
                 updateTransversalVisuals();
 
                 // Desativar modo de edição
-                const tableId = usinaKey === 'pimental' ? 'tablePimental' :
-                               usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
-                const table = document.getElementById(tableId);
                 table.classList.remove('edit-mode');
 
                 // Alternar botões
