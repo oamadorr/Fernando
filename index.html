@@ -2304,6 +2304,17 @@
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
 
+        /* Display de lacres na tabela principal */
+        .seal-display {
+            font-size: 0.85rem;
+            color: var(--dark-gray);
+            font-weight: 500;
+            padding: 2px 6px;
+            background-color: #f3f4f6;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
         @media (max-width: 768px) {
             .transversal-modal-content {
                 width: 95%;
@@ -5475,10 +5486,18 @@
                             </div>
                             <div class="step-item">
                                 <span class="step-label">Tensionamento:</span>
-                                <button class="step-toggle ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].tensionamentoCabo) ? 'step-done' : 'step-pending'}" 
+                                <button class="step-toggle ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].tensionamentoCabo) ? 'step-done' : 'step-pending'}"
                                         onclick="toggleStep('${usinaKey}', '${linha}', 'tensionamentoCabo')">
                                     ${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].tensionamentoCabo) ? 'Realizado' : 'Pendente'}
                                 </button>
+                            </div>
+                            <div class="step-item">
+                                <span class="step-label">Lacre Tensionador:</span>
+                                <span class="seal-display">${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].lacreTensionador) ? '🔖 ' + lineStepsStatus[usinaKey][linha].lacreTensionador : '-'}</span>
+                            </div>
+                            <div class="step-item">
+                                <span class="step-label">Lacre Loop Abs:</span>
+                                <span class="seal-display">${(lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].lacreLoopAbs) ? '🔖 ' + lineStepsStatus[usinaKey][linha].lacreLoopAbs : '-'}</span>
                             </div>
                         </div>
                     </td>
