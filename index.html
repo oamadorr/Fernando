@@ -2592,6 +2592,90 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
+        /* Built Information Tables */
+        .built-section {
+            margin-top: 40px;
+        }
+
+        .built-container {
+            margin-bottom: 30px;
+        }
+
+        .subsection-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin: 25px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-gray);
+        }
+
+        .built-table tbody tr {
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .built-table tbody td,
+        .built-table tbody th {
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            min-width: 80px;
+        }
+
+        .built-table tbody td:first-child {
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary-blue);
+            min-width: 100px;
+        }
+
+        .built-table tbody td.built-pair-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            background-color: var(--light-gray);
+        }
+
+        .built-input-cell {
+            pointer-events: none;
+        }
+
+        .built-table.edit-mode .built-input-cell {
+            pointer-events: auto;
+        }
+
+        .built-input-cell.view-mode {
+            pointer-events: none;
+        }
+
+        .built-display {
+            display: inline-block;
+            min-width: 40px;
+            color: var(--dark-gray);
+        }
+
+        .built-input {
+            width: 100%;
+            max-width: 80px;
+            padding: 6px 4px;
+            border: 2px solid var(--primary-blue);
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: none;
+        }
+
+        .built-input:focus {
+            outline: none;
+            background-color: var(--light-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .built-table tbody td.empty-cell {
+            background-color: var(--light-gray);
+        }
+
     </style>
 </head>
 <body>
@@ -3407,6 +3491,76 @@
                     </table>
                 </div>
             </section>
+
+            <!-- SEÇÃO: Informações para as Built -->
+            <section class="section built-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-ruler-combined"></i> Informações para as Built
+                    </h2>
+                    <div class="section-actions">
+                        <button class="btn btn-secondary btn-small" id="builtEditBtn" onclick="enableBuiltEdit()" style="display: flex;">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <div id="builtEditButtons" style="display: none; gap: 10px;">
+                            <button class="btn btn-secondary btn-small" onclick="cancelBuiltEdit()">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <button class="btn btn-primary" onclick="saveBuiltEdit()">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BELO MONTE -->
+                <div class="container built-container">
+                    <h3 class="subsection-title">Belo Monte</h3>
+                    <div class="table-wrapper">
+                        <table class="data-table built-table" id="tableBuiltBeloMonte">
+                            <thead>
+                                <tr>
+                                    <th>Linha</th>
+                                    <th colspan="13">Distâncias entre Bases (m)</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PIMENTAL -->
+                <div class="container built-container">
+                    <h3 class="subsection-title">Pimental</h3>
+                    <div class="table-wrapper">
+                        <table class="data-table built-table" id="tableBuiltPimental">
+                            <thead>
+                                <tr>
+                                    <th>Linha</th>
+                                    <th colspan="13">Distâncias entre Bases (m)</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- OFICINA -->
+                <div class="container built-container">
+                    <h3 class="subsection-title">Oficina</h3>
+                    <div class="table-wrapper">
+                        <table class="data-table built-table" id="tableBuiltOficina">
+                            <thead>
+                                <tr>
+                                    <th>Linha</th>
+                                    <th colspan="8">Distâncias entre Bases (m)</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
 
@@ -3937,6 +4091,13 @@
             }
         };
 
+        // Informações para as Built - distâncias entre bases consecutivas
+        // Estrutura: usina -> linha -> par de bases (ex: "01-02") -> metragem
+        let builtInformations = {};
+
+        // Backup para cancelamento de edição
+        let builtEditBackup = null;
+
         // Configurações da equipe
         let teamConfig = {
             pessoas: 4,
@@ -4069,6 +4230,7 @@
             validateAndFixTeamConfigDates();
             loadLineStepsFromStorage();
             loadProgressFromStorage();
+            loadBuiltFromStorage();
 
             // Carregar preferência de usina ativa
             const savedActiveUsina = localStorage.getItem('manualActiveUsina');
@@ -4463,6 +4625,7 @@
                 validateAndFixTeamConfigDates(); // Garantir datas válidas
                 loadLineStepsFromStorage();
                 loadProgressFromStorage();
+                loadBuiltFromStorage();
                 updateAllDisplays();
                 initializeCharts();
                 hideLoading();
@@ -4555,6 +4718,9 @@
                         if (data.manualActiveUsina) {
                             manualActiveUsina = data.manualActiveUsina;
                         }
+
+                        // Carregar informações de Built do Firebase
+                        await loadBuiltFromFirebase(doc);
 
                         // Atualizar displays com dados do Firebase
                         console.log('Modo somente leitura: dados carregados do Firebase', {
@@ -4649,8 +4815,11 @@
                             manualActiveUsina = data.manualActiveUsina;
                             localStorage.setItem('manualActiveUsina', manualActiveUsina);
                         }
+
+                        // Carregar informações de Built do Firebase
+                        await loadBuiltFromFirebase(doc);
                     }
-    
+
                 } else {
                     // Projeto novo, criar dados iniciais
                     await saveProjectData();
@@ -4672,6 +4841,7 @@
                     loadTeamConfigFromStorage();
                     loadLineStepsFromStorage();
                     loadProgressFromStorage();
+                    loadBuiltFromStorage();
                     updateAllDisplays();
                     initializeCharts();
                 }
@@ -4682,6 +4852,7 @@
                 loadTeamConfigFromStorage();
                 loadLineStepsFromStorage();
                 loadProgressFromStorage();
+                loadBuiltFromStorage();
                 updateAllDisplays();
                 initializeCharts();
             }
@@ -6086,6 +6257,7 @@
             updateMapFromExternalData(); // Atualizar mapa interativo
             updateTransversalVisuals(); // Atualizar grupos transversais
             updateLastUpdateTimestamp();
+            renderBuiltTables(); // Atualizar tabelas de Built
         }
 
         function updateLastUpdateTimestamp() {
@@ -7293,6 +7465,344 @@
             }
         }
 
+        // ========== FUNÇÕES PARA BUILT INFORMATION ==========
+
+        /**
+         * Inicializa dados de Built vazios baseado em projectData
+         */
+        function initializeBuiltData() {
+            builtInformations = {};
+
+            for (const usinaKey of Object.keys(projectData)) {
+                builtInformations[usinaKey] = {};
+
+                const linhas = projectData[usinaKey].linhas;
+                for (const linhaKey of Object.keys(linhas)) {
+                    builtInformations[usinaKey][linhaKey] = {};
+
+                    // Determinar número de pares para esta linha
+                    let pairCount = 1;
+                    if (usinaKey === 'pimental') {
+                        if (linhaKey === '01' || linhaKey === '03') pairCount = 11;
+                        else if (linhaKey === '02' || linhaKey === '04') pairCount = 12;
+                        else pairCount = 1;
+                    } else if (usinaKey === 'belo-monte') {
+                        if (['01', '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15', '16', '17'].includes(linhaKey)) {
+                            pairCount = 11;
+                        } else if (['09', '18'].includes(linhaKey)) {
+                            pairCount = 7;
+                        } else {
+                            pairCount = 4;
+                        }
+                    } else if (usinaKey === 'oficina') {
+                        if (linhaKey === '72' || linhaKey === '74') pairCount = 1;
+                        else if (linhaKey === '73') pairCount = 7;
+                    }
+
+                    for (let i = 1; i <= pairCount; i++) {
+                        const pairKey = `${String(i).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
+                        builtInformations[usinaKey][linhaKey][pairKey] = '';
+                    }
+                }
+            }
+        }
+
+        /**
+         * Renderiza as tabelas de Built para as 3 usinas
+         */
+        function renderBuiltTables() {
+            renderBuiltTable('pimental');
+            renderBuiltTable('belo-monte');
+            renderBuiltTable('oficina');
+        }
+
+        /**
+         * Renderiza tabela de Built para uma usina específica
+         */
+        function renderBuiltTable(usinaKey) {
+            const tableId = `tableBuilt${usinaKey === 'pimental' ? 'Pimental' : usinaKey === 'belo-monte' ? 'BeloMonte' : 'Oficina'}`;
+            const table = document.getElementById(tableId);
+            if (!table) return;
+
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+
+            let html = '';
+
+            const linhas = Object.keys(projectData[usinaKey].linhas).sort((a, b) => {
+                return parseInt(a) - parseInt(b);
+            });
+
+            linhas.forEach(linha => {
+                const pares = builtInformations[usinaKey][linha];
+                if (!pares) return;
+
+                const pairKeys = Object.keys(pares).sort((a, b) => {
+                    const aNum = parseInt(a.split('-')[0]);
+                    const bNum = parseInt(b.split('-')[0]);
+                    return aNum - bNum;
+                });
+
+                let rowHTML = `<tr>`;
+                rowHTML += `<td style="font-weight: bold; color: var(--primary-blue);">Linha ${linha}</td>`;
+
+                pairKeys.forEach(pair => {
+                    const value = pares[pair] || '';
+                    rowHTML += `
+                        <td class="built-input-cell view-mode" data-pair="${pair}" data-linha="${linha}" data-usina="${usinaKey}">
+                            <div style="font-size: 0.75rem; color: #666; margin-bottom: 2px;">${pair}</div>
+                            <span class="built-display">${value || '-'}</span>
+                            <input type="text" class="built-input" value="${value}" placeholder="-" />
+                        </td>
+                    `;
+                });
+
+                // Preencher colunas vazias para alinhamento
+                const maxCols = 13;
+                const currentCols = pairKeys.length;
+                for (let i = currentCols; i < maxCols; i++) {
+                    rowHTML += `<td class="empty-cell"></td>`;
+                }
+
+                rowHTML += `</tr>`;
+                html += rowHTML;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        /**
+         * Ativa modo de edição para Built (com autenticação)
+         */
+        function enableBuiltEdit() {
+            if (!isAuthenticated) {
+                pendingAction = () => enableBuiltEdit();
+                showPasswordModal();
+                return;
+            }
+
+            // Fazer backup antes de editar
+            builtEditBackup = JSON.parse(JSON.stringify(builtInformations));
+
+            // Ativar modo de edição para todas as tabelas
+            ['tableBuiltBeloMonte', 'tableBuiltPimental', 'tableBuiltOficina'].forEach(tableId => {
+                const table = document.getElementById(tableId);
+                if (!table) return;
+
+                table.classList.add('edit-mode');
+
+                // Mostrar inputs
+                table.querySelectorAll('.built-input-cell').forEach(cell => {
+                    cell.classList.remove('view-mode');
+                    const display = cell.querySelector('.built-display');
+                    const input = cell.querySelector('.built-input');
+
+                    if (display) display.style.display = 'none';
+                    if (input) input.style.display = 'inline-block';
+                });
+            });
+
+            // Alternar botões
+            document.getElementById('builtEditBtn').style.display = 'none';
+            document.getElementById('builtEditButtons').style.display = 'flex';
+        }
+
+        /**
+         * Cancela edição de Built (restaura backup)
+         */
+        function cancelBuiltEdit() {
+            if (builtEditBackup) {
+                builtInformations = JSON.parse(JSON.stringify(builtEditBackup));
+                builtEditBackup = null;
+            }
+
+            // Desativar modo de edição para todas as tabelas
+            ['tableBuiltBeloMonte', 'tableBuiltPimental', 'tableBuiltOficina'].forEach(tableId => {
+                const table = document.getElementById(tableId);
+                if (!table) return;
+
+                table.classList.remove('edit-mode');
+
+                table.querySelectorAll('.built-input-cell').forEach(cell => {
+                    cell.classList.add('view-mode');
+                    const display = cell.querySelector('.built-display');
+                    const input = cell.querySelector('.built-input');
+
+                    if (display) display.style.display = 'inline';
+                    if (input) input.style.display = 'none';
+                });
+            });
+
+            // Alternar botões
+            document.getElementById('builtEditBtn').style.display = 'flex';
+            document.getElementById('builtEditButtons').style.display = 'none';
+
+            // Recarregar tabelas
+            renderBuiltTables();
+        }
+
+        /**
+         * Salva edições de Built (localStorage + Firebase)
+         */
+        async function saveBuiltEdit() {
+            try {
+                // Atualizar builtInformations com valores dos inputs
+                ['tableBuiltBeloMonte', 'tableBuiltPimental', 'tableBuiltOficina'].forEach(tableId => {
+                    const table = document.getElementById(tableId);
+                    if (!table) return;
+
+                    table.querySelectorAll('.built-input-cell').forEach(cell => {
+                        const pair = cell.dataset.pair;
+                        const linha = cell.dataset.linha;
+                        const usinaKey = cell.dataset.usina;
+                        const input = cell.querySelector('.built-input');
+
+                        if (usinaKey && builtInformations[usinaKey] && builtInformations[usinaKey][linha]) {
+                            builtInformations[usinaKey][linha][pair] = input.value.trim();
+                        }
+                    });
+                });
+
+                // Salvar no localStorage
+                saveBuiltToStorage();
+
+                // Desativar modo de edição
+                ['tableBuiltBeloMonte', 'tableBuiltPimental', 'tableBuiltOficina'].forEach(tableId => {
+                    const table = document.getElementById(tableId);
+                    if (!table) return;
+
+                    table.classList.remove('edit-mode');
+
+                    table.querySelectorAll('.built-input-cell').forEach(cell => {
+                        cell.classList.add('view-mode');
+                        const display = cell.querySelector('.built-display');
+                        const input = cell.querySelector('.built-input');
+
+                        if (display) display.style.display = 'inline';
+                        if (input) input.style.display = 'none';
+                    });
+                });
+
+                // Alternar botões
+                document.getElementById('builtEditBtn').style.display = 'flex';
+                document.getElementById('builtEditButtons').style.display = 'none';
+
+                // Sincronizar com Firebase se autenticado
+                if (db && currentProjectId) {
+                    await saveBuiltToFirebase();
+                }
+
+                // Recarregar tabelas
+                renderBuiltTables();
+
+                showToast('Informações de Built salvas com sucesso!', 'success');
+                builtEditBackup = null;
+            } catch (error) {
+                console.error('Erro ao salvar Built:', error);
+                showToast('Erro ao salvar informações de Built', 'error');
+            }
+        }
+
+        /**
+         * Salva Built no localStorage
+         */
+        function saveBuiltToStorage() {
+            localStorage.setItem('linhasVidaBuilt', JSON.stringify(builtInformations));
+            localStorage.setItem('linhasVidaLastUpdate', new Date().toISOString());
+        }
+
+        /**
+         * Carrega Built do localStorage
+         */
+        function loadBuiltFromStorage() {
+            const stored = localStorage.getItem('linhasVidaBuilt');
+            if (stored) {
+                try {
+                    const loadedData = JSON.parse(stored);
+                    builtInformations = sanitizeBuiltData(loadedData);
+                } catch (error) {
+                    console.warn('Erro ao carregar Built do storage:', error);
+                    initializeBuiltData();
+                }
+            } else {
+                initializeBuiltData();
+            }
+        }
+
+        /**
+         * Sanitiza dados de Built (garante estrutura correta)
+         */
+        function sanitizeBuiltData(raw) {
+            const sanitized = {};
+
+            for (const usinaKey of Object.keys(projectData)) {
+                sanitized[usinaKey] = {};
+
+                const linhas = projectData[usinaKey].linhas;
+                for (const linhaKey of Object.keys(linhas)) {
+                    // Determinar número de pares para esta linha
+                    let pairCount = 1;
+                    if (usinaKey === 'pimental') {
+                        if (linhaKey === '01' || linhaKey === '03') pairCount = 11;
+                        else if (linhaKey === '02' || linhaKey === '04') pairCount = 12;
+                        else pairCount = 1;
+                    } else if (usinaKey === 'belo-monte') {
+                        if (['01', '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15', '16', '17'].includes(linhaKey)) {
+                            pairCount = 11;
+                        } else if (['09', '18'].includes(linhaKey)) {
+                            pairCount = 7;
+                        } else {
+                            pairCount = 4;
+                        }
+                    } else if (usinaKey === 'oficina') {
+                        if (linhaKey === '72' || linhaKey === '74') pairCount = 1;
+                        else if (linhaKey === '73') pairCount = 7;
+                    }
+
+                    sanitized[usinaKey][linhaKey] = {};
+                    const rawLine = raw?.[usinaKey]?.[linhaKey] || {};
+
+                    // Preencher pares com valores do backup ou strings vazias
+                    for (let i = 1; i <= pairCount; i++) {
+                        const pairKey = `${String(i).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
+                        sanitized[usinaKey][linhaKey][pairKey] = rawLine[pairKey] || '';
+                    }
+                }
+            }
+
+            return sanitized;
+        }
+
+        /**
+         * Salva Built no Firebase
+         */
+        async function saveBuiltToFirebase() {
+            if (!db || !currentProjectId) return;
+
+            try {
+                await db.collection('projects').doc(currentProjectId).update({
+                    builtInformations: builtInformations,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                console.error('Erro ao salvar Built no Firebase:', error);
+                throw error;
+            }
+        }
+
+        /**
+         * Carrega Built do Firebase
+         */
+        async function loadBuiltFromFirebase(docSnapshot) {
+            if (docSnapshot.data()?.builtInformations) {
+                builtInformations = sanitizeBuiltData(docSnapshot.data().builtInformations);
+            } else {
+                initializeBuiltData();
+            }
+        }
+
+        // ========== FIM DAS FUNÇÕES PARA BUILT INFORMATION ==========
+
         function toggleAllBases(checkbox) {
             const basesCheckboxes = document.querySelectorAll('#basesCheckboxes input[type="checkbox"]');
             basesCheckboxes.forEach(cb => {
@@ -7785,10 +8295,11 @@
                     teamConfig: teamConfigForFirebase,
                     manualActiveUsina: manualActiveUsina,
                     projectData: simplifiedData,
-                    
+                    builtInformations: builtInformations,
+
                     // Compatibilidade com v1.0
                     data: simplifiedData,
-                    
+
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     version: '2.0'
                 });
@@ -8386,9 +8897,96 @@
             checkPageBreak(40);
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
+            // Seção 4: Informações para as Built
+            checkPageBreak(80);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('4. INFORMAÇÕES PARA AS BUILT', 20, currentY);
+            currentY += 12;
+
+            // Belo Monte Built
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('4.1 Belo Monte', 25, currentY);
+            currentY += 10;
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            const beloMonteBuiltLines = Object.keys(builtInformations['belo-monte'] || {})
+                .filter(l => projectData['belo-monte'].linhas[l])
+                .sort((a, b) => parseInt(a) - parseInt(b));
+
+            beloMonteBuiltLines.forEach(linha => {
+                const pairs = builtInformations['belo-monte'][linha] || {};
+                const pairEntries = Object.entries(pairs).filter(([, v]) => v);
+
+                if (pairEntries.length > 0) {
+                    checkPageBreak(15);
+                    const pairStr = pairEntries.map(([k, v]) => `${k}: ${v}m`).join(' | ');
+                    doc.text(`Linha ${linha}: ${pairStr}`, 30, currentY);
+                    currentY += 8;
+                }
+            });
+
+            currentY += 5;
+
+            // Pimental Built
+            checkPageBreak(20);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('4.2 Pimental', 25, currentY);
+            currentY += 10;
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            const pimentalBuiltLines = Object.keys(builtInformations['pimental'] || {})
+                .filter(l => projectData['pimental'].linhas[l])
+                .sort((a, b) => parseInt(a) - parseInt(b));
+
+            pimentalBuiltLines.forEach(linha => {
+                const pairs = builtInformations['pimental'][linha] || {};
+                const pairEntries = Object.entries(pairs).filter(([, v]) => v);
+
+                if (pairEntries.length > 0) {
+                    checkPageBreak(15);
+                    const pairStr = pairEntries.map(([k, v]) => `${k}: ${v}m`).join(' | ');
+                    doc.text(`Linha ${linha}: ${pairStr}`, 30, currentY);
+                    currentY += 8;
+                }
+            });
+
+            currentY += 5;
+
+            // Oficina Built
+            checkPageBreak(20);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('4.3 Oficina', 25, currentY);
+            currentY += 10;
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            const oficinaBuiltLines = Object.keys(builtInformations['oficina'] || {})
+                .filter(l => projectData['oficina'].linhas[l])
+                .sort((a, b) => parseInt(a) - parseInt(b));
+
+            oficinaBuiltLines.forEach(linha => {
+                const pairs = builtInformations['oficina'][linha] || {};
+                const pairEntries = Object.entries(pairs).filter(([, v]) => v);
+
+                if (pairEntries.length > 0) {
+                    checkPageBreak(15);
+                    const pairStr = pairEntries.map(([k, v]) => `${k}: ${v}m`).join(' | ');
+                    doc.text(`Linha ${linha}: ${pairStr}`, 30, currentY);
+                    currentY += 8;
+                }
+            });
+
+            currentY += 10;
+
             doc.text('6. OBSERVAÇÕES E PRÓXIMOS PASSOS', 20, currentY);
             currentY += 12;
-            
+
             doc.setFontSize(11);
             doc.setFont('helvetica', 'normal');
             doc.text('• Manter ritmo atual de produtividade para cumprir cronograma', 25, currentY);
@@ -8399,7 +8997,7 @@
             currentY += 8;
             doc.text('• Realizar inspeções de qualidade periódicas', 25, currentY);
             currentY += 15;
-            
+
             // Rodapé
             doc.setFontSize(8);
             doc.setFont('helvetica', 'italic');
