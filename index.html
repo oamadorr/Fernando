@@ -2593,14 +2593,6 @@
         }
 
         /* Built Information Tables */
-        .built-section {
-            margin-top: 40px;
-        }
-
-        .built-container {
-            margin-bottom: 30px;
-        }
-
         .subsection-title {
             font-size: 1.25rem;
             font-weight: 600;
@@ -2610,23 +2602,10 @@
             border-bottom: 2px solid var(--border-gray);
         }
 
-        .built-table tbody tr {
-            border-bottom: 1px solid var(--border-gray);
-        }
-
-        .built-table tbody td,
-        .built-table tbody th {
-            padding: 12px 8px;
-            text-align: center;
-            font-size: 0.9rem;
-            min-width: 80px;
-        }
-
         .built-table tbody td:first-child {
             text-align: left;
             font-weight: 600;
             color: var(--primary-blue);
-            min-width: 100px;
         }
 
         .built-table tbody td.built-pair-label {
@@ -2642,10 +2621,6 @@
 
         .built-table.edit-mode .built-input-cell {
             pointer-events: auto;
-        }
-
-        .built-input-cell.view-mode {
-            pointer-events: none;
         }
 
         .built-display {
@@ -3493,30 +3468,33 @@
             </section>
 
             <!-- SEÇÃO: Informações para as Built -->
-            <section class="section built-section">
-                <div class="section-header">
-                    <h2 class="section-title">
+            <section class="usina-section">
+                <div class="usina-header">
+                    <h2 class="usina-title">
                         <i class="fas fa-ruler-combined"></i> Informações para as Built
                     </h2>
-                    <div class="section-actions">
-                        <button class="btn btn-secondary btn-small" id="builtEditBtn" onclick="enableBuiltEdit()" style="display: flex;">
+                </div>
+
+                <div style="display: flex; gap: 10px; margin: 0 20px 15px 20px; justify-content: flex-end;">
+                    <div id="builtViewButtons">
+                        <button type="button" class="btn btn-primary btn-small" onclick="enableBuiltEdit()">
                             <i class="fas fa-edit"></i> Editar
                         </button>
-                        <div id="builtEditButtons" style="display: none; gap: 10px;">
-                            <button class="btn btn-secondary btn-small" onclick="cancelBuiltEdit()">
-                                <i class="fas fa-times"></i> Cancelar
-                            </button>
-                            <button class="btn btn-primary" onclick="saveBuiltEdit()">
-                                <i class="fas fa-save"></i> Salvar
-                            </button>
-                        </div>
+                    </div>
+                    <div id="builtEditButtons" style="display: none; gap: 10px;">
+                        <button type="button" class="btn btn-primary btn-small" onclick="saveBuiltEdit()">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="cancelBuiltEdit()">
+                            Cancelar
+                        </button>
                     </div>
                 </div>
 
                 <!-- BELO MONTE -->
-                <div class="container built-container">
+                <div style="margin: 0 20px 30px 20px;">
                     <h3 class="subsection-title">Belo Monte</h3>
-                    <div class="table-wrapper">
+                    <div class="table-container">
                         <table class="data-table built-table" id="tableBuiltBeloMonte">
                             <thead>
                                 <tr>
@@ -3530,9 +3508,9 @@
                 </div>
 
                 <!-- PIMENTAL -->
-                <div class="container built-container">
+                <div style="margin: 0 20px 30px 20px;">
                     <h3 class="subsection-title">Pimental</h3>
-                    <div class="table-wrapper">
+                    <div class="table-container">
                         <table class="data-table built-table" id="tableBuiltPimental">
                             <thead>
                                 <tr>
@@ -3546,9 +3524,9 @@
                 </div>
 
                 <!-- OFICINA -->
-                <div class="container built-container">
+                <div style="margin: 0 20px 30px 20px;">
                     <h3 class="subsection-title">Oficina</h3>
-                    <div class="table-wrapper">
+                    <div class="table-container">
                         <table class="data-table built-table" id="tableBuiltOficina">
                             <thead>
                                 <tr>
@@ -7603,7 +7581,7 @@
             });
 
             // Alternar botões
-            document.getElementById('builtEditBtn').style.display = 'none';
+            document.getElementById('builtViewButtons').style.display = 'none';
             document.getElementById('builtEditButtons').style.display = 'flex';
         }
 
@@ -7634,7 +7612,7 @@
             });
 
             // Alternar botões
-            document.getElementById('builtEditBtn').style.display = 'flex';
+            document.getElementById('builtViewButtons').style.display = 'flex';
             document.getElementById('builtEditButtons').style.display = 'none';
 
             // Recarregar tabelas
@@ -7684,7 +7662,7 @@
                 });
 
                 // Alternar botões
-                document.getElementById('builtEditBtn').style.display = 'flex';
+                document.getElementById('builtViewButtons').style.display = 'flex';
                 document.getElementById('builtEditButtons').style.display = 'none';
 
                 // Sincronizar com Firebase se autenticado
