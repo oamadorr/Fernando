@@ -8347,7 +8347,10 @@
         function saveProgressToStorage() {
             progressData = sanitizeProgressData(progressData);
             localStorage.setItem('linhasVidaProgress', JSON.stringify(progressData));
+            localStorage.setItem('linhasVidaLineSteps', JSON.stringify(lineStepsStatus));
+            localStorage.setItem('linhasVidaExecutionDates', JSON.stringify(executionDates));
             localStorage.setItem('linhasVidaObservations', JSON.stringify(lineObservations));
+            localStorage.setItem('linhasVidaBuiltInformations', JSON.stringify(builtInformations));
             // Salvar timestamp da última atualização
             localStorage.setItem('linhasVidaLastUpdate', new Date().toISOString());
         }
@@ -8420,7 +8423,17 @@
             }
             
             progressData = sanitizeProgressData(progressData);
-            
+
+            // Carregar status das etapas
+            const storedSteps = localStorage.getItem('linhasVidaLineSteps');
+            if (storedSteps) {
+                try {
+                    lineStepsStatus = JSON.parse(storedSteps);
+                } catch (error) {
+                    console.warn('Erro ao carregar etapas do storage:', error);
+                }
+            }
+
             // Carregar datas de execução
             const storedDates = localStorage.getItem('linhasVidaExecutionDates');
             if (storedDates) {
@@ -8432,11 +8445,25 @@
                     executionDates = {};
                 }
             }
-            
+
             // Carregar observações
             const storedObservations = localStorage.getItem('linhasVidaObservations');
             if (storedObservations) {
-                lineObservations = JSON.parse(storedObservations);
+                try {
+                    lineObservations = JSON.parse(storedObservations);
+                } catch (error) {
+                    console.warn('Erro ao carregar observações do storage:', error);
+                }
+            }
+
+            // Carregar informações para Built
+            const storedBuilt = localStorage.getItem('linhasVidaBuiltInformations');
+            if (storedBuilt) {
+                try {
+                    builtInformations = JSON.parse(storedBuilt);
+                } catch (error) {
+                    console.warn('Erro ao carregar built informations do storage:', error);
+                }
             }
         }
 
@@ -8838,6 +8865,9 @@
                 if (versionData.lineStepsStatus) {
                     lineStepsStatus = versionData.lineStepsStatus;
                 }
+                if (versionData.executionDates) {
+                    executionDates = sanitizeExecutionDates(versionData.executionDates);
+                }
                 if (versionData.lineObservations) {
                     lineObservations = versionData.lineObservations;
                 }
@@ -8848,6 +8878,9 @@
                     const currentDate = teamConfig.dataAtual;
                     Object.assign(teamConfig, versionData.teamConfig);
                     teamConfig.dataAtual = currentDate;
+                }
+                if (versionData.manualActiveUsina !== undefined) {
+                    manualActiveUsina = versionData.manualActiveUsina;
                 }
 
                 // Salvar no localStorage
