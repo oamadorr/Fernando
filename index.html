@@ -1526,6 +1526,13 @@
             }
         }
 
+        /* Modo somente leitura */
+        .readonly-mode .readonly-disabled {
+            pointer-events: none;
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+        }
+
         @media (max-width: 480px) {
             .map-layout {
                 height: 200px;
@@ -2707,7 +2714,7 @@
                     <button class="btn btn-warning" onclick="clearAllProgress()" style="background-color: #ef4444; border-color: #dc2626;">
                         <i class="fas fa-trash"></i> Limpar Tudo
                     </button>
-                    <button class="btn btn-primary" onclick="openUpdateModal()">
+                    <button class="btn btn-primary" data-online-only="true" onclick="openUpdateModal()">
                         <i class="fas fa-edit"></i> Atualizar Progresso
                     </button>
 
@@ -3276,7 +3283,7 @@
 
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
                     <div id="pimentalViewButtons">
-                        <button type="button" class="btn btn-primary btn-small" onclick="enableTableEdit('pimental')">
+                        <button type="button" class="btn btn-primary btn-small" data-online-only="true" onclick="enableTableEdit('pimental')">
                             <i class="fas fa-edit"></i> Editar Etapas
                         </button>
                     </div>
@@ -3358,7 +3365,7 @@
 
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
                     <div id="beloMonteViewButtons">
-                        <button type="button" class="btn btn-primary btn-small" onclick="enableTableEdit('belo-monte')">
+                        <button type="button" class="btn btn-primary btn-small" data-online-only="true" onclick="enableTableEdit('belo-monte')">
                             <i class="fas fa-edit"></i> Editar Etapas
                         </button>
                     </div>
@@ -3440,7 +3447,7 @@
 
                 <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
                     <div id="oficinaViewButtons">
-                        <button type="button" class="btn btn-primary btn-small" onclick="enableTableEdit('oficina')">
+                        <button type="button" class="btn btn-primary btn-small" data-online-only="true" onclick="enableTableEdit('oficina')">
                             <i class="fas fa-edit"></i> Editar Etapas
                         </button>
                     </div>
@@ -3484,7 +3491,7 @@
 
                 <div style="display: flex; gap: 10px; margin: 0 20px 15px 20px; justify-content: flex-end;">
                     <div id="builtViewButtons">
-                        <button type="button" class="btn btn-primary btn-small" onclick="enableBuiltEdit()">
+                        <button type="button" class="btn btn-primary btn-small" data-online-only="true" onclick="enableBuiltEdit()">
                             <i class="fas fa-edit"></i> Editar
                         </button>
                     </div>
@@ -3776,7 +3783,7 @@
                 </div>
 
                 <div id="transversalViewButtons" style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                    <button type="button" class="btn btn-primary" onclick="enableTransversalEdit()">
+                    <button type="button" class="btn btn-primary" data-online-only="true" onclick="enableTransversalEdit()">
                         <i class="fas fa-edit"></i> Editar
                     </button>
                     <button type="button" class="btn btn-secondary" onclick="closeTransversalModal()">Fechar</button>
@@ -3814,9 +3821,25 @@
         let isAuthenticated = false;
         let pendingAction = null;
 
+        function applyReadOnlyUI(isReadOnly) {
+            document.querySelectorAll('[data-online-only="true"]').forEach(el => {
+                el.disabled = isReadOnly;
+                el.setAttribute('aria-disabled', isReadOnly ? 'true' : 'false');
+                if (isReadOnly) {
+                    el.classList.add('readonly-disabled');
+                    el.title = 'Disponível apenas online';
+                } else {
+                    el.classList.remove('readonly-disabled');
+                    el.removeAttribute('aria-disabled');
+                    el.removeAttribute('title');
+                }
+            });
+        }
+
         function setReadOnlyMode(isReadOnly) {
             allowOnlineEdits = !isReadOnly;
             document.body.classList.toggle('readonly-mode', isReadOnly);
+            applyReadOnlyUI(isReadOnly);
         }
 
         function requireOnlineEdits() {
@@ -7803,7 +7826,8 @@
         /**
          * Salva Built no localStorage
          */
-        function saveBuiltToStorage() {
+        function saveBuiltToStorage(force = false) {
+            if (!force && !allowOnlineEdits) return;
             localStorage.setItem('linhasVidaBuilt', JSON.stringify(builtInformations));
             localStorage.setItem('linhasVidaLastUpdate', new Date().toISOString());
         }
@@ -8408,7 +8432,8 @@
         }
 
         // Funções de persistência
-        function saveProgressToStorage() {
+        function saveProgressToStorage(force = false) {
+            if (!force && !allowOnlineEdits) return;
             progressData = sanitizeProgressData(progressData);
             localStorage.setItem('linhasVidaProgress', JSON.stringify(progressData));
             localStorage.setItem('linhasVidaLineSteps', JSON.stringify(lineStepsStatus));
@@ -8419,7 +8444,8 @@
             localStorage.setItem('linhasVidaLastUpdate', new Date().toISOString());
         }
 
-        function saveTeamConfigToStorage() {
+        function saveTeamConfigToStorage(force = false) {
+            if (!force && !allowOnlineEdits) return;
             localStorage.setItem('linhasVidaTeamConfig', JSON.stringify(teamConfig));
             localStorage.setItem('linhasVidaLastUpdate', new Date().toISOString());
         }
@@ -8466,7 +8492,8 @@
             saveTeamConfigToStorage();
         }
 
-        function saveLineStepsToStorage() {
+        function saveLineStepsToStorage(force = false) {
+            if (!force && !allowOnlineEdits) return;
             localStorage.setItem('linhasVidaLineSteps', JSON.stringify(lineStepsStatus));
             localStorage.setItem('linhasVidaLastUpdate', new Date().toISOString());
         }
