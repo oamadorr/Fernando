@@ -8675,10 +8675,16 @@
                 let snapshot;
                 try {
                     snapshot = await historyRef.orderBy('savedAt', 'desc').limit(20).get();
-                } catch (error) {
+                } catch (orderByError) {
                     // Se der erro de índice, tentar sem ordenação
-                    console.log('Tentando sem ordenação devido a erro de índice:', error);
-                    snapshot = await historyRef.limit(20).get();
+                    console.log('OrderBy falhou, tentando sem ordenação:', orderByError.message);
+                    try {
+                        snapshot = await historyRef.limit(20).get();
+                    } catch (limitError) {
+                        console.error('Erro ao buscar histórico:', limitError);
+                        showToast('Erro ao carregar histórico. Verifique o console.', 'error');
+                        throw limitError;
+                    }
                 }
 
                 if (snapshot.empty) {
@@ -8792,7 +8798,8 @@
 
             } catch (error) {
                 console.error('Erro ao carregar histórico:', error);
-                showToast('Erro ao carregar histórico de versões.', 'error');
+                const errorMsg = error.message || error.toString();
+                showToast(`Erro ao carregar histórico: ${errorMsg}`, 'error');
             }
         }
 
