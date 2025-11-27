@@ -1,40 +1,29 @@
-# Vercel
-.vercel
-
-# Firebase credentials (NEVER commit!)
-.firebase/
-firebase-adminsdk-*.json
-serviceAccountKey.json
-
-# Claude Code
-.claude
-
-# macOS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# Dependencies
+node_modules/
 
 # Logs
-*.log
 npm-debug.log*
+yarn-error.log
+*.log
+firebase-debug.log
 
-# Temporary files
-*.tmp
-*.temp
+# Env / secrets
+.env
+.env.*
+.npmrc
+.firebase/serviceAccountKey.json
 
-# Backups
-*.backup-*
-
-# Test files and results
-.playwright-mcp/
+# Build / reports / tmp
+dist/
+coverage/
+tmp/
+playwright-report/
 test-results/
+.DS_Store
 
-# Editor directories and files
-.vscode/
-.idea/
-*.swp
-*.swo
+# Local backups (mantém só local)
+backup-*.json
+localstorage-backup-*.json
+# Tooling / service artifacts
+.playwright-mcp/
+.vercel/
