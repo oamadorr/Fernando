@@ -3806,12 +3806,27 @@
         // Firebase variables
         let db;
         let currentProjectId = null;
+        let allowOnlineEdits = false; // controle central de edição (desliga quando offline)
         
         // Sistema de senha
         // Hash SHA-256 da senha - será calculado na primeira execução
         let PROJECT_PASSWORD_HASH = null;
         let isAuthenticated = false;
         let pendingAction = null;
+
+        function setReadOnlyMode(isReadOnly) {
+            allowOnlineEdits = !isReadOnly;
+            document.body.classList.toggle('readonly-mode', isReadOnly);
+        }
+
+        function requireOnlineEdits() {
+            const canEdit = allowOnlineEdits && navigator.onLine && db && currentProjectId;
+            if (!canEdit) {
+                showToast('Modo somente leitura: conecte-se ao Firebase para editar.', 'error');
+                return false;
+            }
+            return true;
+        }
         
         // Dados do projeto
         const projectData = {
@@ -4640,6 +4655,7 @@
                 console.log('Firebase inicializado com sucesso');
             } catch (error) {
                 console.error('Erro ao inicializar Firebase:', error);
+                setReadOnlyMode(true);
                 updateStatusIndicator('offline');
                 // Fallback para localStorage se Firebase falhar
                 loadTeamConfigFromStorage();
@@ -4857,6 +4873,7 @@
                 } catch (error) {
                     console.error('Erro ao carregar dados do Firebase:', error);
                     updateStatusIndicator('offline');
+                    setReadOnlyMode(true);
 
                     // Fallback para localStorage apenas se Firebase falhar
                     loadTeamConfigFromStorage();
@@ -4870,6 +4887,7 @@
                 // Firebase não disponível, usar localStorage
                 console.log('Firebase não disponível, usando localStorage');
                 updateStatusIndicator('offline');
+                setReadOnlyMode(true);
                 loadTeamConfigFromStorage();
                 loadLineStepsFromStorage();
                 loadProgressFromStorage();
@@ -5103,9 +5121,10 @@
         }
 
         async function saveProjectData() {
-            if (!db || !currentProjectId) {
-                // Fallback para localStorage
-                saveProgressToStorage();
+            if (!db || !currentProjectId || !navigator.onLine) {
+                updateStatusIndicator('offline');
+                setReadOnlyMode(true);
+                showToast('Modo somente leitura: sem conexão com o Firebase. Nenhuma alteração foi salva.', 'error');
                 return;
             }
             
@@ -5297,6 +5316,7 @@
         }
 
         function updateStatusIndicator(status) {
+            setReadOnlyMode(status === 'offline');
             const indicator = document.getElementById('statusIndicator');
             indicator.className = `status-indicator status-${status}`;
             
@@ -6780,6 +6800,7 @@
                 showPasswordModal();
                 return;
             }
+            if (!requireOnlineEdits()) return;
             document.getElementById('updateModal').style.display = 'block';
         }
 
@@ -6789,6 +6810,7 @@
                 showPasswordModal();
                 return;
             }
+            if (!requireOnlineEdits()) return;
             document.getElementById('usinaSelect').value = usina;
             loadLinhas();
             document.getElementById('linhaSelect').value = linha;
@@ -6841,7 +6863,8 @@
             currentObservationLinha = '';
         }
 
-        function saveObservation() {
+        async function saveObservation() {
+            if (!requireOnlineEdits()) return;
             if (!currentObservationUsina || !currentObservationLinha) {
                 showToast('Erro: Informações da linha não encontradas.', 'error');
                 return;
@@ -6857,8 +6880,9 @@
             // Salvar observação
             lineObservations[currentObservationUsina][currentObservationLinha] = observationText;
             
-            // Salvar no localStorage
+            // Persistir
             saveProgressToStorage();
+            await saveProjectData();
             
             showToast('Observação salva com sucesso!', 'success');
             closeObservationModal();
@@ -6970,6 +6994,7 @@
                 showPasswordModal();
                 return;
             }
+            if (!requireOnlineEdits()) return;
 
             // Fazer backup do estado atual (incluindo progressData)
             transversalEditBackup = {
@@ -7062,6 +7087,7 @@
         }
 
         async function saveTransversalEdit() {
+            if (!requireOnlineEdits()) return;
             try {
                 // Atualizar progressData com os valores dos inputs
                 document.querySelectorAll('#transversalLinesBody tr').forEach(row => {
@@ -7177,6 +7203,7 @@
                 showPasswordModal();
                 return;
             }
+            if (!requireOnlineEdits()) return;
 
             // Fazer backup do estado atual
             tableEditBackup = JSON.parse(JSON.stringify(lineStepsStatus));
@@ -7229,6 +7256,7 @@
         }
 
         async function saveTableEdit(usinaKey) {
+            if (!requireOnlineEdits()) return;
             try {
                 // Capturar valores dos lacres dos inputs antes de salvar
                 const tableId = usinaKey === 'pimental' ? 'tablePimental' :
@@ -7459,6 +7487,7 @@
         }
 
         async function saveLineDetailsEdit() {
+            if (!requireOnlineEdits()) return;
             try {
                 const { usinaKey, linha } = currentLineDetails;
 
@@ -7490,9 +7519,7 @@
                 saveLineStepsToStorage();
                 saveProgressToStorage();
 
-                if (db && currentProjectId) {
-                    await saveProgressToFirebase();
-                }
+                await saveProgressToFirebase();
 
                 // Limpar backup
                 lineDetailsEditBackup = null;
@@ -7715,6 +7742,7 @@
          * Salva edições de Built (localStorage + Firebase)
          */
         async function saveBuiltEdit() {
+            if (!requireOnlineEdits()) return;
             try {
                 // Atualizar builtInformations com valores dos inputs
                 ['tableBuiltBeloMonte', 'tableBuiltPimental', 'tableBuiltOficina'].forEach(tableId => {
@@ -7758,9 +7786,7 @@
                 document.getElementById('builtEditButtons').style.display = 'none';
 
                 // Sincronizar com Firebase se autenticado
-                if (db && currentProjectId) {
-                    await saveBuiltToFirebase();
-                }
+                await saveBuiltToFirebase();
 
                 // Recarregar tabelas
                 renderBuiltTables();
@@ -7847,7 +7873,7 @@
          * Salva Built no Firebase
          */
         async function saveBuiltToFirebase() {
-            if (!db || !currentProjectId) return;
+            if (!requireOnlineEdits()) return;
 
             try {
                 await db.collection('projects').doc(currentProjectId).update({
@@ -8336,7 +8362,7 @@
 
         // Função para salvar no Firebase
         async function saveProgressToFirebase() {
-            if (!db || !currentProjectId) return;
+            if (!requireOnlineEdits()) return;
             
             try {
                 executionDates = sanitizeExecutionDates(executionDates);
@@ -8583,17 +8609,93 @@
         }
 
         // Funções de backup e restauração de dados
+        function ensureUsinaBuckets(rawObject = {}) {
+            const clone = rawObject ? JSON.parse(JSON.stringify(rawObject)) : {};
+            ['pimental', 'belo-monte', 'oficina'].forEach(usina => {
+                if (!clone[usina]) {
+                    clone[usina] = {};
+                }
+            });
+            return clone;
+        }
+
+        function ensureLineStepsStructure(rawLineSteps, referenceProgressData = progressData) {
+            const base = ensureUsinaBuckets(rawLineSteps);
+            const reference = referenceProgressData || {};
+
+            for (const usina in reference) {
+                for (const linha in reference[usina]) {
+                    const current = base[usina][linha] || {};
+                    base[usina][linha] = {
+                        passagemCabo: !!current.passagemCabo,
+                        crimpagemCabo: !!current.crimpagemCabo,
+                        afericaoCrimpagem: !!current.afericaoCrimpagem,
+                        tensionamentoCabo: !!current.tensionamentoCabo,
+                        lacreTensionador: current.lacreTensionador || "",
+                        lacreLoopAbs: current.lacreLoopAbs || ""
+                    };
+                }
+            }
+
+            return base;
+        }
+
         function exportProgressData() {
+            const sanitizedProgress = sanitizeProgressData(progressData);
+            const sanitizedLineSteps = ensureLineStepsStructure(lineStepsStatus, sanitizedProgress);
+            const sanitizedExecutionDates = sanitizeExecutionDates(executionDates);
+            const sanitizedObservations = ensureUsinaBuckets(lineObservations);
+            const sanitizedBuilt = ensureUsinaBuckets(builtInformations);
+
+            let completedBases = 0;
+            for (const usina in sanitizedProgress) {
+                for (const linha in sanitizedProgress[usina]) {
+                    for (const tipo in sanitizedProgress[usina][linha]) {
+                        completedBases += sanitizedProgress[usina][linha][tipo];
+                    }
+                }
+            }
+
+            let completedCableSteps = 0;
+            for (const usina in sanitizedLineSteps) {
+                for (const linha in sanitizedLineSteps[usina]) {
+                    const steps = sanitizedLineSteps[usina][linha];
+                    if (steps.passagemCabo) completedCableSteps++;
+                    if (steps.crimpagemCabo) completedCableSteps++;
+                    if (steps.afericaoCrimpagem) completedCableSteps++;
+                    if (steps.tensionamentoCabo) completedCableSteps++;
+                }
+            }
+
+            const totalBases = calculateTotalBases();
+            const totalItems = totalBases + calculateTotalCableSteps();
+            const progressPercent = totalItems > 0
+                ? ((completedBases + completedCableSteps) / totalItems) * 100
+                : 0;
+
+            const teamConfigForExport = {
+                ...teamConfig,
+                inicioTrabalhoBruto: teamConfig.inicioTrabalhoBruto?.toISOString
+                    ? teamConfig.inicioTrabalhoBruto.toISOString()
+                    : teamConfig.inicioTrabalhoBruto,
+                dataAtual: new Date().toISOString()
+            };
+
             const exportData = {
-                version: "1.0",
+                version: "2.0",
                 timestamp: new Date().toISOString(),
                 project: "Linhas de Vida - Thommen Engenharia",
-                progressData: progressData,
-                teamConfig: teamConfig,
+                progressData: sanitizedProgress,
+                lineStepsStatus: sanitizedLineSteps,
+                executionDates: sanitizedExecutionDates,
+                lineObservations: sanitizedObservations,
+                builtInformations: sanitizedBuilt,
+                manualActiveUsina: manualActiveUsina,
+                teamConfig: teamConfigForExport,
                 metadata: {
-                    totalBases: calculateTotalBases(),
-                    completedBases: calculateCompletedBases(),
-                    progressPercentage: calculateProgress()
+                    totalBases,
+                    completedBases,
+                    progressPercentage: progressPercent
                 }
             };
             
@@ -8602,12 +8704,12 @@
             
             const link = document.createElement('a');
             link.href = URL.createObjectURL(dataBlob);
-            link.download = `backup-linhas-vida-${new Date().toISOString().split('T')[0]}.json`;
+            link.download = `backup-completo-${new Date().toISOString().split('T')[0]}.json`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
-            showToast('Backup dos dados exportado com sucesso!', 'success');
+            showToast('Backup completo exportado com sucesso!', 'success');
         }
 
         function importProgressData(event) {
@@ -8635,25 +8737,55 @@
                         throw new Error('Arquivo de backup inválido');
                     }
                     
-                    // Verificar versão
-                    if (importData.version !== "1.0") {
-                        if (!confirm('Este backup é de uma versão diferente. Deseja continuar mesmo assim?')) {
-                            return;
-                        }
-                    }
-                    
+                    const backupVersion = importData.version || '1.0';
+                    const hasLineSteps = Boolean(importData.lineStepsStatus);
+                    const hasExecutionDates = Boolean(importData.executionDates);
+                    const hasObservations = Boolean(importData.lineObservations);
+                    const hasBuiltInfo = Boolean(importData.builtInformations);
+
                     // Confirmar importação
-                    const confirmMsg = `Importar backup de ${new Date(importData.timestamp).toLocaleString('pt-BR')}?\n\n` +
-                        `Bases concluídas no backup: ${importData.metadata?.completedBases || 'N/A'}\n` +
-                        `Progresso: ${importData.metadata?.progressPercentage?.toFixed(1) || 'N/A'}%\n\n` +
-                        `ATENÇÃO: Isso substituirá todos os dados atuais!`;
+                    const camposDetalhados = [
+                        hasLineSteps ? 'lineStepsStatus' : null,
+                        hasExecutionDates ? 'executionDates' : null,
+                        hasObservations ? 'lineObservations' : null,
+                        hasBuiltInfo ? 'builtInformations' : null
+                    ].filter(Boolean).join(', ') || 'apenas progressData/teamConfig';
+
+                    // Confirmar importação
+                    const confirmMsg = `Importar backup (v${backupVersion}) de ${new Date(importData.timestamp).toLocaleString('pt-BR')}?\n\n` +
+                        `Bases concluídas no backup: ${importData.metadata?.completedBases ?? 'N/A'}\n` +
+                        `Progresso: ${importData.metadata?.progressPercentage?.toFixed?.(1) ?? 'N/A'}%\n` +
+                        `Campos disponíveis: ${camposDetalhados}\n\n` +
+                        `ATENÇÃO: Isso substituirá os dados locais e salvará no Firebase.`;
                     
                     if (!confirm(confirmMsg)) {
                         return;
                     }
                     
                     // Aplicar dados importados
-                    progressData = importData.progressData;
+                    const sanitizedProgress = sanitizeProgressData(importData.progressData);
+                    progressData = sanitizedProgress;
+                    
+                    // Atualizar lineStepsStatus se estiver no backup
+                    lineStepsStatus = ensureLineStepsStructure(
+                        hasLineSteps ? importData.lineStepsStatus : lineStepsStatus,
+                        sanitizedProgress
+                    );
+                    
+                    // Atualizar datas de execução se disponíveis
+                    if (hasExecutionDates) {
+                        executionDates = sanitizeExecutionDates(importData.executionDates);
+                    }
+                    
+                    // Atualizar observações e built se disponíveis
+                    lineObservations = ensureUsinaBuckets(hasObservations ? importData.lineObservations : lineObservations);
+                    builtInformations = ensureUsinaBuckets(hasBuiltInfo ? importData.builtInformations : builtInformations);
+                    
+                    // Carregar usina ativa se existir no backup
+                    if (importData.manualActiveUsina) {
+                        manualActiveUsina = importData.manualActiveUsina;
+                        localStorage.setItem('manualActiveUsina', manualActiveUsina);
+                    }
                     
                     // Atualizar teamConfig se disponível
                     if (importData.teamConfig) {
