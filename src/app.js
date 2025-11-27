@@ -25,6 +25,7 @@ import {
 } from "./ui/map.js";
 import { createObservationHandlers } from "./ui/modals.js";
 import { showToast } from "./ui/toasts.js";
+import { createTransversalHandlers } from "./ui/transversalModals.js";
 import state, {
     setDb,
     setCurrentProjectId,
@@ -85,6 +86,35 @@ const {
     saveObservation,
     updateCharacterCount,
 } = createObservationHandlers({ requireOnlineEdits, saveProjectData });
+
+const {
+    showTransversalDetails,
+    closeTransversalModal,
+    enableTransversalEdit,
+    cancelTransversalEdit,
+    saveTransversalEdit,
+} = createTransversalHandlers({
+    requireOnlineEdits,
+    saveProjectData,
+    updateAllDisplays,
+    updateTransversalVisuals,
+    showToast,
+    saveLineStepsToStorage,
+    saveProgressToStorage,
+    getIsAuthenticated: () => isAuthenticated,
+    setPendingAction: (action) => {
+        pendingAction = action;
+    },
+    getLineStepsStatus: () => lineStepsStatus,
+    setLineStepsStatus: (value) => {
+        lineStepsStatus = value;
+    },
+    getProgressData: () => progressData,
+    setProgressData: (value) => {
+        progressData = value;
+    },
+    getProjectData: () => projectData,
+});
 
 // Dados do projeto
 const projectData = {
@@ -1820,39 +1850,6 @@ function calculateCableStepsCompletedOfLine(usinaKey, linha) {
     return completed;
 }
 
-// Função para calcular progresso percentual de uma linha específica
-function calculateLineProgress(usinaKey, linha) {
-    if (!projectData[usinaKey] || !projectData[usinaKey].linhas[linha]) {
-        return 0;
-    }
-
-    const linhaData = projectData[usinaKey].linhas[linha];
-    let totalBases = 0;
-    let completedBases = 0;
-
-    // Calcular total de bases da linha
-    for (const tipo in linhaData.bases) {
-        totalBases += linhaData.bases[tipo];
-    }
-
-    // Calcular bases concluídas da linha
-    if (progressData[usinaKey] && progressData[usinaKey][linha]) {
-        for (const tipo in progressData[usinaKey][linha]) {
-            completedBases += progressData[usinaKey][linha][tipo] || 0;
-        }
-    }
-
-    // Incluir etapas do cabo no cálculo
-    const completedCableSteps = calculateCableStepsCompletedOfLine(usinaKey, linha);
-    const totalCableSteps = 4; // 4 etapas por linha
-
-    const totalItems = totalBases + totalCableSteps;
-    const completedItems = completedBases + completedCableSteps;
-
-    const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-    return Math.min(progress, 100); // Limitar a 100% máximo
-}
-
 function updateStatusIndicator(status) {
     setReadOnlyMode(status === "offline");
     const indicator = document.getElementById("statusIndicator");
@@ -3064,272 +3061,6 @@ function closeModal() {
     // Resetar os checkboxes de "todas as bases"
     document.getElementById("selectAllBases").checked = false;
     document.getElementById("selectAllRemoveBases").checked = false;
-}
-
-// Funções para Modal de Linhas Transversais
-function showTransversalDetails(usinaKey, grupo) {
-    const [startLine, endLine] = grupo.split("-").map(Number);
-    const linhas = [];
-
-    for (let i = startLine; i <= endLine; i++) {
-        const linhaStr = String(i).padStart(2, "0");
-        if (projectData[usinaKey].linhas[linhaStr]) {
-            linhas.push(linhaStr);
-        }
-    }
-
-    // Atualizar informações do grupo
-    const usinaName = projectData[usinaKey].name;
-    document.getElementById("transversalGroupInfo").textContent =
-        `${usinaName} - Linhas ${grupo} (${linhas.length} linhas transversais)`;
-
-    // Popular tabela
-    const tbody = document.getElementById("transversalLinesBody");
-    tbody.innerHTML = "";
-
-    linhas.forEach((linha) => {
-        const linhaData = projectData[usinaKey].linhas[linha];
-        const progress = calculateLineProgress(usinaKey, linha);
-        const steps = lineStepsStatus[usinaKey]?.[linha] || {};
-        const completed = progressData[usinaKey]?.[linha]?.J || 0;
-        const total = linhaData.bases.J || 0;
-
-        const statusClass =
-            progress === 100 ? "completed" : progress > 0 ? "in-progress" : "pending";
-
-        const row = document.createElement("tr");
-        row.dataset.usina = usinaKey;
-        row.dataset.linha = linha;
-        row.dataset.total = total;
-        row.innerHTML = `
-                    <td style="font-weight: bold; color: var(--primary-blue);">${linha}</td>
-                    <td>${linhaData.metragem}m</td>
-                    <td>${total}</td>
-                    <td class="editable-completed-cell">
-                        <span class="completed-display">${completed}</span>
-                        <input type="number" class="completed-input" value="${completed}" min="0" max="${total}" style="display: none; width: 60px; text-align: center; padding: 4px; border: 2px solid var(--primary-blue); border-radius: 4px;">
-                    </td>
-                    <td class="progress-cell">
-                        <div class="progress-bar" style="margin: 0;">
-                            <div class="progress-fill ${statusClass}" style="width: ${progress}%"></div>
-                            <span class="progress-text">${progress}%</span>
-                        </div>
-                    </td>
-                    <td class="editable-step" data-step="passagemCabo">${steps.passagemCabo ? "✅" : "❌"}</td>
-                    <td class="editable-step" data-step="crimpagemCabo">${steps.crimpagemCabo ? "✅" : "❌"}</td>
-                    <td class="editable-step" data-step="afericaoCrimpagem">${steps.afericaoCrimpagem ? "✅" : "❌"}</td>
-                    <td class="editable-step" data-step="tensionamentoCabo">${steps.tensionamentoCabo ? "✅" : "❌"}</td>
-                    <td class="editable-seal" data-seal="lacreTensionador">${steps.lacreTensionador || "-"}</td>
-                    <td class="editable-seal" data-seal="lacreLoopAbs">${steps.lacreLoopAbs || "-"}</td>
-                `;
-
-        tbody.appendChild(row);
-    });
-
-    // Resetar modo de visualização
-    document.getElementById("transversalLinesTable").classList.remove("edit-mode");
-    document.getElementById("transversalViewButtons").style.display = "flex";
-    document.getElementById("transversalEditButtons").style.display = "none";
-
-    // Abrir modal
-    document.getElementById("transversalModal").style.display = "flex";
-}
-
-function closeTransversalModal() {
-    document.getElementById("transversalModal").style.display = "none";
-}
-
-// Variável para armazenar estado original antes da edição
-let transversalEditBackup = null;
-
-function enableTransversalEdit() {
-    // Verificar autenticação antes de permitir edição
-    if (!isAuthenticated) {
-        pendingAction = () => enableTransversalEdit();
-        showPasswordModal();
-        return;
-    }
-    if (!requireOnlineEdits()) return;
-
-    // Fazer backup do estado atual (incluindo progressData)
-    transversalEditBackup = {
-        steps: JSON.parse(JSON.stringify(lineStepsStatus)),
-        progress: JSON.parse(JSON.stringify(progressData)),
-    };
-
-    // Ativar modo de edição
-    const table = document.getElementById("transversalLinesTable");
-    table.classList.add("edit-mode");
-
-    // Adicionar event listeners nas células editáveis das etapas
-    document.querySelectorAll(".editable-step").forEach((cell) => {
-        cell.addEventListener("click", toggleStepStatus);
-    });
-
-    // Mostrar inputs de bases concluídas e esconder displays
-    document.querySelectorAll(".completed-display").forEach((span) => {
-        span.style.display = "none";
-    });
-    document.querySelectorAll(".completed-input").forEach((input) => {
-        input.style.display = "inline-block";
-    });
-
-    // Converter campos de lacre em inputs editáveis
-    document.querySelectorAll("#transversalLinesTable .editable-seal").forEach((cell) => {
-        const row = cell.closest("tr");
-        const usina = row.dataset.usina;
-        const linha = row.dataset.linha;
-        const sealField = cell.dataset.seal;
-        const currentValue =
-            (lineStepsStatus[usina] &&
-                lineStepsStatus[usina][linha] &&
-                lineStepsStatus[usina][linha][sealField]) ||
-            "";
-
-        cell.innerHTML = `<input type="text" class="seal-input" value="${currentValue}" maxlength="20" placeholder="Digite o lacre" data-usina="${usina}" data-linha="${linha}" data-seal="${sealField}" style="width: 120px; padding: 4px; text-align: center; border: 2px solid var(--primary-blue); border-radius: 4px; background: white;">`;
-    });
-
-    // Alternar botões
-    document.getElementById("transversalViewButtons").style.display = "none";
-    document.getElementById("transversalEditButtons").style.display = "flex";
-}
-
-function toggleStepStatus(event) {
-    const cell = event.currentTarget;
-    const row = cell.closest("tr");
-    const usinaKey = row.dataset.usina;
-    const linha = row.dataset.linha;
-    const step = cell.dataset.step;
-
-    // Inicializar estrutura se não existir
-    if (!lineStepsStatus[usinaKey]) lineStepsStatus[usinaKey] = {};
-    if (!lineStepsStatus[usinaKey][linha]) lineStepsStatus[usinaKey][linha] = {};
-
-    // Toggle status
-    const currentStatus = lineStepsStatus[usinaKey][linha][step] || false;
-    lineStepsStatus[usinaKey][linha][step] = !currentStatus;
-
-    // Atualizar visual
-    cell.textContent = lineStepsStatus[usinaKey][linha][step] ? "✅" : "❌";
-}
-
-function cancelTransversalEdit() {
-    // Restaurar backup
-    if (transversalEditBackup) {
-        lineStepsStatus = JSON.parse(JSON.stringify(transversalEditBackup.steps));
-        progressData = JSON.parse(JSON.stringify(transversalEditBackup.progress));
-        transversalEditBackup = null;
-    }
-
-    // Desativar modo de edição
-    const table = document.getElementById("transversalLinesTable");
-    table.classList.remove("edit-mode");
-
-    // Remover event listeners
-    document.querySelectorAll(".editable-step").forEach((cell) => {
-        cell.removeEventListener("click", toggleStepStatus);
-    });
-
-    // Alternar botões e recarregar dados
-    document.getElementById("transversalViewButtons").style.display = "flex";
-    document.getElementById("transversalEditButtons").style.display = "none";
-
-    // Recarregar modal com dados originais
-    const usinaKey = document.querySelector("#transversalLinesBody tr")?.dataset.usina;
-    if (!usinaKey) return;
-
-    const grupoText = document.getElementById("transversalGroupInfo").textContent;
-    const grupoMatch = grupoText.match(/Linhas (\d+-\d+)/);
-    if (grupoMatch) {
-        showTransversalDetails(usinaKey, grupoMatch[1]);
-    }
-}
-
-async function saveTransversalEdit() {
-    if (!requireOnlineEdits()) return;
-    try {
-        // Atualizar progressData com os valores dos inputs
-        document.querySelectorAll("#transversalLinesBody tr").forEach((row) => {
-            const usinaKey = row.dataset.usina;
-            const linha = row.dataset.linha;
-            const input = row.querySelector(".completed-input");
-            const completedValue = parseInt(input.value) || 0;
-
-            // Inicializar estrutura se não existir
-            if (!progressData[usinaKey]) progressData[usinaKey] = {};
-            if (!progressData[usinaKey][linha]) progressData[usinaKey][linha] = {};
-
-            // Atualizar bases J concluídas
-            progressData[usinaKey][linha].J = completedValue;
-        });
-
-        // Atualizar campos de lacre com os valores dos inputs
-        document.querySelectorAll("#transversalLinesTable .seal-input").forEach((input) => {
-            const usina = input.dataset.usina;
-            const linha = input.dataset.linha;
-            const sealField = input.dataset.seal;
-            const sealValue = input.value.trim();
-
-            // Inicializar estrutura se não existir
-            if (!lineStepsStatus[usina]) lineStepsStatus[usina] = {};
-            if (!lineStepsStatus[usina][linha]) lineStepsStatus[usina][linha] = {};
-
-            // Atualizar valor do lacre
-            lineStepsStatus[usina][linha][sealField] = sealValue;
-        });
-
-        // Salvar no localStorage
-        saveLineStepsToStorage();
-        saveProgressToStorage();
-
-        // Salvar no Firebase se configurado
-        if (db && currentProjectId) {
-            await saveProjectData();
-        }
-
-        // Limpar backup
-        transversalEditBackup = null;
-
-        // Atualizar displays
-        updateAllDisplays();
-        updateTransversalVisuals();
-
-        // Desativar modo de edição
-        const table = document.getElementById("transversalLinesTable");
-        table.classList.remove("edit-mode");
-
-        // Remover event listeners
-        document.querySelectorAll(".editable-step").forEach((cell) => {
-            cell.removeEventListener("click", toggleStepStatus);
-        });
-
-        // Esconder inputs e mostrar displays
-        document.querySelectorAll(".completed-display").forEach((span) => {
-            span.style.display = "inline-block";
-        });
-        document.querySelectorAll(".completed-input").forEach((input) => {
-            input.style.display = "none";
-        });
-
-        // Alternar botões
-        document.getElementById("transversalViewButtons").style.display = "flex";
-        document.getElementById("transversalEditButtons").style.display = "none";
-
-        // Recarregar modal com dados atualizados
-        const usinaKey = document.querySelector("#transversalLinesBody tr")?.dataset.usina;
-        if (usinaKey) {
-            const grupoText = document.getElementById("transversalGroupInfo").textContent;
-            const grupoMatch = grupoText.match(/Linhas (\d+-\d+)/);
-            if (grupoMatch) {
-                showTransversalDetails(usinaKey, grupoMatch[1]);
-            }
-        }
-
-        showToast("Progresso atualizado com sucesso!", "success");
-    } catch (error) {
-        console.error("Erro ao salvar:", error);
-        showToast("Erro ao salvar progresso", "error");
-    }
 }
 
 // Atualizar visuais dos grupos transversais no mapa
@@ -5898,6 +5629,7 @@ const exportedFunctions = {
     closeObservationModal,
     updateCharacterCount,
     saveObservation,
+    showTransversalDetails,
     closeTransversalModal,
     enableTransversalEdit,
     cancelTransversalEdit,
