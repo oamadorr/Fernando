@@ -1647,7 +1647,7 @@ async function loadProjectData() {
                                 teamConfig.inicioTrabalhoBruto = new Date(
                                     data.teamConfig.inicioTrabalhoBruto
                                 );
-                            } catch (e) {
+                            } catch {
                                 teamConfig.inicioTrabalhoBruto = new Date("2025-09-11");
                             }
                         }
@@ -1655,7 +1655,7 @@ async function loadProjectData() {
                         if (data.teamConfig.dataAtual) {
                             try {
                                 teamConfig.dataAtual = new Date(data.teamConfig.dataAtual);
-                            } catch (e) {
+                            } catch {
                                 teamConfig.dataAtual = new Date();
                             }
                         }
@@ -1695,9 +1695,6 @@ async function loadProjectData() {
 
                     // Estimar progressData baseado no progresso simples
                     if (oldData.pimental && oldData["belo-monte"]) {
-                        const pimentalProgress = oldData.pimental.progress || 0;
-                        const beloMonteProgress = oldData["belo-monte"].progress || 0;
-
                         // Manter dados existentes ou criar base simples
                         if (!progressData.pimental) {
                             progressData.pimental = {
@@ -1756,7 +1753,7 @@ async function loadProjectData() {
                                 teamConfig.inicioTrabalhoBruto = new Date(
                                     data.teamConfig.inicioTrabalhoBruto
                                 );
-                            } catch (e) {
+                            } catch {
                                 teamConfig.inicioTrabalhoBruto = new Date("2025-09-11");
                             }
                         }
@@ -1764,7 +1761,7 @@ async function loadProjectData() {
                         if (data.teamConfig.dataAtual) {
                             try {
                                 teamConfig.dataAtual = new Date(data.teamConfig.dataAtual);
-                            } catch (e) {
+                            } catch {
                                 teamConfig.dataAtual = new Date();
                             }
                         }
@@ -2222,7 +2219,7 @@ function calculateCableStepsCompletedOfUsina(usinaKey) {
 function calculateTotalCableSteps() {
     let total = 0;
     for (const usina in projectData) {
-        for (const linha in projectData[usina].linhas) {
+        for (const _linha in projectData[usina].linhas) {
             total += 4; // 4 etapas por linha
         }
     }
@@ -2232,7 +2229,7 @@ function calculateTotalCableSteps() {
 function calculateTotalCableStepsOfUsina(usinaKey) {
     let total = 0;
     if (projectData[usinaKey]) {
-        for (const linha in projectData[usinaKey].linhas) {
+        for (const _linha in projectData[usinaKey].linhas) {
             total += 4; // 4 etapas por linha
         }
     }
@@ -2974,7 +2971,6 @@ function updateTooltipPosition(event) {
     const tooltip = document.getElementById("basesTooltip");
     const rect = tooltip.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
 
     let left = event.pageX + 35;
     let top = event.pageY - rect.height - 35;
@@ -2997,14 +2993,16 @@ function updateTooltipPosition(event) {
 let currentMapTab = "pimental"; // Tab ativa atual
 
 // Alternar entre abas das usinas
-function switchMapTab(usinaKey) {
+function switchMapTab(usinaKey, evt) {
     currentMapTab = usinaKey;
 
     // Atualizar classes das abas
     document.querySelectorAll(".map-tab-btn").forEach((btn) => {
         btn.classList.remove("active");
     });
-    event.target.classList.add("active");
+    if (evt && evt.target) {
+        evt.target.classList.add("active");
+    }
 
     // Mostrar container correto
     document.querySelectorAll(".map-container").forEach((container) => {
@@ -3602,7 +3600,7 @@ function addProgressTooltip(barElement, tipo, linesInfo, usinaKey) {
     document.body.appendChild(tooltip);
 
     // Event listeners para mostrar/ocultar tooltip
-    barElement.addEventListener("mouseenter", (e) => {
+    barElement.addEventListener("mouseenter", (_e) => {
         const rect = barElement.getBoundingClientRect();
         tooltip.style.left = `${rect.left + window.scrollX}px`;
         tooltip.style.top = `${rect.top + window.scrollY - tooltip.offsetHeight - 10}px`;
@@ -5214,9 +5212,7 @@ function toggleStep(usinaKey, linha, step) {
     }
 
     // Alternar o status
-    const oldValue = lineStepsStatus[usinaKey][linha][step];
     lineStepsStatus[usinaKey][linha][step] = !lineStepsStatus[usinaKey][linha][step];
-    const newValue = lineStepsStatus[usinaKey][linha][step];
 
     // Se estiver em modo de edição, apenas atualizar visual
     if (isEditMode) {
@@ -5654,7 +5650,7 @@ function loadTeamConfigFromStorage() {
             if (loadedConfig.inicioTrabalhoBruto) {
                 try {
                     teamConfig.inicioTrabalhoBruto = new Date(loadedConfig.inicioTrabalhoBruto);
-                } catch (e) {
+                } catch {
                     teamConfig.inicioTrabalhoBruto = new Date("2025-09-11");
                 }
             }
@@ -5662,7 +5658,7 @@ function loadTeamConfigFromStorage() {
             if (loadedConfig.dataAtual) {
                 try {
                     teamConfig.dataAtual = new Date(loadedConfig.dataAtual);
-                } catch (e) {
+                } catch {
                     teamConfig.dataAtual = new Date();
                 }
             }
@@ -7015,6 +7011,42 @@ function exportToExcel() {
 
     showToast("Relatório Excel gerado com sucesso!", "success");
 }
+
+const exportedFunctions = {
+    switchMapTab,
+    setActiveUsina,
+    forceSaveActiveUsina,
+    openUpdateModal,
+    openLineModal,
+    openObservationModal,
+    saveObservation,
+    closeTransversalModal,
+    enableTransversalEdit,
+    cancelTransversalEdit,
+    saveTransversalEdit,
+    enableTableEdit,
+    cancelTableEdit,
+    saveTableEdit,
+    closeLineDetailsModal,
+    enableLineDetailsEdit,
+    cancelLineDetailsEdit,
+    saveLineDetailsEdit,
+    enableBuiltEdit,
+    cancelBuiltEdit,
+    saveBuiltEdit,
+    toggleAllBases,
+    toggleAllRemoveBases,
+    toggleStep,
+    clearAllProgress,
+    exportProgressData,
+    importProgressData,
+    forceRestoreFromFirebase,
+    restoreVersion,
+    exportToPDF,
+    exportToExcel,
+};
+
+Object.assign(window, exportedFunctions);
 
 // Inicializar aplicação quando a página carregar
 window.addEventListener("load", function () {
