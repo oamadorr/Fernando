@@ -4410,11 +4410,24 @@
             const completedBases = calculateCompletedBases();
             const totalCableSteps = calculateTotalCableSteps();
             const completedCableSteps = calculateCableStepsCompleted();
-            
+
             const totalItems = totalBases + totalCableSteps;
             const completedItems = completedBases + completedCableSteps;
-            
-            return totalItems > 0 ? (completedItems / totalItems * 100) : 0;
+
+            const progressPercent = totalItems > 0 ? (completedItems / totalItems * 100) : 0;
+
+            // Debug log para diagnóstico
+            console.log('📊 calculateProgress:', {
+                totalBases,
+                completedBases,
+                totalCableSteps,
+                completedCableSteps,
+                totalItems,
+                completedItems,
+                progressPercent: progressPercent.toFixed(1) + '%'
+            });
+
+            return progressPercent;
         }
 
         function calculateProductivity() {
@@ -5175,8 +5188,10 @@
         // Funções para calcular progresso das etapas do cabo
         function calculateCableStepsCompleted() {
             let completed = 0;
+            let lineCount = 0;
             for (const usina in lineStepsStatus) {
                 for (const linha in lineStepsStatus[usina]) {
+                    lineCount++;
                     const steps = lineStepsStatus[usina][linha];
                     if (steps.passagemCabo) completed++;
                     if (steps.crimpagemCabo) completed++;
@@ -5184,6 +5199,11 @@
                     if (steps.tensionamentoCabo) completed++;
                 }
             }
+            console.log('🔧 calculateCableStepsCompleted:', {
+                totalLines: lineCount,
+                completedSteps: completed,
+                lineStepsStatus: lineStepsStatus
+            });
             return completed;
         }
 
@@ -6283,6 +6303,7 @@
         }
 
         function updateAllDisplays() {
+            console.log('🔄 updateAllDisplays chamado');
             updateDashboard();
             updateUsinaStats();
             updateTables();
@@ -6292,6 +6313,7 @@
             updateTransversalVisuals(); // Atualizar grupos transversais
             updateLastUpdateTimestamp();
             renderBuiltTables(); // Atualizar tabelas de Built
+            console.log('✅ updateAllDisplays concluído');
         }
 
         function updateLastUpdateTimestamp() {
