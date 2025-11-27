@@ -8784,7 +8784,7 @@
                         second: '2-digit'
                     });
 
-                    // Calcular progresso desta versão
+                    // Calcular progresso desta versão (bases + etapas do cabo)
                     let completedBases = 0;
                     let totalBases = 0;
                     if (data.progressData) {
@@ -8800,7 +8800,28 @@
                             }
                         }
                     }
-                    const progress = totalBases > 0 ? ((completedBases / totalBases) * 100).toFixed(1) : 0;
+
+                    // Calcular etapas do cabo completadas
+                    let completedCableSteps = 0;
+                    if (data.lineStepsStatus) {
+                        for (const usina in data.lineStepsStatus) {
+                            for (const linha in data.lineStepsStatus[usina]) {
+                                const steps = data.lineStepsStatus[usina][linha];
+                                if (steps.passagemCabo) completedCableSteps++;
+                                if (steps.crimpagemCabo) completedCableSteps++;
+                                if (steps.afericaoCrimpagem) completedCableSteps++;
+                                if (steps.tensionamentoCabo) completedCableSteps++;
+                            }
+                        }
+                    }
+
+                    // Total de etapas do cabo (92 linhas x 4 etapas)
+                    const totalCableSteps = 368;
+
+                    // Progresso combinado (bases + etapas)
+                    const totalItems = totalBases + totalCableSteps;
+                    const completedItems = completedBases + completedCableSteps;
+                    const progress = totalItems > 0 ? ((completedItems / totalItems) * 100).toFixed(1) : 0;
 
                     const versionCard = document.createElement('div');
                     versionCard.style.cssText = `
@@ -8831,7 +8852,10 @@
                                     📅 ${formattedDate}
                                 </div>
                                 <div style="color: var(--dark-gray); font-size: 0.9rem; margin-top: 5px;">
-                                    📊 Progresso: ${progress}% (${completedBases}/${totalBases} bases)
+                                    📊 Progresso: ${progress}%
+                                </div>
+                                <div style="color: var(--medium-gray); font-size: 0.85rem; margin-top: 3px;">
+                                    • ${completedBases}/${totalBases} bases • ${completedCableSteps}/${totalCableSteps} etapas
                                 </div>
                             </div>
                             <button class="btn btn-primary" onclick="restoreVersion('${doc.id}'); event.stopPropagation();">
