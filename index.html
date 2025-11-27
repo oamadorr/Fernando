@@ -7600,6 +7600,10 @@
             });
 
             linhas.forEach(linha => {
+                // Verificar se a estrutura existe antes de acessar
+                if (!builtInformations[usinaKey] || !builtInformations[usinaKey][linha]) {
+                    return;
+                }
                 const pares = builtInformations[usinaKey][linha];
                 if (!pares) return;
 
