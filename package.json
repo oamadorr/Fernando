@@ -1,19 +1,19 @@
 {
-  "name": "linhas-vida-dashboard",
-  "private": true,
-  "devDependencies": {
-    "@playwright/test": "^1.55.1",
-    "eslint": "^9.11.1",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "prettier": "^3.3.3"
-  },
-  "scripts": {
-    "test:playwright": "playwright test",
-    "lint": "eslint . --ext .js --max-warnings=0",
-    "format": "prettier --write \"**/*.{js,json,css,html,md}\""
-  },
-  "dependencies": {
-    "firebase-admin": "^13.6.0"
-  }
+    "name": "linhas-vida-dashboard",
+    "private": true,
+    "devDependencies": {
+        "@playwright/test": "^1.55.1",
+        "eslint": "^9.11.1",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-import": "^2.29.1",
+        "prettier": "^3.3.3"
+    },
+    "scripts": {
+        "test:playwright": "playwright test",
+        "lint": "eslint . --ext .js --max-warnings=0",
+        "format": "prettier --write \"**/*.{js,json,css,html,md}\""
+    },
+    "dependencies": {
+        "firebase-admin": "^13.6.0"
+    }
 }

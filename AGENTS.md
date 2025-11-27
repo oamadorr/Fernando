@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a **modularized web application** for managing the installation schedule of lifeline systems at Pimental and Belo Monte hydroelectric plants. The project is for Thommen Engenharia working with Norte Energia.
 
 **Main files:**
+
 - `index.html` (1,161 lines) - HTML structure and CDN dependencies
 - `src/styles.css` (2,643 lines) - All CSS styles
 - `src/app.js` (5,925 lines) - All JavaScript logic
@@ -16,6 +17,7 @@ This is a **modularized web application** for managing the installation schedule
 ## Architecture
 
 ### Core Structure
+
 - **Modular architecture** - HTML, CSS, and JavaScript in separate files
 - **No build process** - runs directly in browser
 - **Dual persistence:** localStorage + Firebase Firestore for real-time sync
@@ -23,6 +25,7 @@ This is a **modularized web application** for managing the installation schedule
 - **Vercel deployment** - automatic deploy from GitHub main branch
 
 ### File Organization
+
 ```
 /
 ├── index.html          # HTML structure + CDN script imports
@@ -42,6 +45,7 @@ This is a **modularized web application** for managing the installation schedule
 The application uses **dual persistence** (localStorage + Firebase), but Firebase is the **single source of truth**. ALL data fields must be synced via the realtime listener.
 
 **Firebase Document Structure (`projects/{projectId}`):**
+
 ```javascript
 {
   // ALWAYS include ALL these fields when syncing
@@ -93,6 +97,7 @@ The application uses **dual persistence** (localStorage + Firebase), but Firebas
 ```
 
 **Version History Subcollection (`projects/{projectId}/history/{versionId}`):**
+
 ```javascript
 {
   progressData: { ... },      // Snapshot of all fields
@@ -108,6 +113,7 @@ The application uses **dual persistence** (localStorage + Firebase), but Firebas
 ```
 
 **Team Configuration:**
+
 - 4 people, 6 hours/day (8-11:30, 13:30-16:30), 80% efficiency
 - Productivity calculations based on work days since 2025-09-01
 
@@ -128,12 +134,14 @@ The application uses **dual persistence** (localStorage + Firebase), but Firebas
 ### Version History System
 
 **Automatic Snapshots:**
+
 - Created whenever data is saved to Firebase (`saveProjectData()`)
 - Stored in subcollection: `projects/{projectId}/history/{versionId}`
 - Auto-cleanup: Keeps only 20 most recent versions
 - Each snapshot includes ALL 5 data fields + metadata
 
 **Restoration Flow:**
+
 1. User clicks "Histórico de Versões" button in dashboard
 2. Modal displays versions sorted by date (newest first)
 3. Shows progress percentage, timestamp, and note for each version
@@ -147,16 +155,19 @@ The application uses **dual persistence** (localStorage + Firebase), but Firebas
 ## Data Specifications
 
 **Pimental (6 individual lines + 12 transversal):**
+
 - Lines 01-04: Main horizontal lines with various base types (A, B, C, D, E, F, G, H, K)
 - Lines 05, 18: Vertical side lines with J bases
 - Lines 06-17: Transversal lines grouped as 06-10 and 11-17 (all J type bases)
 
 **Belo Monte (20 individual lines + 52 transversal):**
+
 - Lines 01-18: Main horizontal lines with various base types (A, B, C, D, E, F, G, H, K)
 - Lines 19, 71: Vertical side lines with J bases
 - Lines 20-71: Transversal lines grouped in multiple sets (all J type bases)
 
 **Oficina (3 lines):**
+
 - Line 72: Left vertical (M, B bases)
 - Line 73: Horizontal center (K bases)
 - Line 74: Right vertical (B, H bases)
@@ -164,28 +175,33 @@ The application uses **dual persistence** (localStorage + Firebase), but Firebas
 ## Key Functions
 
 **Modal System:**
+
 - `showLineDetails(usinaKey, linha)` - Opens individual line modal with compact X/Y format (NO password required)
 - `showTransversalDetails(usinaKey, grupo)` - Opens transversal group modal (NO password required)
 - `enableLineDetailsEdit()` / `enableTransversalEdit()` - Activates edit mode (REQUIRES password)
 - `openLineModal(usinaKey, linha)` - Legacy function (REQUIRES password - used for lines without onclick)
 
 **Authentication Flow:**
+
 - Password is ONLY required when clicking "Editar" button, NOT when opening modals
 - `isAuthenticated` flag controls edit permissions
 - Event listeners check for `onclick` attribute before adding click handlers to avoid conflicts
 
 **Progress Calculation:**
+
 - `calculateTotalBases()` - Count all bases across both plants
 - `calculateCompletedBases()` - Sum completed bases by type
 - `updateAllDisplays()` - Refresh all interface elements including map visuals
 
 **Data Management:**
+
 - `saveProgressToStorage()` / `loadProgressFromStorage()` - localStorage persistence
 - `saveProgressToFirebase()` - Cloud sync (automatic when authenticated)
 - `exportProgressData()` / `importProgressData()` - JSON backup/restore
 - `exportToPDF()` / `exportToExcel()` - Report generation
 
 **UI Updates:**
+
 - `updateTable(usinaKey, tableId)` - Populate tables with numerical sorting (01, 02... not 01, 10...)
 - `updateCharts()` - Refresh Chart.js visualizations
 - `updateTransversalVisuals()` - Update map line colors based on progress
@@ -197,23 +213,26 @@ The application uses **dual persistence** (localStorage + Firebase), but Firebas
 **Problem:** Data (lacres, observations, Built info) appeared when multiple users worked simultaneously but disappeared after version restoration or page reload.
 
 **Root Cause:** `setupRealtimeListener()` (around line 5047) was only syncing 3 fields:
+
 - ✅ progressData
 - ✅ lineStepsStatus
 - ✅ executionDates
 
 **IGNORED fields (causing data loss):**
+
 - ❌ lineObservations
 - ❌ builtInformations
 
 **Impact:** When Firebase updated (from any save/restore), the listener detected change and overwrote local data WITHOUT the missing fields, effectively "erasing" them from user's view.
 
 **Solution (Lines 5066-5093):**
+
 ```javascript
 const newProgressData = data.progressData ? sanitizeProgressData(data.progressData) : null;
 const newLineStepsStatus = data.lineStepsStatus || {};
 const newExecutionDates = sanitizeExecutionDates(data.executionDates || {});
-const newLineObservations = data.lineObservations || {};        // CRITICAL: Added
-const newBuiltInformations = data.builtInformations || {};      // CRITICAL: Added
+const newLineObservations = data.lineObservations || {}; // CRITICAL: Added
+const newBuiltInformations = data.builtInformations || {}; // CRITICAL: Added
 
 // Sync ALL fields including new ones
 if (JSON.stringify(newLineObservations) !== JSON.stringify(lineObservations)) {
@@ -235,6 +254,7 @@ if (JSON.stringify(newBuiltInformations) !== JSON.stringify(builtInformations)) 
 **Root Cause:** Modal calculated progress using ONLY bases (287/441 = 65.1%), while dashboard included bases + cable steps (343/809 = 42.4%).
 
 **Solution (Lines 8787-8824):** Updated modal `calculateProgress()` to match dashboard formula:
+
 ```javascript
 // Calculate bases
 let completedBases = 0;
@@ -271,8 +291,9 @@ const progress = ((completedItems / totalItems) * 100).toFixed(1);
 **Root Cause:** Code accessed `builtInformations[usina][linha]` without checking if structure existed first.
 
 **Solution (Lines 7602-7608):**
+
 ```javascript
-linhas.forEach(linha => {
+linhas.forEach((linha) => {
     // CRITICAL: Check structure exists before accessing
     if (!builtInformations[usinaKey] || !builtInformations[usinaKey][linha]) {
         return;
@@ -290,6 +311,7 @@ linhas.forEach(linha => {
 **Service Account:** `.firebase/serviceAccountKey.json` (project: `fernando-bce22`)
 
 **Setup:**
+
 ```bash
 npm install firebase-admin playwright
 npx playwright install chromium
@@ -298,6 +320,7 @@ npx playwright install chromium
 **Available Scripts:**
 
 1. **Export Complete Backup:**
+
 ```bash
 node export-complete-backup.js
 # Creates: backup-completo-YYYY-MM-DD.json
@@ -305,6 +328,7 @@ node export-complete-backup.js
 ```
 
 2. **Import Backup to Firebase:**
+
 ```bash
 node import-backup-to-firebase.js
 # Reads: backup-linhas-vida-YYYY-MM-DD.json
@@ -312,6 +336,7 @@ node import-backup-to-firebase.js
 ```
 
 3. **Check History Detailed:**
+
 ```bash
 node check-history-detailed.js
 # Lists all version history snapshots
@@ -319,6 +344,7 @@ node check-history-detailed.js
 ```
 
 4. **Extract localStorage (Automated):**
+
 ```bash
 node extract-localstorage-data.js
 # Opens browser, extracts localStorage, saves JSON
@@ -326,6 +352,7 @@ node extract-localstorage-data.js
 ```
 
 5. **Extract localStorage (Manual):**
+
 ```bash
 open extract-localStorage-manual.html
 # User opens in same browser/computer where data was filled
@@ -334,6 +361,7 @@ open extract-localStorage-manual.html
 ```
 
 **IMPORTANT:** When creating backup/restore scripts, ALWAYS include all 5 data fields:
+
 1. progressData
 2. lineStepsStatus (with lacres!)
 3. executionDates
@@ -341,6 +369,7 @@ open extract-localStorage-manual.html
 5. builtInformations
 
 **Firestore Rules:**
+
 ```javascript
 rules_version = '2';
 service cloud.firestore {
@@ -361,6 +390,7 @@ service cloud.firestore {
 ## Important Notes
 
 **Modal Architecture:**
+
 - All 29 individual lines (Pimental 6, Belo Monte 20, Oficina 3) use `onclick="showLineDetails()"` in HTML
 - Transversal line groups use `onclick="showTransversalDetails()"`
 - `initializeMapEvents()` checks for existing `onclick` before adding event listeners to avoid conflicts
@@ -369,6 +399,7 @@ service cloud.firestore {
 - Edit mode shows input field with "/total" suffix (e.g., [input]/5)
 
 **Authentication Pattern:**
+
 - View mode: NO password required (default state)
 - Edit mode: Password REQUIRED via `enableLineDetailsEdit()` or `enableTransversalEdit()`
 - CSS: `pointer-events: none` on `.editable-step` cells in view mode
@@ -376,6 +407,7 @@ service cloud.firestore {
 - Backup/restore pattern: Changes only saved on "Salvar", "Cancelar" restores from backup
 
 **Data Consistency:**
+
 - Lines must be displayed in numerical order (01, 02, 03... not 01, 10, 11...)
 - Each line has specific base types defined in `projectData`
 - Progress tracked per line per type in `progressData`
@@ -383,6 +415,7 @@ service cloud.firestore {
 - Firebase sync enables real-time collaboration between devices
 
 **UI Styling:**
+
 - CSS custom properties for consistent theming
 - Modal: `.transversal-modal-content` for both individual and group modals
 - Table: `.transversal-details-table` for horizontal format with dynamic columns
@@ -390,11 +423,13 @@ service cloud.firestore {
 - Hover animations on map lines: `transform: translateY(-50%) scale(1.1)` to preserve centering
 
 **File Management:**
+
 - Designed for Google Drive synchronization
 - localStorage data persists with the HTML file location
 - Backup/restore functions provide data portability
 
 **Dependencies:**
+
 - All external libraries loaded via CDN
 - No package manager or build tools required
 - Font Awesome for icons, Chart.js for visualizations
@@ -404,6 +439,7 @@ service cloud.firestore {
 **No build process required** - this is a static modular application.
 
 **Local Development:**
+
 ```bash
 # Method 1: Python HTTP server (recommended)
 python3 -m http.server 8000
@@ -414,20 +450,23 @@ open index.html
 ```
 
 **File Structure for Editing:**
+
 - **HTML changes:** Edit `index.html`
 - **CSS changes:** Edit `src/styles.css`
 - **JavaScript changes:** Edit `src/app.js`
 
 **Deployment:**
+
 - **Automatic:** Push to `main` branch triggers Vercel deployment
-  - Vercel automatically deploys all files including `src/` folder
-  - No configuration needed - Vercel serves static files as-is
+    - Vercel automatically deploys all files including `src/` folder
+    - No configuration needed - Vercel serves static files as-is
 - **Manual:** Upload `index.html`, `src/` folder, and logo files to any static host
 - **URL:** https://linhasdevida.vercel.app
 
 **IMPORTANT:** After modifying `src/styles.css` or `src/app.js`, clear browser cache (Cmd+Shift+R or Ctrl+Shift+R) to see changes
 
 **Git Workflow:**
+
 - **IMPORTANTE:** Todas as mensagens de commit devem ser em **português**
 - Formato: Descrição clara da mudança em português
 - Exemplo: `git commit -m "Adicionar modal de detalhes para linhas individuais"`
@@ -438,6 +477,7 @@ open index.html
 **Quando usar Playwright (via Node.js):**
 
 Use testes automatizados com Playwright para:
+
 - ✅ Bugs de interação complexa (modais, autenticação, estados assíncronos)
 - ✅ Problemas que envolvem múltiplos componentes interagindo
 - ✅ Quando logs do console são necessários para debug
@@ -448,6 +488,7 @@ Use testes automatizados com Playwright para:
 **Quando NÃO usar Playwright:**
 
 Para mudanças simples, apenas leia código e edite:
+
 - ⚡ Correções de CSS/estilo óbvias
 - ⚡ Mudanças de texto ou conteúdo
 - ⚡ Bugs de lógica simples visíveis no código
@@ -485,6 +526,7 @@ const { chromium } = require('playwright');
 ```
 
 **Setup:**
+
 ```bash
 cd /tmp
 npm install playwright
@@ -493,6 +535,7 @@ node test_script.js
 ```
 
 **Exemplo de caso resolvido com Playwright:**
+
 - Bug: Botões de etapas não clicáveis após autenticação
 - Descoberta via logs: `pendingAction` era `function` mas virava `null` antes de executar
 - Causa: `closePasswordModal()` resetava `pendingAction` antes de `checkPassword()` executá-la
@@ -505,20 +548,21 @@ The application includes extensive debug logging with emojis for easy filtering:
 
 ```javascript
 // Progress calculation
-console.log('📊 calculateProgress:', { totalBases, completedBases, progressPercent });
+console.log("📊 calculateProgress:", { totalBases, completedBases, progressPercent });
 
 // Cable steps tracking
-console.log('🔧 calculateCableStepsCompleted:', { totalLines, completedSteps });
+console.log("🔧 calculateCableStepsCompleted:", { totalLines, completedSteps });
 
 // Firebase sync
-console.log('🔄 updateAllDisplays chamado');
-console.log('🔥 Firebase dados carregados:', data);
+console.log("🔄 updateAllDisplays chamado");
+console.log("🔥 Firebase dados carregados:", data);
 
 // Authentication
-console.log('🔐 Autenticação bem-sucedida');
+console.log("🔐 Autenticação bem-sucedida");
 ```
 
 **Browser DevTools Filtering:**
+
 - Filter console by: `🔧` (cable steps), `📊` (progress), `🔥` (Firebase), `🔐` (auth)
 - Check Network tab for Firebase API calls
 - Application tab → Local Storage → View cached data
@@ -559,6 +603,7 @@ console.log('🔐 Autenticação bem-sucedida');
 
 **Code Organization in `src/app.js`:**
 The JavaScript file follows this structure (approximate line ranges):
+
 - Lines 1-500: Firebase configuration and initialization
 - Lines 500-1500: Data structures and global variables
 - Lines 1500-3000: Core functions (progress calculation, data management)
@@ -568,6 +613,7 @@ The JavaScript file follows this structure (approximate line ranges):
 
 **Code Organization in `src/styles.css`:**
 The CSS file follows this structure:
+
 - Lines 1-300: Reset, variables, base styles
 - Lines 300-800: Dashboard and metrics
 - Lines 800-1600: Map visualization and interactive elements

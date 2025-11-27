@@ -1,1175 +1,1695 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gerenciamento - Linhas de Vida | Thommen Engenharia</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sistema de Gerenciamento - Linhas de Vida | Thommen Engenharia</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%232563eb'/%3E%3Cstop offset='100%25' stop-color='%231e40af'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' fill='url(%23g)' rx='6'/%3E%3Cpath d='M8 12h16M8 20h16' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='12' r='2' fill='white'/%3E%3Ccircle cx='24' cy='12' r='2' fill='white'/%3E%3Ccircle cx='8' cy='20' r='2' fill='white'/%3E%3Ccircle cx='24' cy='20' r='2' fill='white'/%3E%3Ccircle cx='16' cy='8' r='1.5' fill='white'/%3E%3Ccircle cx='16' cy='24' r='1.5' fill='white'/%3E%3C/svg%3E">
+        <!-- Favicon -->
+        <link
+            rel="icon"
+            type="image/svg+xml"
+            href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%232563eb'/%3E%3Cstop offset='100%25' stop-color='%231e40af'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' fill='url(%23g)' rx='6'/%3E%3Cpath d='M8 12h16M8 20h16' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='12' r='2' fill='white'/%3E%3Ccircle cx='24' cy='12' r='2' fill='white'/%3E%3Ccircle cx='8' cy='20' r='2' fill='white'/%3E%3Ccircle cx='24' cy='20' r='2' fill='white'/%3E%3Ccircle cx='16' cy='8' r='1.5' fill='white'/%3E%3Ccircle cx='16' cy='24' r='1.5' fill='white'/%3E%3C/svg%3E"
+        />
 
-    <!-- CDN Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
-    
-    <link rel="stylesheet" href="src/styles.css">
+        <!-- CDN Libraries -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
 
-</head>
-<body>
-    <!-- Loading overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Carregando sistema...</div>
-    </div>
+        <!-- Firebase -->
+        <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
 
-    <!-- Tooltip para detalhes das bases -->
-    <div id="basesTooltip" class="tooltip"></div>
-    
-    <!-- Aviso Modo Somente Leitura -->
-    <div id="readOnlyNotice" class="read-only-notice" style="display: none;">
-        <i class="fas fa-eye"></i> <strong>Modo Somente Leitura</strong> - Para fazer alterações, clique em "Atualizar Progresso" e digite a senha.
-    </div>
-    
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="header-top">
-                    <div class="logo-section">
-                        <img src="thommen-logo.png" alt="Thommen Engenharia" class="company-logo primary-logo">
-                        <div class="title-section">
-                            <h1 style="margin: 0;">Cronograma</h1>
-                            <h1>Linhas de Vida</h1>
-                            <p>Norte Energia • Usinas Hidrelétricas Belo Monte e Pimental</p>
+        <link rel="stylesheet" href="src/styles.css" />
+    </head>
+    <body>
+        <!-- Loading overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Carregando sistema...</div>
+        </div>
+
+        <!-- Tooltip para detalhes das bases -->
+        <div id="basesTooltip" class="tooltip"></div>
+
+        <!-- Aviso Modo Somente Leitura -->
+        <div id="readOnlyNotice" class="read-only-notice" style="display: none">
+            <i class="fas fa-eye"></i> <strong>Modo Somente Leitura</strong> - Para fazer
+            alterações, clique em "Atualizar Progresso" e digite a senha.
+        </div>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="header-top">
+                        <div class="logo-section">
+                            <img
+                                src="thommen-logo.png"
+                                alt="Thommen Engenharia"
+                                class="company-logo primary-logo"
+                            />
+                            <div class="title-section">
+                                <h1 style="margin: 0">Cronograma</h1>
+                                <h1>Linhas de Vida</h1>
+                                <p>Norte Energia • Usinas Hidrelétricas Belo Monte e Pimental</p>
+                            </div>
                         </div>
+                        <img
+                            src="norte-energia-logo.png"
+                            alt="Norte Energia"
+                            class="company-logo secondary-logo"
+                        />
                     </div>
-                    <img src="norte-energia-logo.png" alt="Norte Energia" class="company-logo secondary-logo">
-                </div>
-                <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="exportToPDF()">
-                        <i class="fas fa-file-pdf"></i> Exportar PDF
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportToExcel()">
-                        <i class="fas fa-file-excel"></i> Exportar Excel
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportProgressData()">
-                        <i class="fas fa-download"></i> Backup Dados
-                    </button>
-                    <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
-                        <i class="fas fa-upload"></i> Restaurar Dados
-                    </button>
-                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importProgressData(event)">
-                    <button class="btn btn-secondary" data-online-only="true" onclick="forceRestoreFromFirebase()">
-                        <i class="fas fa-cloud-download-alt"></i> Restaurar do Firebase
-                    </button>
-                    <button class="btn btn-warning" onclick="clearAllProgress()" style="background-color: #ef4444; border-color: #dc2626;">
-                        <i class="fas fa-trash"></i> Limpar Tudo
-                    </button>
-                    <button class="btn btn-primary" data-online-only="true" onclick="openUpdateModal()">
-                        <i class="fas fa-edit"></i> Atualizar Progresso
-                    </button>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="exportToPDF()">
+                            <i class="fas fa-file-pdf"></i> Exportar PDF
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Exportar Excel
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportProgressData()">
+                            <i class="fas fa-download"></i> Backup Dados
+                        </button>
+                        <button
+                            class="btn btn-secondary"
+                            onclick="document.getElementById('importFile').click()"
+                        >
+                            <i class="fas fa-upload"></i> Restaurar Dados
+                        </button>
+                        <input
+                            type="file"
+                            id="importFile"
+                            accept=".json"
+                            style="display: none"
+                            onchange="importProgressData(event)"
+                        />
+                        <button
+                            class="btn btn-secondary"
+                            data-online-only="true"
+                            onclick="forceRestoreFromFirebase()"
+                        >
+                            <i class="fas fa-cloud-download-alt"></i> Restaurar do Firebase
+                        </button>
+                        <button
+                            class="btn btn-warning"
+                            onclick="clearAllProgress()"
+                            style="background-color: #ef4444; border-color: #dc2626"
+                        >
+                            <i class="fas fa-trash"></i> Limpar Tudo
+                        </button>
+                        <button
+                            class="btn btn-primary"
+                            data-online-only="true"
+                            onclick="openUpdateModal()"
+                        >
+                            <i class="fas fa-edit"></i> Atualizar Progresso
+                        </button>
 
-                    <!-- Status indicator integrado no header -->
-                    <div id="statusIndicator" class="status-indicator status-offline">
-                        <i class="fas fa-circle"></i> Offline
-                    </div>
+                        <!-- Status indicator integrado no header -->
+                        <div id="statusIndicator" class="status-indicator status-offline">
+                            <i class="fas fa-circle"></i> Offline
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="container">
-            <!-- Dashboard -->
-            <section class="dashboard">
-                <div class="dashboard-grid">
-                    <div class="dashboard-card">
-                        <h3>Progresso Geral
-                            <span class="last-updated" id="lastUpdatedMain">
-                                <span class="update-indicator"></span>
-                                <span id="lastUpdateTime">--:--</span>
-                            </span>
-                        </h3>
-                        <div class="metric" id="progressoGeral">0%</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressBar" style="width: 0%"></div>
-                        </div>
-                        <div class="sub-metric" id="basesCompletas">0 de 0 bases concluídas</div>
-                    </div>
-                    
-                    <div class="dashboard-card">
-                        <h3>Produtividade</h3>
-                        <div class="metric" id="produtividade">0</div>
-                        <div class="sub-metric">bases/dia útil</div>
-                        <div class="sub-metric" style="margin-top: 10px; font-weight: 600; color: var(--primary-blue);">
-                            <i class="fas fa-clock"></i> <span id="horasTrabalhadas">0</span> horas trabalhadas
-                        </div>
-                        <div class="sub-metric" style="margin-top: 8px;">
-                            <i class="fas fa-users"></i> 4 pessoas
-                        </div>
-                    </div>
-                    
-                    <div class="dashboard-card">
-                        <h3>Estimativa Conclusão</h3>
-                        <div class="metric" id="estimativaConclusao">-</div>
-                        <div class="sub-metric" id="diasRestantes">0 dias restantes</div>
-                        <div class="sub-metric" style="margin-top: 10px;">
-                            <i class="fas fa-calendar"></i> Baseado na produtividade atual
-                        </div>
-                    </div>
-                    
-                    <div class="dashboard-card">
-                        <h3>Status do Projeto</h3>
-                        <div class="metric" style="font-size: 1.8rem;" id="statusProjeto">Em Andamento</div>
-                        <div class="sub-metric" id="tempoDecorrido">Iniciado em 01/09/2025</div>
-                        <div class="sub-metric" style="margin-top: 10px;">
-                            <i class="fas fa-clock"></i> <span id="diasTrabalhados">0</span> dias trabalhados
-                        </div>
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- Charts -->
-            <section class="charts-section">
-                <div class="chart-container">
-                    <h3 class="chart-title">Conclusão Geral por Usina</h3>
-                    <canvas id="chartConclusaoGeral"></canvas>
-                </div>
-                <div class="chart-container">
-                    <h3 class="chart-title">Progresso Pimental</h3>
-                    <div id="chartPimental" class="horizontal-bars-chart"></div>
-                    <div class="chart-info" id="chartPimentalInfo">
-                        <div class="info-row">
-                            <span class="info-label">📊 Total de bases:</span>
-                            <span class="info-value" id="pimentalTotalBases">52</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">🏗️ Linhas ativas:</span>
-                            <span class="info-value">6 linhas</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">📏 Extensão total:</span>
-                            <span class="info-value">395,7m</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">📅 Estimativa conclusão:</span>
-                            <span class="info-value" id="pimentalEstimativa">Calculando...</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <h3 class="chart-title">Progresso Belo Monte</h3>
-                    <div id="chartBeloMonte" class="horizontal-bars-chart"></div>
-                    <div class="chart-info" id="chartBeloMonteInfo">
-                        <div class="info-row">
-                            <span class="info-label">📊 Total de bases:</span>
-                            <span class="info-value" id="beloMonteTotalBases">212</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">🏗️ Linhas ativas:</span>
-                            <span class="info-value">20 linhas</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">📏 Extensão total:</span>
-                            <span class="info-value">1738,9m</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">📅 Estimativa conclusão:</span>
-                            <span class="info-value" id="beloMonteEstimativa">Calculando...</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <h3 class="chart-title">Progresso Oficina</h3>
-                    <div id="chartOficina" class="horizontal-bars-chart"></div>
-                    <div class="chart-info" id="chartOficinaInfo">
-                        <div class="info-row">
-                            <span class="info-label">📊 Total de bases:</span>
-                            <span class="info-value" id="oficinaTotalBases">10</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">🏗️ Linhas ativas:</span>
-                            <span class="info-value">3 linhas</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">📏 Extensão total:</span>
-                            <span class="info-value">75,2m</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Mapa Interativo -->
-            <section class="map-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-map-marked-alt"></i> Mapa Interativo de Linhas</h2>
-                </div>
-
-                <!-- Abas das Usinas -->
-                <div class="map-tabs">
-                    <button class="map-tab-btn active" onclick="switchMapTab('pimental')">
-                        <i class="fas fa-industry"></i> Pimental
-                    </button>
-                    <button class="map-tab-btn" onclick="switchMapTab('belo-monte')">
-                        <i class="fas fa-industry"></i> Belo Monte
-                    </button>
-                    <button class="map-tab-btn" onclick="switchMapTab('oficina')">
-                        <i class="fas fa-tools"></i> Oficina
-                    </button>
-                </div>
-
-                <!-- Cards de Estatísticas do Mapa -->
-                <div class="map-stats-cards">
-                    <div class="map-stat-card">
-                        <div class="stat-value" id="mapTotalLines">0</div>
-                        <div class="stat-label">Total de Linhas</div>
-                    </div>
-                    <div class="map-stat-card">
-                        <div class="stat-value" id="mapCompletedLines">0</div>
-                        <div class="stat-label">Linhas Concluídas</div>
-                    </div>
-                    <div class="map-stat-card">
-                        <div class="stat-value" id="mapProgressPercent">0%</div>
-                        <div class="stat-label">Progresso Geral</div>
-                    </div>
-                    <div class="map-stat-card">
-                        <div class="stat-value" id="mapInProgressLines">0</div>
-                        <div class="stat-label">Em Andamento</div>
-                    </div>
-                </div>
-
-                <!-- Container do Mapa Pimental -->
-                <div id="mapPimental" class="map-container active">
-                    <div class="map-layout pimental-layout">
-                        <!-- Linha 05 - Lateral Esquerda -->
-                        <div class="map-line pimental-vertical pimental-left" data-linha="05" data-usina="pimental" onclick="showLineDetails('pimental', '05')">
-                            <div class="line-bar vertical"></div>
-                            <div class="line-label">05</div>
-                        </div>
-
-                        <!-- Linha 18 - Lateral Direita -->
-                        <div class="map-line pimental-vertical pimental-right" data-linha="18" data-usina="pimental" onclick="showLineDetails('pimental', '18')">
-                            <div class="line-bar vertical"></div>
-                            <div class="line-label">18</div>
-                        </div>
-
-                        <!-- Linha 01 - Superior Esquerda -->
-                        <div class="map-line pimental-01" data-linha="01" data-usina="pimental" onclick="showLineDetails('pimental', '01')">
-                            <div class="line-bar horizontal pimental-bar"></div>
-                            <div class="line-label">01</div>
-                        </div>
-
-                        <!-- Linha 02 - Superior Direita -->
-                        <div class="map-line pimental-02" data-linha="02" data-usina="pimental" onclick="showLineDetails('pimental', '02')">
-                            <div class="line-bar horizontal pimental-bar"></div>
-                            <div class="line-label">02</div>
-                        </div>
-
-                        <!-- Linha 03 - Inferior Esquerda -->
-                        <div class="map-line pimental-03" data-linha="03" data-usina="pimental" onclick="showLineDetails('pimental', '03')">
-                            <div class="line-bar horizontal pimental-bar"></div>
-                            <div class="line-label">03</div>
-                        </div>
-
-                        <!-- Linha 04 - Inferior Direita -->
-                        <div class="map-line pimental-04" data-linha="04" data-usina="pimental" onclick="showLineDetails('pimental', '04')">
-                            <div class="line-bar horizontal pimental-bar"></div>
-                            <div class="line-label">04</div>
-                        </div>
-
-                        <!-- Grupos Transversais Pimental -->
-                        <div class="transversal-group pm-transversal-01" data-grupo="06-10" data-usina="pimental" onclick="showTransversalDetails('pimental', '06-10')">
-                            <div class="transversal-line-mini" data-linha="06"></div>
-                            <div class="transversal-line-mini" data-linha="07"></div>
-                            <div class="transversal-line-mini" data-linha="08"></div>
-                            <div class="transversal-line-mini" data-linha="09"></div>
-                            <div class="transversal-line-mini" data-linha="10"></div>
-                            <div class="transversal-group-label">06-10</div>
-                        </div>
-
-                        <div class="transversal-group pm-transversal-02" data-grupo="11-17" data-usina="pimental" onclick="showTransversalDetails('pimental', '11-17')">
-                            <div class="transversal-line-mini" data-linha="11"></div>
-                            <div class="transversal-line-mini" data-linha="12"></div>
-                            <div class="transversal-line-mini" data-linha="13"></div>
-                            <div class="transversal-line-mini" data-linha="14"></div>
-                            <div class="transversal-line-mini" data-linha="15"></div>
-                            <div class="transversal-line-mini" data-linha="16"></div>
-                            <div class="transversal-line-mini" data-linha="17"></div>
-                            <div class="transversal-group-label">11-17</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Container do Mapa Belo Monte -->
-                <div id="mapBeloMonte" class="map-container">
-                    <div class="map-layout large">
-                        <!-- Linha 19 - Lateral Esquerda -->
-                        <div class="map-line vertical left" data-linha="19" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '19')">
-                            <div class="line-bar vertical"></div>
-                            <div class="line-label">19</div>
-                        </div>
-
-                        <!-- Linha 71 - Lateral Direita -->
-                        <div class="map-line vertical right" data-linha="71" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '71')">
-                            <div class="line-bar vertical"></div>
-                            <div class="line-label">71</div>
-                        </div>
-
-                        <!-- Fileira Superior: Linhas 01-09 -->
-                        <div class="line-grid top-grid">
-                            <div class="map-line grid-item" data-linha="01" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '01')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">01</div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                <!-- Dashboard -->
+                <section class="dashboard">
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <h3>
+                                Progresso Geral
+                                <span class="last-updated" id="lastUpdatedMain">
+                                    <span class="update-indicator"></span>
+                                    <span id="lastUpdateTime">--:--</span>
+                                </span>
+                            </h3>
+                            <div class="metric" id="progressoGeral">0%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
                             </div>
-                            <div class="map-line grid-item" data-linha="02" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '02')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">02</div>
+                            <div class="sub-metric" id="basesCompletas">
+                                0 de 0 bases concluídas
                             </div>
-                            <div class="map-line grid-item" data-linha="03" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '03')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">03</div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <h3>Produtividade</h3>
+                            <div class="metric" id="produtividade">0</div>
+                            <div class="sub-metric">bases/dia útil</div>
+                            <div
+                                class="sub-metric"
+                                style="
+                                    margin-top: 10px;
+                                    font-weight: 600;
+                                    color: var(--primary-blue);
+                                "
+                            >
+                                <i class="fas fa-clock"></i>
+                                <span id="horasTrabalhadas">0</span> horas trabalhadas
                             </div>
-                            <div class="map-line grid-item" data-linha="04" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '04')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">04</div>
+                            <div class="sub-metric" style="margin-top: 8px">
+                                <i class="fas fa-users"></i> 4 pessoas
                             </div>
-                            <div class="map-line grid-item" data-linha="05" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '05')">
-                                <div class="line-bar horizontal small"></div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <h3>Estimativa Conclusão</h3>
+                            <div class="metric" id="estimativaConclusao">-</div>
+                            <div class="sub-metric" id="diasRestantes">0 dias restantes</div>
+                            <div class="sub-metric" style="margin-top: 10px">
+                                <i class="fas fa-calendar"></i> Baseado na produtividade atual
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <h3>Status do Projeto</h3>
+                            <div class="metric" style="font-size: 1.8rem" id="statusProjeto">
+                                Em Andamento
+                            </div>
+                            <div class="sub-metric" id="tempoDecorrido">Iniciado em 01/09/2025</div>
+                            <div class="sub-metric" style="margin-top: 10px">
+                                <i class="fas fa-clock"></i>
+                                <span id="diasTrabalhados">0</span> dias trabalhados
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Charts -->
+                <section class="charts-section">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Conclusão Geral por Usina</h3>
+                        <canvas id="chartConclusaoGeral"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Progresso Pimental</h3>
+                        <div id="chartPimental" class="horizontal-bars-chart"></div>
+                        <div class="chart-info" id="chartPimentalInfo">
+                            <div class="info-row">
+                                <span class="info-label">📊 Total de bases:</span>
+                                <span class="info-value" id="pimentalTotalBases">52</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">🏗️ Linhas ativas:</span>
+                                <span class="info-value">6 linhas</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">📏 Extensão total:</span>
+                                <span class="info-value">395,7m</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">📅 Estimativa conclusão:</span>
+                                <span class="info-value" id="pimentalEstimativa"
+                                    >Calculando...</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Progresso Belo Monte</h3>
+                        <div id="chartBeloMonte" class="horizontal-bars-chart"></div>
+                        <div class="chart-info" id="chartBeloMonteInfo">
+                            <div class="info-row">
+                                <span class="info-label">📊 Total de bases:</span>
+                                <span class="info-value" id="beloMonteTotalBases">212</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">🏗️ Linhas ativas:</span>
+                                <span class="info-value">20 linhas</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">📏 Extensão total:</span>
+                                <span class="info-value">1738,9m</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">📅 Estimativa conclusão:</span>
+                                <span class="info-value" id="beloMonteEstimativa"
+                                    >Calculando...</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Progresso Oficina</h3>
+                        <div id="chartOficina" class="horizontal-bars-chart"></div>
+                        <div class="chart-info" id="chartOficinaInfo">
+                            <div class="info-row">
+                                <span class="info-label">📊 Total de bases:</span>
+                                <span class="info-value" id="oficinaTotalBases">10</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">🏗️ Linhas ativas:</span>
+                                <span class="info-value">3 linhas</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">📏 Extensão total:</span>
+                                <span class="info-value">75,2m</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Mapa Interativo -->
+                <section class="map-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-map-marked-alt"></i> Mapa Interativo de Linhas</h2>
+                    </div>
+
+                    <!-- Abas das Usinas -->
+                    <div class="map-tabs">
+                        <button class="map-tab-btn active" onclick="switchMapTab('pimental')">
+                            <i class="fas fa-industry"></i> Pimental
+                        </button>
+                        <button class="map-tab-btn" onclick="switchMapTab('belo-monte')">
+                            <i class="fas fa-industry"></i> Belo Monte
+                        </button>
+                        <button class="map-tab-btn" onclick="switchMapTab('oficina')">
+                            <i class="fas fa-tools"></i> Oficina
+                        </button>
+                    </div>
+
+                    <!-- Cards de Estatísticas do Mapa -->
+                    <div class="map-stats-cards">
+                        <div class="map-stat-card">
+                            <div class="stat-value" id="mapTotalLines">0</div>
+                            <div class="stat-label">Total de Linhas</div>
+                        </div>
+                        <div class="map-stat-card">
+                            <div class="stat-value" id="mapCompletedLines">0</div>
+                            <div class="stat-label">Linhas Concluídas</div>
+                        </div>
+                        <div class="map-stat-card">
+                            <div class="stat-value" id="mapProgressPercent">0%</div>
+                            <div class="stat-label">Progresso Geral</div>
+                        </div>
+                        <div class="map-stat-card">
+                            <div class="stat-value" id="mapInProgressLines">0</div>
+                            <div class="stat-label">Em Andamento</div>
+                        </div>
+                    </div>
+
+                    <!-- Container do Mapa Pimental -->
+                    <div id="mapPimental" class="map-container active">
+                        <div class="map-layout pimental-layout">
+                            <!-- Linha 05 - Lateral Esquerda -->
+                            <div
+                                class="map-line pimental-vertical pimental-left"
+                                data-linha="05"
+                                data-usina="pimental"
+                                onclick="showLineDetails('pimental', '05')"
+                            >
+                                <div class="line-bar vertical"></div>
                                 <div class="line-label">05</div>
                             </div>
-                            <div class="map-line grid-item" data-linha="06" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '06')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">06</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="07" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '07')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">07</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="08" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '08')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">08</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="09" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '09')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">09</div>
-                            </div>
-                        </div>
 
-                        <!-- Fileira Inferior: Linhas 10-18 -->
-                        <div class="line-grid bottom-grid">
-                            <div class="map-line grid-item" data-linha="10" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '10')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">10</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="11" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '11')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">11</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="12" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '12')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">12</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="13" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '13')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">13</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="14" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '14')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">14</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="15" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '15')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">15</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="16" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '16')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">16</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="17" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '17')">
-                                <div class="line-bar horizontal small"></div>
-                                <div class="line-label">17</div>
-                            </div>
-                            <div class="map-line grid-item" data-linha="18" data-usina="belo-monte" onclick="showLineDetails('belo-monte', '18')">
-                                <div class="line-bar horizontal small"></div>
+                            <!-- Linha 18 - Lateral Direita -->
+                            <div
+                                class="map-line pimental-vertical pimental-right"
+                                data-linha="18"
+                                data-usina="pimental"
+                                onclick="showLineDetails('pimental', '18')"
+                            >
+                                <div class="line-bar vertical"></div>
                                 <div class="line-label">18</div>
                             </div>
-                        </div>
 
-                        <!-- Grupos Transversais Belo Monte -->
-                        <div class="transversal-group bm-transversal-01-10" data-grupo="20-25" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '20-25')">
-                            <div class="transversal-line-mini" data-linha="20"></div>
-                            <div class="transversal-line-mini" data-linha="21"></div>
-                            <div class="transversal-line-mini" data-linha="22"></div>
-                            <div class="transversal-line-mini" data-linha="23"></div>
-                            <div class="transversal-line-mini" data-linha="24"></div>
-                            <div class="transversal-line-mini" data-linha="25"></div>
-                            <div class="transversal-group-label">20-25</div>
-                        </div>
-
-                        <div class="transversal-group bm-transversal-02-11" data-grupo="26-31" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '26-31')">
-                            <div class="transversal-line-mini" data-linha="26"></div>
-                            <div class="transversal-line-mini" data-linha="27"></div>
-                            <div class="transversal-line-mini" data-linha="28"></div>
-                            <div class="transversal-line-mini" data-linha="29"></div>
-                            <div class="transversal-line-mini" data-linha="30"></div>
-                            <div class="transversal-line-mini" data-linha="31"></div>
-                            <div class="transversal-group-label">26-31</div>
-                        </div>
-
-                        <div class="transversal-group bm-transversal-03-12" data-grupo="32-37" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '32-37')">
-                            <div class="transversal-line-mini" data-linha="32"></div>
-                            <div class="transversal-line-mini" data-linha="33"></div>
-                            <div class="transversal-line-mini" data-linha="34"></div>
-                            <div class="transversal-line-mini" data-linha="35"></div>
-                            <div class="transversal-line-mini" data-linha="36"></div>
-                            <div class="transversal-line-mini" data-linha="37"></div>
-                            <div class="transversal-group-label">32-37</div>
-                        </div>
-
-                        <div class="transversal-group bm-transversal-04-13" data-grupo="38-43" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '38-43')">
-                            <div class="transversal-line-mini" data-linha="38"></div>
-                            <div class="transversal-line-mini" data-linha="39"></div>
-                            <div class="transversal-line-mini" data-linha="40"></div>
-                            <div class="transversal-line-mini" data-linha="41"></div>
-                            <div class="transversal-line-mini" data-linha="42"></div>
-                            <div class="transversal-line-mini" data-linha="43"></div>
-                            <div class="transversal-group-label">38-43</div>
-                        </div>
-
-                        <div class="transversal-group bm-transversal-05-14" data-grupo="44-49" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '44-49')">
-                            <div class="transversal-line-mini" data-linha="44"></div>
-                            <div class="transversal-line-mini" data-linha="45"></div>
-                            <div class="transversal-line-mini" data-linha="46"></div>
-                            <div class="transversal-line-mini" data-linha="47"></div>
-                            <div class="transversal-line-mini" data-linha="48"></div>
-                            <div class="transversal-line-mini" data-linha="49"></div>
-                            <div class="transversal-group-label">44-49</div>
-                        </div>
-
-                        <div class="transversal-group bm-transversal-06-15" data-grupo="50-55" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '50-55')">
-                            <div class="transversal-line-mini" data-linha="50"></div>
-                            <div class="transversal-line-mini" data-linha="51"></div>
-                            <div class="transversal-line-mini" data-linha="52"></div>
-                            <div class="transversal-line-mini" data-linha="53"></div>
-                            <div class="transversal-line-mini" data-linha="54"></div>
-                            <div class="transversal-line-mini" data-linha="55"></div>
-                            <div class="transversal-group-label">50-55</div>
-                        </div>
-
-                        <div class="transversal-group bm-transversal-07-16" data-grupo="56-61" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '56-61')">
-                            <div class="transversal-line-mini" data-linha="56"></div>
-                            <div class="transversal-line-mini" data-linha="57"></div>
-                            <div class="transversal-line-mini" data-linha="58"></div>
-                            <div class="transversal-line-mini" data-linha="59"></div>
-                            <div class="transversal-line-mini" data-linha="60"></div>
-                            <div class="transversal-line-mini" data-linha="61"></div>
-                            <div class="transversal-group-label">56-61</div>
-                        </div>
-
-                        <div class="transversal-group bm-transversal-08-17" data-grupo="62-67" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '62-67')">
-                            <div class="transversal-line-mini" data-linha="62"></div>
-                            <div class="transversal-line-mini" data-linha="63"></div>
-                            <div class="transversal-line-mini" data-linha="64"></div>
-                            <div class="transversal-line-mini" data-linha="65"></div>
-                            <div class="transversal-line-mini" data-linha="66"></div>
-                            <div class="transversal-line-mini" data-linha="67"></div>
-                            <div class="transversal-group-label">62-67</div>
-                        </div>
-
-                        <div class="transversal-group bm-transversal-09-18" data-grupo="68-70" data-usina="belo-monte" onclick="showTransversalDetails('belo-monte', '68-70')">
-                            <div class="transversal-line-mini" data-linha="68"></div>
-                            <div class="transversal-line-mini" data-linha="69"></div>
-                            <div class="transversal-line-mini" data-linha="70"></div>
-                            <div class="transversal-group-label">68-70</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Container do Mapa Oficina -->
-                <div id="mapOficina" class="map-container">
-                    <div class="map-layout oficina-layout">
-                        <!-- Linha 72 - Lateral Esquerda (Preta) -->
-                        <div class="map-line oficina-vertical oficina-left" data-linha="72" data-usina="oficina" onclick="showLineDetails('oficina', '72')">
-                            <div class="line-bar vertical oficina-72"></div>
-                            <div class="line-label">72</div>
-                        </div>
-
-                        <!-- Linha 74 - Lateral Direita (Vermelha) -->
-                        <div class="map-line oficina-vertical oficina-right" data-linha="74" data-usina="oficina" onclick="showLineDetails('oficina', '74')">
-                            <div class="line-bar vertical oficina-74"></div>
-                            <div class="line-label">74</div>
-                        </div>
-
-                        <!-- Linha 73 - Horizontal Central (Azul) -->
-                        <div class="map-line oficina-73" data-linha="73" data-usina="oficina" onclick="showLineDetails('oficina', '73')">
-                            <div class="line-bar horizontal oficina-73-bar"></div>
-                            <div class="line-label">73</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Legenda do Mapa -->
-                <div class="map-legend">
-                    <div class="legend-item">
-                        <div class="legend-color completed"></div>
-                        <span>Concluído (100%)</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color in-progress"></div>
-                        <span>Em Andamento (1-99%)</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color pending"></div>
-                        <span>Pendente (0%)</span>
-                    </div>
-                </div>
-
-                <!-- Tooltip do Mapa -->
-                <div id="mapTooltip" class="map-tooltip">
-                    <div class="tooltip-content">
-                        <div class="tooltip-line"></div>
-                        <div class="tooltip-progress"></div>
-                        <div class="tooltip-status"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Controle de Execução -->
-            <section class="execution-control-section">
-                <div class="container">
-                    <div class="execution-control-card">
-                        <div class="control-header">
-                            <h3><i class="fas fa-exchange-alt"></i> Controle de Execução das Usinas</h3>
-                            <p class="control-description">Selecione a usina com trabalhos em andamento (onde a equipe está executando as instalações das linhas)</p>
-                        </div>
-                        <div class="control-content">
-                            <div class="control-label">Usina em execução atual:</div>
-                            <div class="usina-buttons-wide">
-                                <button id="btnActivePimental" class="btn-usina-wide" onclick="setActiveUsina('pimental')">
-                                    <div class="btn-icon"><i class="fas fa-industry"></i></div>
-                                    <div class="btn-content">
-                                        <div class="btn-title">Usina Pimental</div>
-                                        <div class="btn-subtitle">6 linhas • 56 bases</div>
-                                    </div>
-                                    <div class="btn-status" id="statusPimental">Disponível</div>
-                                </button>
-                                <button id="btnActiveBelo" class="btn-usina-wide" onclick="setActiveUsina('belo-monte')">
-                                    <div class="btn-icon"><i class="fas fa-industry"></i></div>
-                                    <div class="btn-content">
-                                        <div class="btn-title">Usina Belo Monte</div>
-                                        <div class="btn-subtitle">20 linhas • 212 bases</div>
-                                    </div>
-                                    <div class="btn-status" id="statusBeloMonte">Disponível</div>
-                                </button>
-                                <button id="btnActiveOficina" class="btn-usina-wide" onclick="setActiveUsina('oficina')">
-                                    <div class="btn-icon"><i class="fas fa-tools"></i></div>
-                                    <div class="btn-content">
-                                        <div class="btn-title">Oficina</div>
-                                        <div class="btn-subtitle">3 linhas • 10 bases</div>
-                                    </div>
-                                    <div class="btn-status" id="statusOficina">Disponível</div>
-                                </button>
+                            <!-- Linha 01 - Superior Esquerda -->
+                            <div
+                                class="map-line pimental-01"
+                                data-linha="01"
+                                data-usina="pimental"
+                                onclick="showLineDetails('pimental', '01')"
+                            >
+                                <div class="line-bar horizontal pimental-bar"></div>
+                                <div class="line-label">01</div>
                             </div>
-                            <div class="control-help" id="controlHelpText">
-                                <i class="fas fa-info-circle"></i> Clique para alternar a usina ativa. As estimativas serão recalculadas automaticamente.
+
+                            <!-- Linha 02 - Superior Direita -->
+                            <div
+                                class="map-line pimental-02"
+                                data-linha="02"
+                                data-usina="pimental"
+                                onclick="showLineDetails('pimental', '02')"
+                            >
+                                <div class="line-bar horizontal pimental-bar"></div>
+                                <div class="line-label">02</div>
                             </div>
-                            <div style="margin-top: 15px; text-align: center;">
-                                <button onclick="forceSaveActiveUsina()" style="background: var(--primary-blue); color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-size: 14px;">
-                                    <i class="fas fa-save"></i> Salvar Configuração
-                                </button>
+
+                            <!-- Linha 03 - Inferior Esquerda -->
+                            <div
+                                class="map-line pimental-03"
+                                data-linha="03"
+                                data-usina="pimental"
+                                onclick="showLineDetails('pimental', '03')"
+                            >
+                                <div class="line-bar horizontal pimental-bar"></div>
+                                <div class="line-label">03</div>
+                            </div>
+
+                            <!-- Linha 04 - Inferior Direita -->
+                            <div
+                                class="map-line pimental-04"
+                                data-linha="04"
+                                data-usina="pimental"
+                                onclick="showLineDetails('pimental', '04')"
+                            >
+                                <div class="line-bar horizontal pimental-bar"></div>
+                                <div class="line-label">04</div>
+                            </div>
+
+                            <!-- Grupos Transversais Pimental -->
+                            <div
+                                class="transversal-group pm-transversal-01"
+                                data-grupo="06-10"
+                                data-usina="pimental"
+                                onclick="showTransversalDetails('pimental', '06-10')"
+                            >
+                                <div class="transversal-line-mini" data-linha="06"></div>
+                                <div class="transversal-line-mini" data-linha="07"></div>
+                                <div class="transversal-line-mini" data-linha="08"></div>
+                                <div class="transversal-line-mini" data-linha="09"></div>
+                                <div class="transversal-line-mini" data-linha="10"></div>
+                                <div class="transversal-group-label">06-10</div>
+                            </div>
+
+                            <div
+                                class="transversal-group pm-transversal-02"
+                                data-grupo="11-17"
+                                data-usina="pimental"
+                                onclick="showTransversalDetails('pimental', '11-17')"
+                            >
+                                <div class="transversal-line-mini" data-linha="11"></div>
+                                <div class="transversal-line-mini" data-linha="12"></div>
+                                <div class="transversal-line-mini" data-linha="13"></div>
+                                <div class="transversal-line-mini" data-linha="14"></div>
+                                <div class="transversal-line-mini" data-linha="15"></div>
+                                <div class="transversal-line-mini" data-linha="16"></div>
+                                <div class="transversal-line-mini" data-linha="17"></div>
+                                <div class="transversal-group-label">11-17</div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
 
-            <!-- Usina Pimental -->
-            <section class="usina-section">
-                <div class="usina-header">
-                    <h2 class="usina-title">
-                        <i class="fas fa-industry"></i> Usina Pimental
-                    </h2>
-                    <div class="usina-stats">
-                        <div class="stat-item">
-                            <div class="stat-value" id="pimentalLinhas">6</div>
-                            <div class="stat-label">Linhas</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="pimentalBases">0</div>
-                            <div class="stat-label">Bases</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="pimentalMetros">0</div>
-                            <div class="stat-label">Metros</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="pimentalProgresso">0%</div>
-                            <div class="stat-label">Progresso</div>
+                    <!-- Container do Mapa Belo Monte -->
+                    <div id="mapBeloMonte" class="map-container">
+                        <div class="map-layout large">
+                            <!-- Linha 19 - Lateral Esquerda -->
+                            <div
+                                class="map-line vertical left"
+                                data-linha="19"
+                                data-usina="belo-monte"
+                                onclick="showLineDetails('belo-monte', '19')"
+                            >
+                                <div class="line-bar vertical"></div>
+                                <div class="line-label">19</div>
+                            </div>
+
+                            <!-- Linha 71 - Lateral Direita -->
+                            <div
+                                class="map-line vertical right"
+                                data-linha="71"
+                                data-usina="belo-monte"
+                                onclick="showLineDetails('belo-monte', '71')"
+                            >
+                                <div class="line-bar vertical"></div>
+                                <div class="line-label">71</div>
+                            </div>
+
+                            <!-- Fileira Superior: Linhas 01-09 -->
+                            <div class="line-grid top-grid">
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="01"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '01')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">01</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="02"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '02')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">02</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="03"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '03')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">03</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="04"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '04')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">04</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="05"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '05')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">05</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="06"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '06')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">06</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="07"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '07')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">07</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="08"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '08')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">08</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="09"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '09')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">09</div>
+                                </div>
+                            </div>
+
+                            <!-- Fileira Inferior: Linhas 10-18 -->
+                            <div class="line-grid bottom-grid">
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="10"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '10')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">10</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="11"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '11')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">11</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="12"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '12')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">12</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="13"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '13')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">13</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="14"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '14')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">14</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="15"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '15')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">15</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="16"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '16')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">16</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="17"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '17')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">17</div>
+                                </div>
+                                <div
+                                    class="map-line grid-item"
+                                    data-linha="18"
+                                    data-usina="belo-monte"
+                                    onclick="showLineDetails('belo-monte', '18')"
+                                >
+                                    <div class="line-bar horizontal small"></div>
+                                    <div class="line-label">18</div>
+                                </div>
+                            </div>
+
+                            <!-- Grupos Transversais Belo Monte -->
+                            <div
+                                class="transversal-group bm-transversal-01-10"
+                                data-grupo="20-25"
+                                data-usina="belo-monte"
+                                onclick="showTransversalDetails('belo-monte', '20-25')"
+                            >
+                                <div class="transversal-line-mini" data-linha="20"></div>
+                                <div class="transversal-line-mini" data-linha="21"></div>
+                                <div class="transversal-line-mini" data-linha="22"></div>
+                                <div class="transversal-line-mini" data-linha="23"></div>
+                                <div class="transversal-line-mini" data-linha="24"></div>
+                                <div class="transversal-line-mini" data-linha="25"></div>
+                                <div class="transversal-group-label">20-25</div>
+                            </div>
+
+                            <div
+                                class="transversal-group bm-transversal-02-11"
+                                data-grupo="26-31"
+                                data-usina="belo-monte"
+                                onclick="showTransversalDetails('belo-monte', '26-31')"
+                            >
+                                <div class="transversal-line-mini" data-linha="26"></div>
+                                <div class="transversal-line-mini" data-linha="27"></div>
+                                <div class="transversal-line-mini" data-linha="28"></div>
+                                <div class="transversal-line-mini" data-linha="29"></div>
+                                <div class="transversal-line-mini" data-linha="30"></div>
+                                <div class="transversal-line-mini" data-linha="31"></div>
+                                <div class="transversal-group-label">26-31</div>
+                            </div>
+
+                            <div
+                                class="transversal-group bm-transversal-03-12"
+                                data-grupo="32-37"
+                                data-usina="belo-monte"
+                                onclick="showTransversalDetails('belo-monte', '32-37')"
+                            >
+                                <div class="transversal-line-mini" data-linha="32"></div>
+                                <div class="transversal-line-mini" data-linha="33"></div>
+                                <div class="transversal-line-mini" data-linha="34"></div>
+                                <div class="transversal-line-mini" data-linha="35"></div>
+                                <div class="transversal-line-mini" data-linha="36"></div>
+                                <div class="transversal-line-mini" data-linha="37"></div>
+                                <div class="transversal-group-label">32-37</div>
+                            </div>
+
+                            <div
+                                class="transversal-group bm-transversal-04-13"
+                                data-grupo="38-43"
+                                data-usina="belo-monte"
+                                onclick="showTransversalDetails('belo-monte', '38-43')"
+                            >
+                                <div class="transversal-line-mini" data-linha="38"></div>
+                                <div class="transversal-line-mini" data-linha="39"></div>
+                                <div class="transversal-line-mini" data-linha="40"></div>
+                                <div class="transversal-line-mini" data-linha="41"></div>
+                                <div class="transversal-line-mini" data-linha="42"></div>
+                                <div class="transversal-line-mini" data-linha="43"></div>
+                                <div class="transversal-group-label">38-43</div>
+                            </div>
+
+                            <div
+                                class="transversal-group bm-transversal-05-14"
+                                data-grupo="44-49"
+                                data-usina="belo-monte"
+                                onclick="showTransversalDetails('belo-monte', '44-49')"
+                            >
+                                <div class="transversal-line-mini" data-linha="44"></div>
+                                <div class="transversal-line-mini" data-linha="45"></div>
+                                <div class="transversal-line-mini" data-linha="46"></div>
+                                <div class="transversal-line-mini" data-linha="47"></div>
+                                <div class="transversal-line-mini" data-linha="48"></div>
+                                <div class="transversal-line-mini" data-linha="49"></div>
+                                <div class="transversal-group-label">44-49</div>
+                            </div>
+
+                            <div
+                                class="transversal-group bm-transversal-06-15"
+                                data-grupo="50-55"
+                                data-usina="belo-monte"
+                                onclick="showTransversalDetails('belo-monte', '50-55')"
+                            >
+                                <div class="transversal-line-mini" data-linha="50"></div>
+                                <div class="transversal-line-mini" data-linha="51"></div>
+                                <div class="transversal-line-mini" data-linha="52"></div>
+                                <div class="transversal-line-mini" data-linha="53"></div>
+                                <div class="transversal-line-mini" data-linha="54"></div>
+                                <div class="transversal-line-mini" data-linha="55"></div>
+                                <div class="transversal-group-label">50-55</div>
+                            </div>
+
+                            <div
+                                class="transversal-group bm-transversal-07-16"
+                                data-grupo="56-61"
+                                data-usina="belo-monte"
+                                onclick="showTransversalDetails('belo-monte', '56-61')"
+                            >
+                                <div class="transversal-line-mini" data-linha="56"></div>
+                                <div class="transversal-line-mini" data-linha="57"></div>
+                                <div class="transversal-line-mini" data-linha="58"></div>
+                                <div class="transversal-line-mini" data-linha="59"></div>
+                                <div class="transversal-line-mini" data-linha="60"></div>
+                                <div class="transversal-line-mini" data-linha="61"></div>
+                                <div class="transversal-group-label">56-61</div>
+                            </div>
+
+                            <div
+                                class="transversal-group bm-transversal-08-17"
+                                data-grupo="62-67"
+                                data-usina="belo-monte"
+                                onclick="showTransversalDetails('belo-monte', '62-67')"
+                            >
+                                <div class="transversal-line-mini" data-linha="62"></div>
+                                <div class="transversal-line-mini" data-linha="63"></div>
+                                <div class="transversal-line-mini" data-linha="64"></div>
+                                <div class="transversal-line-mini" data-linha="65"></div>
+                                <div class="transversal-line-mini" data-linha="66"></div>
+                                <div class="transversal-line-mini" data-linha="67"></div>
+                                <div class="transversal-group-label">62-67</div>
+                            </div>
+
+                            <div
+                                class="transversal-group bm-transversal-09-18"
+                                data-grupo="68-70"
+                                data-usina="belo-monte"
+                                onclick="showTransversalDetails('belo-monte', '68-70')"
+                            >
+                                <div class="transversal-line-mini" data-linha="68"></div>
+                                <div class="transversal-line-mini" data-linha="69"></div>
+                                <div class="transversal-line-mini" data-linha="70"></div>
+                                <div class="transversal-group-label">68-70</div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Container do Mapa Oficina -->
+                    <div id="mapOficina" class="map-container">
+                        <div class="map-layout oficina-layout">
+                            <!-- Linha 72 - Lateral Esquerda (Preta) -->
+                            <div
+                                class="map-line oficina-vertical oficina-left"
+                                data-linha="72"
+                                data-usina="oficina"
+                                onclick="showLineDetails('oficina', '72')"
+                            >
+                                <div class="line-bar vertical oficina-72"></div>
+                                <div class="line-label">72</div>
+                            </div>
+
+                            <!-- Linha 74 - Lateral Direita (Vermelha) -->
+                            <div
+                                class="map-line oficina-vertical oficina-right"
+                                data-linha="74"
+                                data-usina="oficina"
+                                onclick="showLineDetails('oficina', '74')"
+                            >
+                                <div class="line-bar vertical oficina-74"></div>
+                                <div class="line-label">74</div>
+                            </div>
+
+                            <!-- Linha 73 - Horizontal Central (Azul) -->
+                            <div
+                                class="map-line oficina-73"
+                                data-linha="73"
+                                data-usina="oficina"
+                                onclick="showLineDetails('oficina', '73')"
+                            >
+                                <div class="line-bar horizontal oficina-73-bar"></div>
+                                <div class="line-label">73</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legenda do Mapa -->
+                    <div class="map-legend">
+                        <div class="legend-item">
+                            <div class="legend-color completed"></div>
+                            <span>Concluído (100%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color in-progress"></div>
+                            <span>Em Andamento (1-99%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color pending"></div>
+                            <span>Pendente (0%)</span>
+                        </div>
+                    </div>
+
+                    <!-- Tooltip do Mapa -->
+                    <div id="mapTooltip" class="map-tooltip">
+                        <div class="tooltip-content">
+                            <div class="tooltip-line"></div>
+                            <div class="tooltip-progress"></div>
+                            <div class="tooltip-status"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Controle de Execução -->
+                <section class="execution-control-section">
+                    <div class="container">
+                        <div class="execution-control-card">
+                            <div class="control-header">
+                                <h3>
+                                    <i class="fas fa-exchange-alt"></i> Controle de Execução das
+                                    Usinas
+                                </h3>
+                                <p class="control-description">
+                                    Selecione a usina com trabalhos em andamento (onde a equipe está
+                                    executando as instalações das linhas)
+                                </p>
+                            </div>
+                            <div class="control-content">
+                                <div class="control-label">Usina em execução atual:</div>
+                                <div class="usina-buttons-wide">
+                                    <button
+                                        id="btnActivePimental"
+                                        class="btn-usina-wide"
+                                        onclick="setActiveUsina('pimental')"
+                                    >
+                                        <div class="btn-icon"><i class="fas fa-industry"></i></div>
+                                        <div class="btn-content">
+                                            <div class="btn-title">Usina Pimental</div>
+                                            <div class="btn-subtitle">6 linhas • 56 bases</div>
+                                        </div>
+                                        <div class="btn-status" id="statusPimental">Disponível</div>
+                                    </button>
+                                    <button
+                                        id="btnActiveBelo"
+                                        class="btn-usina-wide"
+                                        onclick="setActiveUsina('belo-monte')"
+                                    >
+                                        <div class="btn-icon"><i class="fas fa-industry"></i></div>
+                                        <div class="btn-content">
+                                            <div class="btn-title">Usina Belo Monte</div>
+                                            <div class="btn-subtitle">20 linhas • 212 bases</div>
+                                        </div>
+                                        <div class="btn-status" id="statusBeloMonte">
+                                            Disponível
+                                        </div>
+                                    </button>
+                                    <button
+                                        id="btnActiveOficina"
+                                        class="btn-usina-wide"
+                                        onclick="setActiveUsina('oficina')"
+                                    >
+                                        <div class="btn-icon"><i class="fas fa-tools"></i></div>
+                                        <div class="btn-content">
+                                            <div class="btn-title">Oficina</div>
+                                            <div class="btn-subtitle">3 linhas • 10 bases</div>
+                                        </div>
+                                        <div class="btn-status" id="statusOficina">Disponível</div>
+                                    </button>
+                                </div>
+                                <div class="control-help" id="controlHelpText">
+                                    <i class="fas fa-info-circle"></i> Clique para alternar a usina
+                                    ativa. As estimativas serão recalculadas automaticamente.
+                                </div>
+                                <div style="margin-top: 15px; text-align: center">
+                                    <button
+                                        onclick="forceSaveActiveUsina()"
+                                        style="
+                                            background: var(--primary-blue);
+                                            color: white;
+                                            border: none;
+                                            border-radius: 6px;
+                                            padding: 8px 16px;
+                                            cursor: pointer;
+                                            font-size: 14px;
+                                        "
+                                    >
+                                        <i class="fas fa-save"></i> Salvar Configuração
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Usina Pimental -->
+                <section class="usina-section">
+                    <div class="usina-header">
+                        <h2 class="usina-title"><i class="fas fa-industry"></i> Usina Pimental</h2>
+                        <div class="usina-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="pimentalLinhas">6</div>
+                                <div class="stat-label">Linhas</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="pimentalBases">0</div>
+                                <div class="stat-label">Bases</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="pimentalMetros">0</div>
+                                <div class="stat-label">Metros</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="pimentalProgresso">0%</div>
+                                <div class="stat-label">Progresso</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtros para Pimental -->
+                    <div class="table-filters">
+                        <div class="filter-group">
+                            <i class="fas fa-search"></i>
+                            <input
+                                type="text"
+                                id="filterPimentalSearch"
+                                placeholder="Buscar por linha..."
+                                class="filter-search"
+                            />
+                        </div>
+                        <div class="filter-group">
+                            <i class="fas fa-filter"></i>
+                            <select id="filterPimentalStatus" class="filter-select">
+                                <option value="">Todos os status</option>
+                                <option value="Pendente">Pendente</option>
+                                <option value="Em Andamento">Em Andamento</option>
+                                <option value="Concluído">Concluído</option>
+                            </select>
+                        </div>
+                        <div class="filter-results">
+                            <span id="pimentalFilterResults">Mostrando 6 de 6 linhas</span>
+                        </div>
+                    </div>
+
+                    <div
+                        style="
+                            display: flex;
+                            gap: 10px;
+                            margin-bottom: 15px;
+                            justify-content: flex-end;
+                        "
+                    >
+                        <div id="pimentalViewButtons">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-small"
+                                data-online-only="true"
+                                onclick="enableTableEdit('pimental')"
+                            >
+                                <i class="fas fa-edit"></i> Editar Etapas
+                            </button>
+                        </div>
+                        <div id="pimentalEditButtons" style="display: none; gap: 10px">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-small"
+                                onclick="saveTableEdit('pimental')"
+                            >
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-secondary btn-small"
+                                onclick="cancelTableEdit('pimental')"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table" id="tablePimental">
+                            <thead>
+                                <tr>
+                                    <th>Linha</th>
+                                    <th>Metragem</th>
+                                    <th>Bases</th>
+                                    <th>Concluídas</th>
+                                    <th>Progresso</th>
+                                    <th>Status</th>
+                                    <th>Data Execução</th>
+                                    <th>Etapas do Cabo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Usina Belo Monte -->
+                <section class="usina-section">
+                    <div class="usina-header">
+                        <h2 class="usina-title">
+                            <i class="fas fa-industry"></i> Usina Belo Monte
+                        </h2>
+                        <div class="usina-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="beloMonteLinhas">20</div>
+                                <div class="stat-label">Linhas</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="beloMonteBases">0</div>
+                                <div class="stat-label">Bases</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="beloMonteMetros">0</div>
+                                <div class="stat-label">Metros</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="beloMonteProgresso">0%</div>
+                                <div class="stat-label">Progresso</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtros para Belo Monte -->
+                    <div class="table-filters">
+                        <div class="filter-group">
+                            <i class="fas fa-search"></i>
+                            <input
+                                type="text"
+                                id="filterBeloMonteSearch"
+                                placeholder="Buscar por linha..."
+                                class="filter-search"
+                            />
+                        </div>
+                        <div class="filter-group">
+                            <i class="fas fa-filter"></i>
+                            <select id="filterBeloMonteStatus" class="filter-select">
+                                <option value="">Todos os status</option>
+                                <option value="Pendente">Pendente</option>
+                                <option value="Em Andamento">Em Andamento</option>
+                                <option value="Concluído">Concluído</option>
+                            </select>
+                        </div>
+                        <div class="filter-results">
+                            <span id="beloMonteFilterResults">Mostrando 20 de 20 linhas</span>
+                        </div>
+                    </div>
+
+                    <div
+                        style="
+                            display: flex;
+                            gap: 10px;
+                            margin-bottom: 15px;
+                            justify-content: flex-end;
+                        "
+                    >
+                        <div id="beloMonteViewButtons">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-small"
+                                data-online-only="true"
+                                onclick="enableTableEdit('belo-monte')"
+                            >
+                                <i class="fas fa-edit"></i> Editar Etapas
+                            </button>
+                        </div>
+                        <div id="beloMonteEditButtons" style="display: none; gap: 10px">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-small"
+                                onclick="saveTableEdit('belo-monte')"
+                            >
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-secondary btn-small"
+                                onclick="cancelTableEdit('belo-monte')"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table" id="tableBeloMonte">
+                            <thead>
+                                <tr>
+                                    <th>Linha</th>
+                                    <th>Metragem</th>
+                                    <th>Bases</th>
+                                    <th>Concluídas</th>
+                                    <th>Progresso</th>
+                                    <th>Status</th>
+                                    <th>Data Execução</th>
+                                    <th>Etapas do Cabo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Seção Oficina -->
+                <section class="usina-section">
+                    <div class="usina-header">
+                        <h2 class="usina-title"><i class="fas fa-tools"></i> Oficina</h2>
+                        <div class="usina-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="oficinaLinhas">3</div>
+                                <div class="stat-label">Linhas</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="oficinaBases">0</div>
+                                <div class="stat-label">Bases</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="oficinaMetros">0</div>
+                                <div class="stat-label">Metros</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="oficinaProgresso">0%</div>
+                                <div class="stat-label">Progresso</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtros para Oficina -->
+                    <div class="table-filters">
+                        <div class="filter-group">
+                            <i class="fas fa-search"></i>
+                            <input
+                                type="text"
+                                id="filterOficinaSearch"
+                                placeholder="Buscar por linha..."
+                                class="filter-search"
+                            />
+                        </div>
+                        <div class="filter-group">
+                            <i class="fas fa-filter"></i>
+                            <select id="filterOficinaStatus" class="filter-select">
+                                <option value="">Todos os status</option>
+                                <option value="Pendente">Pendente</option>
+                                <option value="Em Andamento">Em Andamento</option>
+                                <option value="Concluído">Concluído</option>
+                            </select>
+                        </div>
+                        <div class="filter-results">
+                            <span id="oficinaFilterResults">Mostrando 3 de 3 linhas</span>
+                        </div>
+                    </div>
+
+                    <div
+                        style="
+                            display: flex;
+                            gap: 10px;
+                            margin-bottom: 15px;
+                            justify-content: flex-end;
+                        "
+                    >
+                        <div id="oficinaViewButtons">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-small"
+                                data-online-only="true"
+                                onclick="enableTableEdit('oficina')"
+                            >
+                                <i class="fas fa-edit"></i> Editar Etapas
+                            </button>
+                        </div>
+                        <div id="oficinaEditButtons" style="display: none; gap: 10px">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-small"
+                                onclick="saveTableEdit('oficina')"
+                            >
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-secondary btn-small"
+                                onclick="cancelTableEdit('oficina')"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table" id="tableOficina">
+                            <thead>
+                                <tr>
+                                    <th>Linha</th>
+                                    <th>Metragem</th>
+                                    <th>Bases</th>
+                                    <th>Concluídas</th>
+                                    <th>Progresso</th>
+                                    <th>Status</th>
+                                    <th>Data Execução</th>
+                                    <th>Etapas do Cabo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- SEÇÃO: Informações para as Built -->
+                <section class="usina-section">
+                    <div class="usina-header">
+                        <h2 class="usina-title">
+                            <i class="fas fa-ruler-combined"></i> Informações para as Built
+                        </h2>
+                    </div>
+
+                    <div
+                        style="
+                            display: flex;
+                            gap: 10px;
+                            margin: 0 20px 15px 20px;
+                            justify-content: flex-end;
+                        "
+                    >
+                        <div id="builtViewButtons">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-small"
+                                data-online-only="true"
+                                onclick="enableBuiltEdit()"
+                            >
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </div>
+                        <div id="builtEditButtons" style="display: none; gap: 10px">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-small"
+                                onclick="saveBuiltEdit()"
+                            >
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-secondary btn-small"
+                                onclick="cancelBuiltEdit()"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- BELO MONTE -->
+                    <div style="margin: 0 20px 30px 20px">
+                        <h3 class="subsection-title">Belo Monte</h3>
+                        <div class="table-container">
+                            <table class="data-table built-table" id="tableBuiltBeloMonte">
+                                <thead>
+                                    <tr>
+                                        <th>Linha</th>
+                                        <th colspan="13">Distâncias entre Bases (m)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- PIMENTAL -->
+                    <div style="margin: 0 20px 30px 20px">
+                        <h3 class="subsection-title">Pimental</h3>
+                        <div class="table-container">
+                            <table class="data-table built-table" id="tableBuiltPimental">
+                                <thead>
+                                    <tr>
+                                        <th>Linha</th>
+                                        <th colspan="13">Distâncias entre Bases (m)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- OFICINA -->
+                    <div style="margin: 0 20px 30px 20px">
+                        <h3 class="subsection-title">Oficina</h3>
+                        <div class="table-container">
+                            <table class="data-table built-table" id="tableBuiltOficina">
+                                <thead>
+                                    <tr>
+                                        <th>Linha</th>
+                                        <th colspan="8">Distâncias entre Bases (m)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Toast Container -->
+        <div id="toastContainer" class="toast-container"></div>
+
+        <!-- Modal para atualização de progresso -->
+        <div id="updateModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Atualizar Progresso</h2>
+                    <button class="close-btn" onclick="closeModal()">&times;</button>
                 </div>
-                
-                <!-- Filtros para Pimental -->
-                <div class="table-filters">
-                    <div class="filter-group">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="filterPimentalSearch" placeholder="Buscar por linha..." class="filter-search">
-                    </div>
-                    <div class="filter-group">
-                        <i class="fas fa-filter"></i>
-                        <select id="filterPimentalStatus" class="filter-select">
-                            <option value="">Todos os status</option>
-                            <option value="Pendente">Pendente</option>
-                            <option value="Em Andamento">Em Andamento</option>
-                            <option value="Concluído">Concluído</option>
+                <form id="updateForm">
+                    <div class="form-group">
+                        <label class="form-label" for="usinaSelect">Usina:</label>
+                        <select id="usinaSelect" class="form-select" onchange="loadLinhas()">
+                            <option value="">Selecione uma usina</option>
+                            <option value="pimental">Pimental</option>
+                            <option value="belo-monte">Belo Monte</option>
+                            <option value="oficina">Oficina</option>
                         </select>
                     </div>
-                    <div class="filter-results">
-                        <span id="pimentalFilterResults">Mostrando 6 de 6 linhas</span>
-                    </div>
-                </div>
 
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
-                    <div id="pimentalViewButtons">
-                        <button type="button" class="btn btn-primary btn-small" data-online-only="true" onclick="enableTableEdit('pimental')">
-                            <i class="fas fa-edit"></i> Editar Etapas
-                        </button>
-                    </div>
-                    <div id="pimentalEditButtons" style="display: none; gap: 10px;">
-                        <button type="button" class="btn btn-primary btn-small" onclick="saveTableEdit('pimental')">
-                            <i class="fas fa-save"></i> Salvar
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-small" onclick="cancelTableEdit('pimental')">
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table class="data-table" id="tablePimental">
-                        <thead>
-                            <tr>
-                                <th>Linha</th>
-                                <th>Metragem</th>
-                                <th>Bases</th>
-                                <th>Concluídas</th>
-                                <th>Progresso</th>
-                                <th>Status</th>
-                                <th>Data Execução</th>
-                                <th>Etapas do Cabo</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Usina Belo Monte -->
-            <section class="usina-section">
-                <div class="usina-header">
-                    <h2 class="usina-title">
-                        <i class="fas fa-industry"></i> Usina Belo Monte
-                    </h2>
-                    <div class="usina-stats">
-                        <div class="stat-item">
-                            <div class="stat-value" id="beloMonteLinhas">20</div>
-                            <div class="stat-label">Linhas</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="beloMonteBases">0</div>
-                            <div class="stat-label">Bases</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="beloMonteMetros">0</div>
-                            <div class="stat-label">Metros</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="beloMonteProgresso">0%</div>
-                            <div class="stat-label">Progresso</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Filtros para Belo Monte -->
-                <div class="table-filters">
-                    <div class="filter-group">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="filterBeloMonteSearch" placeholder="Buscar por linha..." class="filter-search">
-                    </div>
-                    <div class="filter-group">
-                        <i class="fas fa-filter"></i>
-                        <select id="filterBeloMonteStatus" class="filter-select">
-                            <option value="">Todos os status</option>
-                            <option value="Pendente">Pendente</option>
-                            <option value="Em Andamento">Em Andamento</option>
-                            <option value="Concluído">Concluído</option>
+                    <div class="form-group">
+                        <label class="form-label" for="linhaSelect">Linha:</label>
+                        <select
+                            id="linhaSelect"
+                            class="form-select"
+                            onchange="loadBases()"
+                            disabled
+                        >
+                            <option value="">Selecione uma linha</option>
                         </select>
                     </div>
-                    <div class="filter-results">
-                        <span id="beloMonteFilterResults">Mostrando 20 de 20 linhas</span>
-                    </div>
-                </div>
 
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
-                    <div id="beloMonteViewButtons">
-                        <button type="button" class="btn btn-primary btn-small" data-online-only="true" onclick="enableTableEdit('belo-monte')">
-                            <i class="fas fa-edit"></i> Editar Etapas
-                        </button>
+                    <div class="form-group">
+                        <label class="form-label" for="executionDate">
+                            <i class="fas fa-calendar-alt"></i> Data de Execução:
+                        </label>
+                        <input type="date" id="executionDate" class="form-select" />
+                        <small class="form-help"
+                            >Opcional - deixe em branco para usar data atual</small
+                        >
                     </div>
-                    <div id="beloMonteEditButtons" style="display: none; gap: 10px;">
-                        <button type="button" class="btn btn-primary btn-small" onclick="saveTableEdit('belo-monte')">
-                            <i class="fas fa-save"></i> Salvar
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-small" onclick="cancelTableEdit('belo-monte')">
+
+                    <div class="form-group">
+                        <label class="form-label" style="color: #10b981">
+                            <i class="fas fa-plus-circle"></i> Marcar bases como concluídas:
+                        </label>
+                        <div class="checkbox-group" style="margin-bottom: 10px">
+                            <label class="checkbox-label" style="font-weight: bold; color: #059669">
+                                <input
+                                    type="checkbox"
+                                    id="selectAllBases"
+                                    onchange="toggleAllBases(this)"
+                                />
+                                <i class="fas fa-check-double"></i> Selecionar todas as bases da
+                                linha
+                            </label>
+                        </div>
+                        <div id="basesCheckboxes" class="checkbox-group"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="color: #ef4444">
+                            <i class="fas fa-minus-circle"></i> Remover bases concluídas:
+                        </label>
+                        <div class="checkbox-group" style="margin-bottom: 10px">
+                            <label class="checkbox-label" style="font-weight: bold; color: #dc2626">
+                                <input
+                                    type="checkbox"
+                                    id="selectAllRemoveBases"
+                                    onchange="toggleAllRemoveBases(this)"
+                                />
+                                <i class="fas fa-check-double"></i> Selecionar todas as bases
+                                concluídas
+                            </label>
+                        </div>
+                        <div id="removeBasesCheckboxes" class="checkbox-group"></div>
+                    </div>
+
+                    <div
+                        style="
+                            display: flex;
+                            gap: 15px;
+                            justify-content: flex-end;
+                            margin-top: 30px;
+                        "
+                    >
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">
                             Cancelar
                         </button>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table class="data-table" id="tableBeloMonte">
-                        <thead>
-                            <tr>
-                                <th>Linha</th>
-                                <th>Metragem</th>
-                                <th>Bases</th>
-                                <th>Concluídas</th>
-                                <th>Progresso</th>
-                                <th>Status</th>
-                                <th>Data Execução</th>
-                                <th>Etapas do Cabo</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Seção Oficina -->
-            <section class="usina-section">
-                <div class="usina-header">
-                    <h2 class="usina-title">
-                        <i class="fas fa-tools"></i> Oficina
-                    </h2>
-                    <div class="usina-stats">
-                        <div class="stat-item">
-                            <div class="stat-value" id="oficinaLinhas">3</div>
-                            <div class="stat-label">Linhas</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="oficinaBases">0</div>
-                            <div class="stat-label">Bases</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="oficinaMetros">0</div>
-                            <div class="stat-label">Metros</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="oficinaProgresso">0%</div>
-                            <div class="stat-label">Progresso</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filtros para Oficina -->
-                <div class="table-filters">
-                    <div class="filter-group">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="filterOficinaSearch" placeholder="Buscar por linha..." class="filter-search">
-                    </div>
-                    <div class="filter-group">
-                        <i class="fas fa-filter"></i>
-                        <select id="filterOficinaStatus" class="filter-select">
-                            <option value="">Todos os status</option>
-                            <option value="Pendente">Pendente</option>
-                            <option value="Em Andamento">Em Andamento</option>
-                            <option value="Concluído">Concluído</option>
-                        </select>
-                    </div>
-                    <div class="filter-results">
-                        <span id="oficinaFilterResults">Mostrando 3 de 3 linhas</span>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
-                    <div id="oficinaViewButtons">
-                        <button type="button" class="btn btn-primary btn-small" data-online-only="true" onclick="enableTableEdit('oficina')">
-                            <i class="fas fa-edit"></i> Editar Etapas
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Alterações
                         </button>
                     </div>
-                    <div id="oficinaEditButtons" style="display: none; gap: 10px;">
-                        <button type="button" class="btn btn-primary btn-small" onclick="saveTableEdit('oficina')">
-                            <i class="fas fa-save"></i> Salvar
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-small" onclick="cancelTableEdit('oficina')">
+                </form>
+            </div>
+        </div>
+
+        <!-- Password Modal -->
+        <div id="passwordModal" class="modal password-modal" onclick="closePasswordModal()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2 class="modal-title">🔒 Autorização Necessária</h2>
+                    <button class="close-btn" onclick="closePasswordModal()">&times;</button>
+                </div>
+                <div>
+                    <p>Para realizar modificações no projeto, digite a senha:</p>
+                    <input
+                        type="password"
+                        id="passwordInput"
+                        class="password-input"
+                        placeholder="Digite a senha"
+                        maxlength="20"
+                    />
+                    <div id="passwordError" class="password-error">
+                        Senha incorreta. Tente novamente.
+                    </div>
+                    <div
+                        style="display: flex; gap: 15px; justify-content: center; margin-top: 20px"
+                    >
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="closePasswordModal()"
+                        >
                             Cancelar
                         </button>
+                        <button type="button" class="btn btn-primary" onclick="checkPassword()">
+                            <i class="fas fa-unlock"></i> Confirmar
+                        </button>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="table-container">
-                    <table class="data-table" id="tableOficina">
-                        <thead>
-                            <tr>
-                                <th>Linha</th>
-                                <th>Metragem</th>
-                                <th>Bases</th>
-                                <th>Concluídas</th>
-                                <th>Progresso</th>
-                                <th>Status</th>
-                                <th>Data Execução</th>
-                                <th>Etapas do Cabo</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+        <!-- Modal para observações -->
+        <div id="observationModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">📝 Observação da Linha</h2>
+                    <button class="close-btn" onclick="closeObservationModal()">&times;</button>
                 </div>
-            </section>
+                <div>
+                    <div class="form-group">
+                        <label class="form-label" id="observationLineLabel">Linha:</label>
+                        <p
+                            style="font-weight: bold; color: var(--primary-blue)"
+                            id="observationLineInfo"
+                        ></p>
+                    </div>
 
-            <!-- SEÇÃO: Informações para as Built -->
-            <section class="usina-section">
-                <div class="usina-header">
-                    <h2 class="usina-title">
-                        <i class="fas fa-ruler-combined"></i> Informações para as Built
-                    </h2>
+                    <div class="form-group">
+                        <label class="form-label" for="observationText">Observação:</label>
+                        <textarea
+                            id="observationText"
+                            class="form-textarea"
+                            placeholder="💭 Digite aqui comentários, alertas, status da linha..."
+                            rows="6"
+                            maxlength="500"
+                            oninput="updateCharacterCount()"
+                        ></textarea>
+                        <div
+                            class="form-help"
+                            style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-top: 8px;
+                            "
+                        >
+                            <span style="color: var(--medium-gray); font-size: 0.75rem"
+                                >💡 Dica: Inclua informações sobre problemas, progresso ou
+                                observações importantes</span
+                            >
+                            <span
+                                id="charCount"
+                                style="color: var(--medium-gray); font-size: 0.75rem"
+                                >0/500</span
+                            >
+                        </div>
+                    </div>
+
+                    <div
+                        style="display: flex; gap: 15px; justify-content: center; margin-top: 20px"
+                    >
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="closeObservationModal()"
+                        >
+                            Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="saveObservation()">
+                            <i class="fas fa-save"></i> Salvar Observação
+                        </button>
+                    </div>
                 </div>
+            </div>
+        </div>
 
-                <div style="display: flex; gap: 10px; margin: 0 20px 15px 20px; justify-content: flex-end;">
-                    <div id="builtViewButtons">
-                        <button type="button" class="btn btn-primary btn-small" data-online-only="true" onclick="enableBuiltEdit()">
+        <!-- Modal de Histórico de Versões -->
+        <div id="versionHistoryModal" class="modal">
+            <div class="modal-content" style="max-width: 800px">
+                <div class="modal-header">
+                    <h2 class="modal-title">🕒 Histórico de Versões</h2>
+                    <button class="close-btn" onclick="closeVersionHistoryModal()">&times;</button>
+                </div>
+                <div>
+                    <p style="color: var(--medium-gray); margin-bottom: 20px">
+                        Selecione uma versão anterior para restaurar. As últimas 20 versões são
+                        mantidas automaticamente.
+                    </p>
+
+                    <div id="versionHistoryList" style="max-height: 400px; overflow-y: auto">
+                        <!-- Lista preenchida dinamicamente -->
+                    </div>
+
+                    <div
+                        style="display: flex; gap: 15px; justify-content: center; margin-top: 20px"
+                    >
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="closeVersionHistoryModal()"
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para Detalhamento de Linha Individual -->
+        <div id="lineDetailsModal" class="modal">
+            <div class="modal-content transversal-modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">🔍 Detalhamento da Linha</h2>
+                    <button class="close-btn" onclick="closeLineDetailsModal()">&times;</button>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label class="form-label" id="lineDetailsLabel">Linha:</label>
+                        <p
+                            style="font-weight: bold; color: var(--primary-blue)"
+                            id="lineDetailsInfo"
+                        ></p>
+                    </div>
+
+                    <div class="transversal-table-wrapper">
+                        <table class="data-table transversal-details-table" id="lineDetailsTable">
+                            <thead id="lineDetailsTableHead">
+                                <!-- Cabeçalho preenchido dinamicamente -->
+                            </thead>
+                            <tbody id="lineDetailsBody">
+                                <!-- Preenchido dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div
+                        id="lineDetailsViewButtons"
+                        style="display: flex; gap: 15px; justify-content: center; margin-top: 20px"
+                    >
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="enableLineDetailsEdit()"
+                        >
                             <i class="fas fa-edit"></i> Editar
                         </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="closeLineDetailsModal()"
+                        >
+                            Fechar
+                        </button>
                     </div>
-                    <div id="builtEditButtons" style="display: none; gap: 10px;">
-                        <button type="button" class="btn btn-primary btn-small" onclick="saveBuiltEdit()">
+                    <div
+                        id="lineDetailsEditButtons"
+                        style="display: none; gap: 15px; justify-content: center; margin-top: 20px"
+                    >
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="saveLineDetailsEdit()"
+                        >
                             <i class="fas fa-save"></i> Salvar
                         </button>
-                        <button type="button" class="btn btn-secondary btn-small" onclick="cancelBuiltEdit()">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="cancelLineDetailsEdit()"
+                        >
                             Cancelar
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- BELO MONTE -->
-                <div style="margin: 0 20px 30px 20px;">
-                    <h3 class="subsection-title">Belo Monte</h3>
-                    <div class="table-container">
-                        <table class="data-table built-table" id="tableBuiltBeloMonte">
+        <!-- Modal para Detalhamento de Linhas Transversais -->
+        <div id="transversalModal" class="modal">
+            <div class="modal-content transversal-modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">🔍 Detalhamento de Linhas Transversais</h2>
+                    <button class="close-btn" onclick="closeTransversalModal()">&times;</button>
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label class="form-label" id="transversalGroupLabel">Grupo:</label>
+                        <p
+                            style="font-weight: bold; color: var(--primary-blue)"
+                            id="transversalGroupInfo"
+                        ></p>
+                    </div>
+
+                    <div class="transversal-table-wrapper">
+                        <table class="data-table" id="transversalLinesTable">
                             <thead>
                                 <tr>
                                     <th>Linha</th>
-                                    <th colspan="13">Distâncias entre Bases (m)</th>
+                                    <th>Metragem</th>
+                                    <th>Bases J</th>
+                                    <th>Concluídas</th>
+                                    <th>Progresso</th>
+                                    <th>Passagem</th>
+                                    <th>Crimpagem</th>
+                                    <th>Aferição</th>
+                                    <th>Tensionamento</th>
+                                    <th>Lacre Tensionador</th>
+                                    <th>Lacre Loop Abs</th>
                                 </tr>
                             </thead>
-                            <tbody></tbody>
+                            <tbody id="transversalLinesBody">
+                                <!-- Preenchido dinamicamente -->
+                            </tbody>
                         </table>
                     </div>
-                </div>
 
-                <!-- PIMENTAL -->
-                <div style="margin: 0 20px 30px 20px;">
-                    <h3 class="subsection-title">Pimental</h3>
-                    <div class="table-container">
-                        <table class="data-table built-table" id="tableBuiltPimental">
-                            <thead>
-                                <tr>
-                                    <th>Linha</th>
-                                    <th colspan="13">Distâncias entre Bases (m)</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                    <div
+                        id="transversalViewButtons"
+                        style="display: flex; gap: 15px; justify-content: center; margin-top: 20px"
+                    >
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            data-online-only="true"
+                            onclick="enableTransversalEdit()"
+                        >
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="closeTransversalModal()"
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                    <div
+                        id="transversalEditButtons"
+                        style="display: none; gap: 15px; justify-content: center; margin-top: 20px"
+                    >
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="saveTransversalEdit()"
+                        >
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="cancelTransversalEdit()"
+                        >
+                            Cancelar
+                        </button>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- OFICINA -->
-                <div style="margin: 0 20px 30px 20px;">
-                    <h3 class="subsection-title">Oficina</h3>
-                    <div class="table-container">
-                        <table class="data-table built-table" id="tableBuiltOficina">
-                            <thead>
-                                <tr>
-                                    <th>Linha</th>
-                                    <th colspan="8">Distâncias entre Bases (m)</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+        <script src="src/app.js"></script>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-text">
+                        <p>Sistema desenvolvido por</p>
+                    </div>
+                    <div class="footer-logo">
+                        <img
+                            src="thommen-logo.png"
+                            alt="Thommen Engenharia"
+                            class="footer-company-logo"
+                        />
                     </div>
                 </div>
-            </section>
-        </div>
-    </main>
-
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container"></div>
-
-    <!-- Modal para atualização de progresso -->
-    <div id="updateModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Atualizar Progresso</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
-            <form id="updateForm">
-                <div class="form-group">
-                    <label class="form-label" for="usinaSelect">Usina:</label>
-                    <select id="usinaSelect" class="form-select" onchange="loadLinhas()">
-                        <option value="">Selecione uma usina</option>
-                        <option value="pimental">Pimental</option>
-                        <option value="belo-monte">Belo Monte</option>
-                        <option value="oficina">Oficina</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="linhaSelect">Linha:</label>
-                    <select id="linhaSelect" class="form-select" onchange="loadBases()" disabled>
-                        <option value="">Selecione uma linha</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="executionDate">
-                        <i class="fas fa-calendar-alt"></i> Data de Execução:
-                    </label>
-                    <input type="date" id="executionDate" class="form-select" />
-                    <small class="form-help">Opcional - deixe em branco para usar data atual</small>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" style="color: #10b981;">
-                        <i class="fas fa-plus-circle"></i> Marcar bases como concluídas:
-                    </label>
-                    <div class="checkbox-group" style="margin-bottom: 10px;">
-                        <label class="checkbox-label" style="font-weight: bold; color: #059669;">
-                            <input type="checkbox" id="selectAllBases" onchange="toggleAllBases(this)">
-                            <i class="fas fa-check-double"></i> Selecionar todas as bases da linha
-                        </label>
-                    </div>
-                    <div id="basesCheckboxes" class="checkbox-group"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" style="color: #ef4444;">
-                        <i class="fas fa-minus-circle"></i> Remover bases concluídas:
-                    </label>
-                    <div class="checkbox-group" style="margin-bottom: 10px;">
-                        <label class="checkbox-label" style="font-weight: bold; color: #dc2626;">
-                            <input type="checkbox" id="selectAllRemoveBases" onchange="toggleAllRemoveBases(this)">
-                            <i class="fas fa-check-double"></i> Selecionar todas as bases concluídas
-                        </label>
-                    </div>
-                    <div id="removeBasesCheckboxes" class="checkbox-group"></div>
-                </div>
-                
-                <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Salvar Alterações
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Password Modal -->
-    <div id="passwordModal" class="modal password-modal" onclick="closePasswordModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h2 class="modal-title">🔒 Autorização Necessária</h2>
-                <button class="close-btn" onclick="closePasswordModal()">&times;</button>
-            </div>
-            <div>
-                <p>Para realizar modificações no projeto, digite a senha:</p>
-                <input type="password" id="passwordInput" class="password-input" placeholder="Digite a senha" maxlength="20">
-                <div id="passwordError" class="password-error">Senha incorreta. Tente novamente.</div>
-                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="checkPassword()">
-                        <i class="fas fa-unlock"></i> Confirmar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para observações -->
-    <div id="observationModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">📝 Observação da Linha</h2>
-                <button class="close-btn" onclick="closeObservationModal()">&times;</button>
-            </div>
-            <div>
-                <div class="form-group">
-                    <label class="form-label" id="observationLineLabel">Linha:</label>
-                    <p style="font-weight: bold; color: var(--primary-blue);" id="observationLineInfo"></p>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="observationText">Observação:</label>
-                    <textarea id="observationText" class="form-textarea"
-                              placeholder="💭 Digite aqui comentários, alertas, status da linha..."
-                              rows="6" maxlength="500" oninput="updateCharacterCount()"></textarea>
-                    <div class="form-help" style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                        <span style="color: var(--medium-gray); font-size: 0.75rem;">💡 Dica: Inclua informações sobre problemas, progresso ou observações importantes</span>
-                        <span id="charCount" style="color: var(--medium-gray); font-size: 0.75rem;">0/500</span>
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeObservationModal()">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="saveObservation()">
-                        <i class="fas fa-save"></i> Salvar Observação
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Histórico de Versões -->
-    <div id="versionHistoryModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header">
-                <h2 class="modal-title">🕒 Histórico de Versões</h2>
-                <button class="close-btn" onclick="closeVersionHistoryModal()">&times;</button>
-            </div>
-            <div>
-                <p style="color: var(--medium-gray); margin-bottom: 20px;">
-                    Selecione uma versão anterior para restaurar. As últimas 20 versões são mantidas automaticamente.
-                </p>
-
-                <div id="versionHistoryList" style="max-height: 400px; overflow-y: auto;">
-                    <!-- Lista preenchida dinamicamente -->
-                </div>
-
-                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeVersionHistoryModal()">Fechar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para Detalhamento de Linha Individual -->
-    <div id="lineDetailsModal" class="modal">
-        <div class="modal-content transversal-modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">🔍 Detalhamento da Linha</h2>
-                <button class="close-btn" onclick="closeLineDetailsModal()">&times;</button>
-            </div>
-            <div>
-                <div class="form-group">
-                    <label class="form-label" id="lineDetailsLabel">Linha:</label>
-                    <p style="font-weight: bold; color: var(--primary-blue);" id="lineDetailsInfo"></p>
-                </div>
-
-                <div class="transversal-table-wrapper">
-                    <table class="data-table transversal-details-table" id="lineDetailsTable">
-                        <thead id="lineDetailsTableHead">
-                            <!-- Cabeçalho preenchido dinamicamente -->
-                        </thead>
-                        <tbody id="lineDetailsBody">
-                            <!-- Preenchido dinamicamente -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div id="lineDetailsViewButtons" style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                    <button type="button" class="btn btn-primary" onclick="enableLineDetailsEdit()">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeLineDetailsModal()">Fechar</button>
-                </div>
-                <div id="lineDetailsEditButtons" style="display: none; gap: 15px; justify-content: center; margin-top: 20px;">
-                    <button type="button" class="btn btn-primary" onclick="saveLineDetailsEdit()">
-                        <i class="fas fa-save"></i> Salvar
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="cancelLineDetailsEdit()">Cancelar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para Detalhamento de Linhas Transversais -->
-    <div id="transversalModal" class="modal">
-        <div class="modal-content transversal-modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">🔍 Detalhamento de Linhas Transversais</h2>
-                <button class="close-btn" onclick="closeTransversalModal()">&times;</button>
-            </div>
-            <div>
-                <div class="form-group">
-                    <label class="form-label" id="transversalGroupLabel">Grupo:</label>
-                    <p style="font-weight: bold; color: var(--primary-blue);" id="transversalGroupInfo"></p>
-                </div>
-
-                <div class="transversal-table-wrapper">
-                    <table class="data-table" id="transversalLinesTable">
-                        <thead>
-                            <tr>
-                                <th>Linha</th>
-                                <th>Metragem</th>
-                                <th>Bases J</th>
-                                <th>Concluídas</th>
-                                <th>Progresso</th>
-                                <th>Passagem</th>
-                                <th>Crimpagem</th>
-                                <th>Aferição</th>
-                                <th>Tensionamento</th>
-                                <th>Lacre Tensionador</th>
-                                <th>Lacre Loop Abs</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transversalLinesBody">
-                            <!-- Preenchido dinamicamente -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div id="transversalViewButtons" style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                    <button type="button" class="btn btn-primary" data-online-only="true" onclick="enableTransversalEdit()">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeTransversalModal()">Fechar</button>
-                </div>
-                <div id="transversalEditButtons" style="display: none; gap: 15px; justify-content: center; margin-top: 20px;">
-                    <button type="button" class="btn btn-primary" onclick="saveTransversalEdit()">
-                        <i class="fas fa-save"></i> Salvar
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="cancelTransversalEdit()">Cancelar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="src/app.js"></script>
-
-    
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-text">
-                    <p>Sistema desenvolvido por</p>
-                </div>
-                <div class="footer-logo">
-                    <img src="thommen-logo.png" alt="Thommen Engenharia" class="footer-company-logo">
-                </div>
-            </div>
-        </div>
-    </footer>
-</body>
-</html><!-- Deploy trigger: Tue Sep 16 14:49:30 -03 2025 -->
+        </footer>
+    </body>
+</html>
+<!-- Deploy trigger: Tue Sep 16 14:49:30 -03 2025 -->
