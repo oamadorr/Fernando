@@ -8623,6 +8623,31 @@
             event.target.value = '';
         }
 
+        // Função para criar snapshot manual da versão atual
+        async function createCurrentSnapshot() {
+            try {
+                const historyRef = db.collection('projects').doc(currentProjectId).collection('history');
+
+                await historyRef.add({
+                    progressData: progressData,
+                    lineStepsStatus: lineStepsStatus,
+                    executionDates: executionDates,
+                    teamConfig: teamConfig,
+                    lineObservations: lineObservations,
+                    builtInformations: builtInformations,
+                    savedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    version: '2.0',
+                    manual: true // Marcador de snapshot manual
+                });
+
+                return true;
+            } catch (error) {
+                console.error('Erro ao criar snapshot:', error);
+                showToast('Erro ao criar snapshot.', 'error');
+                return false;
+            }
+        }
+
         // Função para abrir modal de histórico de versões
         async function forceRestoreFromFirebase() {
             if (!isAuthenticated) {
@@ -8648,7 +8673,19 @@
                 const snapshot = await historyRef.orderBy('savedAt', 'desc').limit(20).get();
 
                 if (snapshot.empty) {
-                    showToast('Nenhuma versão anterior encontrada no histórico.', 'warning');
+                    // Oferecer criar snapshot da versão atual
+                    const createSnapshot = confirm(
+                        'Nenhuma versão anterior encontrada no histórico.\n\n' +
+                        'Deseja criar um snapshot da versão atual agora?\n\n' +
+                        'Isso permitirá que você tenha um ponto de restauração.'
+                    );
+
+                    if (createSnapshot) {
+                        await createCurrentSnapshot();
+                        showToast('Snapshot criado! Agora você pode fazer mudanças com segurança.', 'success');
+                    } else {
+                        showToast('Faça qualquer modificação no projeto para criar a primeira versão.', 'info');
+                    }
                     return;
                 }
 
