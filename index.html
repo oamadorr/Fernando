@@ -2701,6 +2701,9 @@
                         <i class="fas fa-upload"></i> Restaurar Dados
                     </button>
                     <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importProgressData(event)">
+                    <button class="btn btn-secondary" onclick="forceRestoreFromFirebase()">
+                        <i class="fas fa-cloud-download-alt"></i> Restaurar do Firebase
+                    </button>
                     <button class="btn btn-warning" onclick="clearAllProgress()" style="background-color: #ef4444; border-color: #dc2626;">
                         <i class="fas fa-trash"></i> Limpar Tudo
                     </button>
@@ -8566,9 +8569,87 @@
             };
             
             reader.readAsText(file);
-            
+
             // Limpar input para permitir reimportação do mesmo arquivo
             event.target.value = '';
+        }
+
+        // Função para restaurar dados do Firebase manualmente
+        async function forceRestoreFromFirebase() {
+            if (!isAuthenticated) {
+                pendingAction = forceRestoreFromFirebase;
+                showPasswordModal();
+                return;
+            }
+
+            if (!db) {
+                showToast('Firebase não está conectado. Verifique sua conexão.', 'error');
+                return;
+            }
+
+            const confirmMessage = 'Deseja restaurar TODOS os dados do Firebase?\n\n' +
+                'ATENÇÃO: Isso irá substituir todos os dados locais pelos dados salvos na nuvem.\n\n' +
+                'Esta ação não pode ser desfeita.';
+
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            try {
+                showToast('Restaurando dados do Firebase...', 'info');
+
+                const doc = await db.collection('projects').doc(currentProjectId).get();
+
+                if (!doc.exists) {
+                    showToast('Nenhum dado encontrado no Firebase.', 'warning');
+                    return;
+                }
+
+                const firebaseData = doc.data();
+
+                // Restaurar progressData
+                if (firebaseData.progressData) {
+                    progressData = sanitizeProgressData(firebaseData.progressData);
+                }
+
+                // Restaurar lineStepsStatus
+                if (firebaseData.lineStepsStatus) {
+                    lineStepsStatus = firebaseData.lineStepsStatus;
+                }
+
+                // Restaurar lineObservations
+                if (firebaseData.lineObservations) {
+                    lineObservations = firebaseData.lineObservations;
+                }
+
+                // Restaurar builtInformations
+                if (firebaseData.builtInformations) {
+                    builtInformations = firebaseData.builtInformations;
+                }
+
+                // Restaurar teamConfig (mantendo dataAtual local)
+                if (firebaseData.teamConfig) {
+                    const currentDate = teamConfig.dataAtual;
+                    Object.assign(teamConfig, firebaseData.teamConfig);
+                    teamConfig.dataAtual = currentDate;
+                }
+
+                // Salvar dados restaurados no localStorage
+                saveProgressToStorage();
+
+                // Atualizar toda a interface
+                updateAllDisplays();
+
+                const timestamp = firebaseData.lastUpdated
+                    ? new Date(firebaseData.lastUpdated.toDate()).toLocaleString('pt-BR')
+                    : 'N/A';
+
+                showToast(`Dados restaurados do Firebase com sucesso!\nÚltima atualização: ${timestamp}`, 'success');
+
+            } catch (error) {
+                console.error('Erro ao restaurar do Firebase:', error);
+                showToast('Erro ao restaurar dados do Firebase. Verifique sua conexão.', 'error');
+            }
         }
 
         // Funções de exportação de relatórios
