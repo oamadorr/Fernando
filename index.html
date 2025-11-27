@@ -8409,7 +8409,9 @@
                         : new Date().toISOString()
                 };
 
-                await db.collection('projects').doc(currentProjectId).set({
+                const docRef = db.collection('projects').doc(currentProjectId);
+
+                await docRef.set({
                     // Dados detalhados (v2.0)
                     progressData: progressData,
                     lineStepsStatus: lineStepsStatus,
@@ -8425,6 +8427,27 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     version: '2.0'
                 });
+
+                // Registrar snapshot no histórico (mesmo payload principal)
+                const historyRef = docRef.collection('history');
+                await historyRef.add({
+                    progressData: progressData,
+                    lineStepsStatus: lineStepsStatus,
+                    executionDates: executionDates,
+                    teamConfig: teamConfigForFirebase,
+                    lineObservations: lineObservations,
+                    builtInformations: builtInformations,
+                    savedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    version: '2.0'
+                });
+
+                // Limpar versões antigas (manter 20)
+                const oldSnapshots = await historyRef.orderBy('savedAt', 'desc').limit(100).get();
+                if (oldSnapshots.size > 20) {
+                    const batch = db.batch();
+                    oldSnapshots.docs.slice(20).forEach(doc => batch.delete(doc.ref));
+                    await batch.commit();
+                }
             } catch (error) {
                 console.error('Erro ao salvar no Firebase:', error);
                 throw error;
