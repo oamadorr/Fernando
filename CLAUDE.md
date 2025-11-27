@@ -20,27 +20,73 @@ This is a **single-file HTML application** for managing the installation schedul
 
 ### Data Architecture
 
-**Project Data Structure:**
+**CRITICAL: Complete Data Structure in Firebase**
+
+The application uses **dual persistence** (localStorage + Firebase), but Firebase is the **single source of truth**. ALL data fields must be synced via the realtime listener.
+
+**Firebase Document Structure (`projects/{projectId}`):**
 ```javascript
-projectData = {
-  pimental: { name, linhas: { "01": { metragem, bases: { tipo: quantidade } } } },
-  "belo-monte": { name, linhas: { ... } }
+{
+  // ALWAYS include ALL these fields when syncing
+  progressData: {
+    pimental: { "01": { K: 5, E: 1, D: 0 }, "02": { ... } },
+    "belo-monte": { "01": { K: 3, C: 2 }, "02": { ... } }
+  },
+  lineStepsStatus: {
+    pimental: {
+      "01": {
+        passagemCabo: true,
+        crimpagemCabo: false,
+        afericaoCrimpagem: false,
+        tensionamentoCabo: false,
+        lacreTensionador: "ABC123",  // CRITICAL: Must sync
+        lacreLoopAbs: "XYZ789"       // CRITICAL: Must sync
+      }
+    },
+    "belo-monte": { "01": { ... } }
+  },
+  executionDates: {
+    pimental: { "01": "2025-11-20", "02": "2025-11-21" },
+    "belo-monte": { ... }
+  },
+  lineObservations: {  // CRITICAL: Must sync
+    pimental: { "01": "Observação importante...", "02": "..." },
+    "belo-monte": { ... }
+  },
+  builtInformations: {  // CRITICAL: Must sync
+    pimental: {
+      "01": {
+        "distancia_pimental_01_bm_01": "150",
+        "distancia_pimental_01_bm_02": "200"
+      }
+    },
+    "belo-monte": { ... }
+  },
+  teamConfig: {
+    pessoas: 4,
+    horasPorDia: 6,
+    eficiencia: 0.8,
+    inicioTrabalhoBruto: Timestamp,
+    dataAtual: Timestamp
+  },
+  manualActiveUsina: "pimental" | "belo-monte" | null,
+  updatedAt: Timestamp,
+  version: "2.0"
 }
 ```
 
-**Progress Tracking:**
+**Version History Subcollection (`projects/{projectId}/history/{versionId}`):**
 ```javascript
-progressData = {
-  pimental: { "01": { K: 5, E: 1, D: 0 }, "02": { ... } },
-  "belo-monte": { "01": { K: 3, C: 2 }, "02": { ... } }
-}
-```
-
-**Cable Installation Steps:**
-```javascript
-lineStepsStatus = {
-  pimental: { "01": { passagemCabo: true, crimpagemCabo: false, afericaoCrimpagem: false, tensionamentoCabo: false } },
-  "belo-monte": { "01": { ... } }
+{
+  progressData: { ... },      // Snapshot of all fields
+  lineStepsStatus: { ... },
+  executionDates: { ... },
+  lineObservations: { ... },
+  builtInformations: { ... },
+  teamConfig: { ... },
+  savedAt: Timestamp,
+  note: "Backup automático",
+  version: "2.0"
 }
 ```
 
@@ -59,7 +105,27 @@ lineStepsStatus = {
 7. **Charts** - Visual progress by base type and plant using Chart.js
 8. **Export Functions** - PDF reports, Excel exports, and data backup/restore
 9. **Firebase Sync** - Real-time data synchronization across devices
-10. **Toast Notifications** - User feedback for actions
+10. **Version History System** - Automatic snapshots with restoration capability (max 20 versions)
+11. **Toast Notifications** - User feedback for actions
+
+### Version History System
+
+**Automatic Snapshots:**
+- Created whenever data is saved to Firebase (`saveProjectData()`)
+- Stored in subcollection: `projects/{projectId}/history/{versionId}`
+- Auto-cleanup: Keeps only 20 most recent versions
+- Each snapshot includes ALL 5 data fields + metadata
+
+**Restoration Flow:**
+1. User clicks "Histórico de Versões" button in dashboard
+2. Modal displays versions sorted by date (newest first)
+3. Shows progress percentage, timestamp, and note for each version
+4. User selects version and clicks "Restaurar"
+5. Password required for confirmation
+6. Data restored to Firebase and automatically synced to all clients via realtime listener
+7. New snapshot created with note "Restaurado da versão [date]"
+
+**CRITICAL:** When restoring, the version data is saved to the main document, which triggers the realtime listener on all connected clients, ensuring everyone sees the restored data immediately.
 
 ## Data Specifications
 
@@ -106,6 +172,174 @@ lineStepsStatus = {
 - `updateTable(usinaKey, tableId)` - Populate tables with numerical sorting (01, 02... not 01, 10...)
 - `updateCharts()` - Refresh Chart.js visualizations
 - `updateTransversalVisuals()` - Update map line colors based on progress
+
+## Critical Bugs & Solutions (MUST READ)
+
+### Bug #1: Realtime Listener Data Loss (SOLVED)
+
+**Problem:** Data (lacres, observations, Built info) appeared when multiple users worked simultaneously but disappeared after version restoration or page reload.
+
+**Root Cause:** `setupRealtimeListener()` (around line 5047) was only syncing 3 fields:
+- ✅ progressData
+- ✅ lineStepsStatus
+- ✅ executionDates
+
+**IGNORED fields (causing data loss):**
+- ❌ lineObservations
+- ❌ builtInformations
+
+**Impact:** When Firebase updated (from any save/restore), the listener detected change and overwrote local data WITHOUT the missing fields, effectively "erasing" them from user's view.
+
+**Solution (Lines 5066-5093):**
+```javascript
+const newProgressData = data.progressData ? sanitizeProgressData(data.progressData) : null;
+const newLineStepsStatus = data.lineStepsStatus || {};
+const newExecutionDates = sanitizeExecutionDates(data.executionDates || {});
+const newLineObservations = data.lineObservations || {};        // CRITICAL: Added
+const newBuiltInformations = data.builtInformations || {};      // CRITICAL: Added
+
+// Sync ALL fields including new ones
+if (JSON.stringify(newLineObservations) !== JSON.stringify(lineObservations)) {
+    lineObservations = newLineObservations;
+    hasChanges = true;
+}
+if (JSON.stringify(newBuiltInformations) !== JSON.stringify(builtInformations)) {
+    builtInformations = newBuiltInformations;
+    hasChanges = true;
+}
+```
+
+**RULE:** When adding ANY new data field to the application, you MUST update `setupRealtimeListener()` to sync that field. Otherwise, data loss will occur.
+
+### Bug #2: Progress Calculation Inconsistency (SOLVED)
+
+**Problem:** Version history modal showed 65.1% but dashboard showed 42.4% after restoration.
+
+**Root Cause:** Modal calculated progress using ONLY bases (287/441 = 65.1%), while dashboard included bases + cable steps (343/809 = 42.4%).
+
+**Solution (Lines 8787-8824):** Updated modal `calculateProgress()` to match dashboard formula:
+```javascript
+// Calculate bases
+let completedBases = 0;
+let totalBases = 0;
+// ... count bases ...
+
+// Calculate cable steps
+let completedCableSteps = 0;
+for (const usina in data.lineStepsStatus) {
+    for (const linha in data.lineStepsStatus[usina]) {
+        const steps = data.lineStepsStatus[usina][linha];
+        if (steps.passagemCabo) completedCableSteps++;
+        if (steps.crimpagemCabo) completedCableSteps++;
+        if (steps.afericaoCrimpagem) completedCableSteps++;
+        if (steps.tensionamentoCabo) completedCableSteps++;
+    }
+}
+
+// Total cable steps = 92 lines × 4 steps
+const totalCableSteps = 368;
+
+// Combined progress (bases + steps)
+const totalItems = totalBases + totalCableSteps;
+const completedItems = completedBases + completedCableSteps;
+const progress = ((completedItems / totalItems) * 100).toFixed(1);
+```
+
+**RULE:** ALL progress calculations must include both bases AND cable steps for consistency.
+
+### Bug #3: Built Table Rendering Error (SOLVED)
+
+**Problem:** `TypeError: Cannot read properties of undefined (reading '01')` when opening Built modal.
+
+**Root Cause:** Code accessed `builtInformations[usina][linha]` without checking if structure existed first.
+
+**Solution (Lines 7602-7608):**
+```javascript
+linhas.forEach(linha => {
+    // CRITICAL: Check structure exists before accessing
+    if (!builtInformations[usinaKey] || !builtInformations[usinaKey][linha]) {
+        return;
+    }
+    const pares = builtInformations[usinaKey][linha];
+    if (!pares) return;
+    // ... rest of logic
+});
+```
+
+**RULE:** Always null-check nested Firebase data structures before accessing, as they may not exist for all lines/usinas.
+
+### Firebase Admin Scripts
+
+**Service Account:** `.firebase/serviceAccountKey.json` (project: `fernando-bce22`)
+
+**Setup:**
+```bash
+npm install firebase-admin playwright
+npx playwright install chromium
+```
+
+**Available Scripts:**
+
+1. **Export Complete Backup:**
+```bash
+node export-complete-backup.js
+# Creates: backup-completo-YYYY-MM-DD.json
+# Includes: ALL 5 data fields + statistics
+```
+
+2. **Import Backup to Firebase:**
+```bash
+node import-backup-to-firebase.js
+# Reads: backup-linhas-vida-YYYY-MM-DD.json
+# Imports old backup format to Firebase with all fields
+```
+
+3. **Check History Detailed:**
+```bash
+node check-history-detailed.js
+# Lists all version history snapshots
+# Shows: timestamp, bases, steps, lacres for each version
+```
+
+4. **Extract localStorage (Automated):**
+```bash
+node extract-localstorage-data.js
+# Opens browser, extracts localStorage, saves JSON
+# Creates: localstorage-backup-YYYY-MM-DD.json
+```
+
+5. **Extract localStorage (Manual):**
+```bash
+open extract-localStorage-manual.html
+# User opens in same browser/computer where data was filled
+# Click "Extrair Dados" → "Baixar Arquivo JSON"
+# Send file back for import
+```
+
+**IMPORTANT:** When creating backup/restore scripts, ALWAYS include all 5 data fields:
+1. progressData
+2. lineStepsStatus (with lacres!)
+3. executionDates
+4. lineObservations
+5. builtInformations
+
+**Firestore Rules:**
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if true;
+
+      match /history/{versionId} {
+        allow read: if true;
+        allow write: if true;
+      }
+    }
+  }
+}
+```
 
 ## Important Notes
 
@@ -232,12 +466,58 @@ node test_script.js
 - Causa: `closePasswordModal()` resetava `pendingAction` antes de `checkPassword()` executá-la
 - Solução: Salvar `pendingAction` em variável local antes de fechar modal
 
+## Debugging
+
+**Console Logs:**
+The application includes extensive debug logging with emojis for easy filtering:
+
+```javascript
+// Progress calculation
+console.log('📊 calculateProgress:', { totalBases, completedBases, progressPercent });
+
+// Cable steps tracking
+console.log('🔧 calculateCableStepsCompleted:', { totalLines, completedSteps });
+
+// Firebase sync
+console.log('🔄 updateAllDisplays chamado');
+console.log('🔥 Firebase dados carregados:', data);
+
+// Authentication
+console.log('🔐 Autenticação bem-sucedida');
+```
+
+**Browser DevTools Filtering:**
+- Filter console by: `🔧` (cable steps), `📊` (progress), `🔥` (Firebase), `🔐` (auth)
+- Check Network tab for Firebase API calls
+- Application tab → Local Storage → View cached data
+- Application tab → IndexedDB → Firebase offline persistence
+
+**Common Issues:**
+
+1. **Data not syncing:** Check Firebase connection status indicator (top-right)
+2. **Progress percentage wrong:** Verify `calculateProgress()` includes both bases + cable steps
+3. **Data disappeared after restore:** Check `setupRealtimeListener()` syncs ALL 5 fields
+4. **Modal not opening:** Check browser console for `onclick` conflicts
+5. **Lacres/observations missing:** Verify `lineStepsStatus` and `lineObservations` are synced
+
 ## Project Structure
 
 ```
-├── index.html          # Main application (168KB)
-├── thommen-logo.png    # Company logo (48KB)
-├── norte-energia-logo.png # Client logo (126KB)
-├── README.md           # Project documentation
-└── .vercel-trigger     # Forces Vercel redeployment
+├── index.html                      # Main application (168KB)
+├── thommen-logo.png                # Company logo (48KB)
+├── norte-energia-logo.png          # Client logo (126KB)
+├── README.md                       # Project documentation
+├── CLAUDE.md                       # Development guide (this file)
+├── .vercel-trigger                 # Forces Vercel redeployment
+├── .gitignore                      # Excludes .firebase/, backups, node_modules
+│
+├── .firebase/
+│   └── serviceAccountKey.json      # Firebase Admin SDK credentials (NOT in git)
+│
+└── Firebase Admin Scripts:
+    ├── export-complete-backup.js       # Export full backup with all fields
+    ├── import-backup-to-firebase.js    # Import old backup to Firebase
+    ├── check-history-detailed.js       # Analyze version history
+    ├── extract-localstorage-data.js    # Automated localStorage extraction
+    └── extract-localStorage-manual.html # Manual localStorage extraction tool
 ```
