@@ -23,6 +23,7 @@ import {
     updateMapFromExternalData,
     updateTransversalVisuals,
 } from "./ui/map.js";
+import { createObservationHandlers } from "./ui/modals.js";
 import { showToast } from "./ui/toasts.js";
 import state, {
     setDb,
@@ -77,6 +78,13 @@ function requireOnlineEdits() {
     }
     return true;
 }
+
+const {
+    openObservationModal,
+    closeObservationModal,
+    saveObservation,
+    updateCharacterCount,
+} = createObservationHandlers({ requireOnlineEdits, saveProjectData });
 
 // Dados do projeto
 const projectData = {
@@ -3058,92 +3066,6 @@ function closeModal() {
     document.getElementById("selectAllRemoveBases").checked = false;
 }
 
-// Variáveis globais para o modal de observação
-let currentObservationUsina = "";
-let currentObservationLinha = "";
-
-function openObservationModal(usinaKey, linha) {
-    currentObservationUsina = usinaKey;
-    currentObservationLinha = linha;
-
-    // Atualizar informações da linha
-    const usinaName = projectData[usinaKey].name;
-    document.getElementById("observationLineInfo").textContent = `${usinaName} - Linha ${linha}`;
-
-    // Carregar observação existente
-    const currentObservation =
-        lineObservations[usinaKey] && lineObservations[usinaKey][linha]
-            ? lineObservations[usinaKey][linha]
-            : "";
-    document.getElementById("observationText").value = currentObservation;
-
-    // Atualizar contador de caracteres
-    updateCharacterCount();
-
-    // Mostrar modal
-    document.getElementById("observationModal").style.display = "block";
-}
-
-function closeObservationModal() {
-    document.getElementById("observationModal").style.display = "none";
-    const textarea = document.getElementById("observationText");
-    textarea.value = "";
-    textarea.style.height = "auto"; // Reset height
-    document.getElementById("charCount").textContent = "0/500";
-    document.getElementById("charCount").style.color = "var(--medium-gray)";
-    currentObservationUsina = "";
-    currentObservationLinha = "";
-}
-
-async function saveObservation() {
-    if (!requireOnlineEdits()) return;
-    if (!currentObservationUsina || !currentObservationLinha) {
-        showToast("Erro: Informações da linha não encontradas.", "error");
-        return;
-    }
-
-    const observationText = document.getElementById("observationText").value.trim();
-
-    // Inicializar estrutura se necessário
-    if (!lineObservations[currentObservationUsina]) {
-        lineObservations[currentObservationUsina] = {};
-    }
-
-    // Salvar observação
-    lineObservations[currentObservationUsina][currentObservationLinha] = observationText;
-
-    // Persistir
-    saveProgressToStorage();
-    await saveProjectData();
-
-    showToast("Observação salva com sucesso!", "success");
-    closeObservationModal();
-}
-
-// Função para atualizar contador de caracteres e auto-resize
-function updateCharacterCount() {
-    const textarea = document.getElementById("observationText");
-    const charCount = document.getElementById("charCount");
-    const currentLength = textarea.value.length;
-    const maxLength = textarea.maxLength;
-
-    charCount.textContent = `${currentLength}/${maxLength}`;
-
-    // Mudar cor quando próximo do limite
-    if (currentLength > maxLength * 0.9) {
-        charCount.style.color = "var(--error-red)";
-    } else if (currentLength > maxLength * 0.75) {
-        charCount.style.color = "var(--warning-orange)";
-    } else {
-        charCount.style.color = "var(--medium-gray)";
-    }
-
-    // Auto-resize do textarea
-    textarea.style.height = "auto";
-    const newHeight = Math.max(140, textarea.scrollHeight);
-    textarea.style.height = newHeight + "px";
-}
-
 // Funções para Modal de Linhas Transversais
 function showTransversalDetails(usinaKey, grupo) {
     const [startLine, endLine] = grupo.split("-").map(Number);
@@ -5973,6 +5895,8 @@ const exportedFunctions = {
     openUpdateModal,
     openLineModal,
     openObservationModal,
+    closeObservationModal,
+    updateCharacterCount,
     saveObservation,
     closeTransversalModal,
     enableTransversalEdit,
