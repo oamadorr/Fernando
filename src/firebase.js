@@ -30,20 +30,24 @@ function applyTeamConfigFromFirebase(teamConfig, data) {
         ...data.teamConfig,
     });
 
-    if (data.teamConfig.inicioTrabalhoBruto) {
-        try {
-            teamConfig.inicioTrabalhoBruto = new Date(data.teamConfig.inicioTrabalhoBruto);
-        } catch {
-            teamConfig.inicioTrabalhoBruto = new Date("2025-09-11");
-        }
+    const rawInicio = data.teamConfig.inicioTrabalhoBruto;
+    if (rawInicio) {
+        const parsed =
+            typeof rawInicio?.toDate === "function"
+                ? rawInicio.toDate()
+                : new Date(rawInicio);
+        teamConfig.inicioTrabalhoBruto =
+            parsed instanceof Date && !isNaN(parsed.getTime())
+                ? parsed
+                : new Date("2025-09-11");
     }
 
-    if (data.teamConfig.dataAtual) {
-        try {
-            teamConfig.dataAtual = new Date(data.teamConfig.dataAtual);
-        } catch {
-            teamConfig.dataAtual = new Date();
-        }
+    const rawDataAtual = data.teamConfig.dataAtual;
+    if (rawDataAtual) {
+        const parsed =
+            typeof rawDataAtual?.toDate === "function" ? rawDataAtual.toDate() : new Date(rawDataAtual);
+        teamConfig.dataAtual =
+            parsed instanceof Date && !isNaN(parsed.getTime()) ? parsed : new Date();
     }
 
     return teamConfig;
