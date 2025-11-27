@@ -5025,7 +5025,9 @@
                             const newProgressData = data.progressData ? sanitizeProgressData(data.progressData) : null;
                             const newLineStepsStatus = data.lineStepsStatus || {};
                             const newExecutionDates = sanitizeExecutionDates(data.executionDates || {});
-                            
+                            const newLineObservations = data.lineObservations || {};
+                            const newBuiltInformations = data.builtInformations || {};
+
                             // Verificar se houve mudanças nos dados
                             let hasChanges = false;
                             if (newProgressData && JSON.stringify(newProgressData) !== JSON.stringify(progressData)) {
@@ -5038,6 +5040,14 @@
                             }
                             if (JSON.stringify(newExecutionDates) !== JSON.stringify(executionDates)) {
                                 executionDates = newExecutionDates;
+                                hasChanges = true;
+                            }
+                            if (JSON.stringify(newLineObservations) !== JSON.stringify(lineObservations)) {
+                                lineObservations = newLineObservations;
+                                hasChanges = true;
+                            }
+                            if (JSON.stringify(newBuiltInformations) !== JSON.stringify(builtInformations)) {
+                                builtInformations = newBuiltInformations;
                                 hasChanges = true;
                             }
                             
