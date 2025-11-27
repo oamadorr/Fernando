@@ -2,20 +2,33 @@ import {
     configurePersistence,
     loadLineStepsFromStorage,
     loadProgressFromStorage,
-    migrateProgressDataIfNeeded,
     saveProgressToStorage,
 } from "./persistence.js";
-
-// Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyCBk1dt3vKyHO3-RIm6TBqC2GpCxiZTvfQ",
-    authDomain: "fernando-bce22.firebaseapp.com",
-    databaseURL: "https://fernando-bce22-default-rtdb.firebaseio.com",
-    projectId: "fernando-bce22",
-    storageBucket: "fernando-bce22.firebasestorage.app",
-    messagingSenderId: "909134111459",
-    appId: "1:909134111459:web:dc75f291b972f664999bd6",
-};
+import {
+    sanitizeProgressData,
+    sanitizeExecutionDates,
+    formatExecutionDateForDisplay,
+    getExecutionDateForLine,
+} from "./utils/sanitize.js";
+import {
+    initializeFirebase as initializeFirebaseModule,
+    applyFirebaseDataSnapshot,
+    detectAndResolveDataConflicts as detectAndResolveDataConflictsModule,
+    saveProjectData as saveProjectDataModule,
+    setupRealtimeListener as setupRealtimeListenerModule,
+} from "./firebase.js";
+import state, {
+    setDb,
+    setCurrentProjectId,
+    setAllowOnlineEdits,
+    setProgressData,
+    setLineStepsStatus,
+    setLineObservations,
+    setBuiltInformations,
+    setTeamConfig,
+    setExecutionDates,
+    setManualActiveUsina,
+} from "./state.js";
 
 // Firebase variables
 let db;
@@ -168,25 +181,6 @@ const projectData = {
         },
     },
 };
-
-function sanitizeProgressData(raw) {
-    const sanitized = {};
-    for (const usinaKey of Object.keys(projectData)) {
-        sanitized[usinaKey] = {};
-        const linhas = projectData[usinaKey].linhas;
-        for (const linhaKey of Object.keys(linhas)) {
-            sanitized[usinaKey][linhaKey] = {};
-            const allowedBases = linhas[linhaKey].bases;
-            const rawLine = raw?.[usinaKey]?.[linhaKey] || {};
-            for (const tipo of Object.keys(allowedBases)) {
-                const limite = allowedBases[tipo];
-                const valor = rawLine?.[tipo] ?? 0;
-                sanitized[usinaKey][linhaKey][tipo] = Math.max(0, Math.min(limite, valor));
-            }
-        }
-    }
-    return sanitized;
-}
 
 // Progresso individual por linha - estrutura: usina -> linha -> tipo -> quantidade concluída
 let progressData = {
@@ -1046,72 +1040,30 @@ configurePersistence({
     setBuiltInformations: (value) => (builtInformations = value),
 });
 
-function normalizeExecutionDateValue(rawValue) {
-    if (!rawValue) return "";
-
-    if (rawValue instanceof Date) {
-        return !isNaN(rawValue) ? rawValue.toISOString().split("T")[0] : "";
-    }
-
-    if (typeof rawValue === "string") {
-        const trimmed = rawValue.trim();
-        if (!trimmed) return "";
-
-        // Se já estiver no formato ISO simples, usar diretamente
-        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-            return trimmed;
-        }
-
-        const parsed = new Date(trimmed);
-        if (!isNaN(parsed.getTime())) {
-            return parsed.toISOString().split("T")[0];
-        }
-
-        return "";
-    }
-
-    return "";
+function syncLocalStateToModule() {
+    setDb(db);
+    setCurrentProjectId(currentProjectId);
+    setAllowOnlineEdits(allowOnlineEdits);
+    setProgressData(progressData);
+    setLineStepsStatus(lineStepsStatus);
+    setExecutionDates(executionDates);
+    setLineObservations(lineObservations);
+    setBuiltInformations(builtInformations);
+    setTeamConfig(teamConfig);
+    setManualActiveUsina(manualActiveUsina);
 }
 
-function getExecutionDateForLine(usinaKey, linhaKey) {
-    if (!executionDates[usinaKey]) return "";
-    const rawValue = executionDates[usinaKey][linhaKey];
-    return normalizeExecutionDateValue(rawValue);
-}
-
-function sanitizeExecutionDates(raw) {
-    const sanitized = {};
-    if (!raw || typeof raw !== "object") {
-        return sanitized;
-    }
-
-    for (const usinaKey of Object.keys(raw)) {
-        const linhas = raw[usinaKey];
-        if (!linhas || typeof linhas !== "object") continue;
-
-        for (const linhaKey of Object.keys(linhas)) {
-            const normalized = normalizeExecutionDateValue(linhas[linhaKey]);
-            if (normalized) {
-                if (!sanitized[usinaKey]) {
-                    sanitized[usinaKey] = {};
-                }
-                sanitized[usinaKey][linhaKey] = normalized;
-            }
-        }
-    }
-
-    return sanitized;
-}
-
-function formatExecutionDateForDisplay(value) {
-    const normalized = normalizeExecutionDateValue(value);
-    if (!normalized) return "";
-
-    const parts = normalized.split("-");
-    if (parts.length !== 3) return "";
-
-    const [year, month, day] = parts;
-    return `${day}/${month}/${year}`;
+function syncModuleStateToLocal() {
+    db = state.db;
+    currentProjectId = state.currentProjectId;
+    allowOnlineEdits = state.allowOnlineEdits;
+    progressData = state.progressData;
+    lineStepsStatus = state.lineStepsStatus;
+    executionDates = state.executionDates;
+    lineObservations = state.lineObservations;
+    builtInformations = state.builtInformations;
+    teamConfig = state.teamConfig;
+    manualActiveUsina = state.manualActiveUsina;
 }
 
 // Controle manual da usina ativa
@@ -1165,6 +1117,9 @@ function validateAndFixTeamConfigDates() {
 
 // Inicialização
 document.addEventListener("DOMContentLoaded", async function () {
+    // Sincronizar estado inicial com o módulo compartilhado
+    syncLocalStateToModule();
+
     // Inicializar hash da senha
     await initializePasswordHash();
 
@@ -1583,10 +1538,28 @@ function calculateEstimatedCompletion() {
 // Firebase Functions
 function initializeFirebase() {
     try {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-        updateStatusIndicator("online");
-        console.log("Firebase inicializado com sucesso");
+        initializeFirebaseModule(
+            () => {
+                db = state.db;
+                setReadOnlyMode(false);
+                updateStatusIndicator("online");
+                syncLocalStateToModule();
+                console.log("Firebase inicializado com sucesso");
+            },
+            (error) => {
+                console.error("Erro ao inicializar Firebase:", error);
+                setReadOnlyMode(true);
+                updateStatusIndicator("offline");
+                loadTeamConfigFromStorage();
+                validateAndFixTeamConfigDates();
+                loadLineStepsFromStorage();
+                loadProgressFromStorage();
+                loadBuiltFromStorage();
+                updateAllDisplays();
+                initializeCharts();
+                hideLoading();
+            }
+        );
     } catch (error) {
         console.error("Erro ao inicializar Firebase:", error);
         setReadOnlyMode(true);
@@ -1608,6 +1581,7 @@ function checkUrlParams() {
     const projectId = urlParams.get("project") || "thommen-belo-monte-2025";
 
     currentProjectId = projectId;
+    setCurrentProjectId(projectId);
     loadProjectData();
 }
 
@@ -1617,7 +1591,6 @@ async function loadProjectData() {
 
     // Sempre tentar Firebase primeiro, detectando e resolvendo conflitos
     if (db && currentProjectId) {
-        // Em modo somente leitura, pular detecção de conflitos e carregar direto do Firebase
         const isReadOnlyMode =
             !isAuthenticated &&
             (!localStorage.getItem("linhasVidaProgress") ||
@@ -1626,12 +1599,10 @@ async function loadProjectData() {
 
         let conflictResolved = false;
         if (!isReadOnlyMode) {
-            // Detectar e resolver conflitos apenas se não estiver em modo somente leitura
             conflictResolved = await detectAndResolveDataConflicts();
         }
 
         if (conflictResolved) {
-            // Dados já foram sincronizados, apenas atualizar displays
             updateAllDisplays();
             initializeCharts();
             updateStatusIndicator("online");
@@ -1644,167 +1615,27 @@ async function loadProjectData() {
             const doc = await db.collection("projects").doc(currentProjectId).get();
 
             if (doc.exists) {
-                const data = doc.data();
-
-                // Em modo somente leitura, aplicar dados do Firebase diretamente
-                if (isReadOnlyMode) {
-                    progressData = data.progressData
-                        ? sanitizeProgressData(data.progressData)
-                        : sanitizeProgressData(progressData);
-                    if (data.lineStepsStatus) {
-                        lineStepsStatus = data.lineStepsStatus;
-                    }
-                    if (data.executionDates) {
-                        executionDates = sanitizeExecutionDates(data.executionDates);
-                    }
-                    if (data.teamConfig) {
-                        // Aplicar dados do Firebase
-                        teamConfig = {
-                            ...teamConfig,
-                            ...data.teamConfig,
-                        };
-
-                        // Converter strings de data para objetos Date
-                        if (data.teamConfig.inicioTrabalhoBruto) {
-                            try {
-                                teamConfig.inicioTrabalhoBruto = new Date(
-                                    data.teamConfig.inicioTrabalhoBruto
-                                );
-                            } catch {
-                                teamConfig.inicioTrabalhoBruto = new Date("2025-09-11");
-                            }
-                        }
-
-                        if (data.teamConfig.dataAtual) {
-                            try {
-                                teamConfig.dataAtual = new Date(data.teamConfig.dataAtual);
-                            } catch {
-                                teamConfig.dataAtual = new Date();
-                            }
-                        }
-
-                        // Garantir que as datas sejam válidas
-                        validateAndFixTeamConfigDates();
-                    }
-
-                    // Carregar usina ativa do Firebase
-                    if (data.manualActiveUsina) {
-                        manualActiveUsina = data.manualActiveUsina;
-                    }
-
-                    // Carregar informações de Built do Firebase
-                    await loadBuiltFromFirebase(doc);
-
-                    // Atualizar displays com dados do Firebase
-                    console.log("Modo somente leitura: dados carregados do Firebase", {
-                        progressData: progressData,
-                        lineStepsStatus: lineStepsStatus,
-                        teamConfig: teamConfig,
-                    });
-                    saveProgressToStorage();
-                    updateAllDisplays();
-                    initializeCharts();
-                    updateStatusIndicator("online");
-                    setupRealtimeListener();
-                    hideLoading();
-                    return;
-                }
-
-                // Compatibilidade com sistema v1.0 (produção atual)
-                if (data.version === "1.0" && data.data) {
-                    // Converter dados v1.0 para v2.0
-                    console.log("Convertendo dados v1.0 para v2.0...");
-                    const oldData = data.data;
-
-                    // Estimar progressData baseado no progresso simples
-                    if (oldData.pimental && oldData["belo-monte"]) {
-                        // Manter dados existentes ou criar base simples
-                        if (!progressData.pimental) {
-                            progressData.pimental = {
-                                A: 0,
-                                B: 0,
-                                C: 0,
-                                D: 0,
-                                E: 0,
-                                F: 0,
-                                G: 0,
-                                H: 0,
-                                J: 0,
-                                K: 0,
-                            };
-                        }
-                        if (!progressData["belo-monte"]) {
-                            progressData["belo-monte"] = {};
-                            // Initialize all lines for Belo Monte
-                            for (const linha in projectData["belo-monte"].linhas) {
-                                progressData["belo-monte"][linha] = {};
-                                for (const tipo in projectData["belo-monte"].linhas[linha].bases) {
-                                    progressData["belo-monte"][linha][tipo] = 0;
-                                }
-                            }
-                        }
-                    }
-
-                    // Salvar dados convertidos
-                    await saveProjectData();
-                }
-                // Adaptar dados detalhados v2.0
-                else if (data.progressData) {
-                    progressData = sanitizeProgressData(data.progressData);
-
-                    // Carregar status das etapas do cabo se disponível
-                    if (data.lineStepsStatus) {
-                        lineStepsStatus = data.lineStepsStatus;
-                    }
-
-                    // Carregar datas de execução se disponível
-                    if (data.executionDates) {
-                        executionDates = sanitizeExecutionDates(data.executionDates);
-                    }
-
-                    // Carregar configuração da equipe se disponível
-                    if (data.teamConfig) {
-                        // Aplicar dados e converter datas
-                        teamConfig = {
-                            ...teamConfig,
-                            ...data.teamConfig,
-                        };
-
-                        // Converter strings para datas com tratamento de erro
-                        if (data.teamConfig.inicioTrabalhoBruto) {
-                            try {
-                                teamConfig.inicioTrabalhoBruto = new Date(
-                                    data.teamConfig.inicioTrabalhoBruto
-                                );
-                            } catch {
-                                teamConfig.inicioTrabalhoBruto = new Date("2025-09-11");
-                            }
-                        }
-
-                        if (data.teamConfig.dataAtual) {
-                            try {
-                                teamConfig.dataAtual = new Date(data.teamConfig.dataAtual);
-                            } catch {
-                                teamConfig.dataAtual = new Date();
-                            }
-                        }
-
-                        // Garantir que as datas sejam válidas
-                        validateAndFixTeamConfigDates();
-                    }
-
-                    // IMPORTANTE: Carregar usina ativa do Firebase também quando não está em modo somente leitura
-                    if (data.manualActiveUsina) {
-                        manualActiveUsina = data.manualActiveUsina;
-                        localStorage.setItem("manualActiveUsina", manualActiveUsina);
-                    }
-
-                    // Carregar informações de Built do Firebase
-                    await loadBuiltFromFirebase(doc);
-                }
+                syncLocalStateToModule();
+                applyFirebaseDataSnapshot(doc, {
+                    isReadOnlyMode,
+                    progressData,
+                    lineStepsStatus,
+                    executionDates,
+                    teamConfig,
+                    manualActiveUsina,
+                    loadBuiltFromFirebase,
+                });
+                syncModuleStateToLocal();
             } else {
-                // Projeto novo, criar dados iniciais
-                await saveProjectData();
+                syncLocalStateToModule();
+                await saveProjectDataModule(db, currentProjectId, {
+                    projectDataPartial: {
+                        pimental: { progress: calculateProgressOfUsina("pimental") },
+                        "belo-monte": { progress: calculateProgressOfUsina("belo-monte") },
+                    },
+                    onStatusChange: updateStatusIndicator,
+                });
+                syncModuleStateToLocal();
             }
 
             saveProgressToStorage();
@@ -1843,17 +1674,6 @@ async function loadProjectData() {
     hideLoading();
 }
 
-// Função para limpar cache local órfão
-function clearLocalData() {
-    localStorage.removeItem("linhasVidaProgress");
-    localStorage.removeItem("linhasVidaObservations");
-    localStorage.removeItem("linhasVidaTeamConfig");
-    localStorage.removeItem("linhasVidaLineSteps");
-    localStorage.removeItem("linhasVidaExecutionDates");
-    localStorage.removeItem("linhasVidaLastUpdate");
-    console.log("Cache local limpo");
-}
-
 // Função para detectar e resolver conflitos entre Firebase e localStorage
 async function detectAndResolveDataConflicts() {
     if (!db || !currentProjectId) return false;
@@ -1861,115 +1681,10 @@ async function detectAndResolveDataConflicts() {
     updateStatusIndicator("syncing");
 
     try {
-        // Verificar se há dados no localStorage
-        const localProgress = localStorage.getItem("linhasVidaProgress");
-        const localSteps = localStorage.getItem("linhasVidaLineSteps");
-        const localTeamConfig = localStorage.getItem("linhasVidaTeamConfig");
-        const localExecutionRaw = localStorage.getItem("linhasVidaExecutionDates");
-
-        if (!localProgress && !localSteps && !localTeamConfig) {
-            return false; // Sem dados locais
-        }
-
-        // Buscar dados do Firebase
-        const doc = await db.collection("projects").doc(currentProjectId).get();
-
-        if (!doc.exists) {
-            // Firebase vazio mas localStorage tem dados - sincronizar para Firebase
-            console.log("Sincronizando dados locais para Firebase...");
-            await saveProjectData();
-            showToast("Dados locais sincronizados com a nuvem", "success");
-            return true;
-        }
-
-        const firebaseData = doc.data();
-        const firebaseUpdated = firebaseData.updatedAt
-            ? firebaseData.updatedAt.toDate()
-            : new Date(0);
-
-        let localProgressSanitized = sanitizeProgressData(progressData);
-        let localExecutionSanitized = sanitizeExecutionDates(executionDates);
-        if (localProgress) {
-            try {
-                const parsedLocalProgress = JSON.parse(localProgress);
-                localProgressSanitized = sanitizeProgressData(
-                    migrateProgressDataIfNeeded(parsedLocalProgress)
-                );
-            } catch (parseError) {
-                console.warn("Erro ao analisar progresso local, limpando cache...", parseError);
-                clearLocalData();
-                localProgressSanitized = sanitizeProgressData({});
-            }
-        }
-
-        if (localExecutionRaw) {
-            try {
-                const parsedExecution = JSON.parse(localExecutionRaw);
-                localExecutionSanitized = sanitizeExecutionDates(parsedExecution);
-            } catch (parseError) {
-                console.warn("Erro ao analisar datas locais, limpando cache...", parseError);
-                clearLocalData();
-                localExecutionSanitized = {};
-            }
-        }
-
-        const firebaseProgressSanitized = firebaseData.progressData
-            ? sanitizeProgressData(firebaseData.progressData)
-            : sanitizeProgressData({});
-        const firebaseExecutionSanitized = firebaseData.executionDates
-            ? sanitizeExecutionDates(firebaseData.executionDates)
-            : {};
-        const hasSanitizedDiff =
-            JSON.stringify(localProgressSanitized) !== JSON.stringify(firebaseProgressSanitized) ||
-            JSON.stringify(localExecutionSanitized) !== JSON.stringify(firebaseExecutionSanitized);
-
-        // Verificar timestamps dos dados locais (se disponível)
-        const localTimestamp = localStorage.getItem("linhasVidaLastUpdate");
-        const localUpdated = localTimestamp ? new Date(localTimestamp) : new Date(0);
-
-        const timeDiff = Math.abs(firebaseUpdated - localUpdated);
-        const significantDiff = timeDiff > 5 * 60 * 1000; // 5 minutos
-
-        if (firebaseUpdated > localUpdated) {
-            // Firebase é mais recente
-            if (significantDiff || (!isAuthenticated && hasSanitizedDiff)) {
-                console.log(
-                    "Dados do Firebase são mais recentes que o cache local, limpando cache..."
-                );
-                clearLocalData();
-                if (significantDiff) {
-                    showToast("Carregando dados mais recentes da nuvem", "info");
-                } else {
-                    showToast("Dados locais desatualizados foram descartados.", "info");
-                }
-            }
-            return false; // Deixa o loadProjectData carregar do Firebase
-        } else if (localUpdated > firebaseUpdated) {
-            // localStorage é mais recente
-            if (!isAuthenticated && hasSanitizedDiff) {
-                console.log(
-                    "Cache local difere do Firebase mas usuário não autenticado; preferindo dados da nuvem."
-                );
-                clearLocalData();
-                showToast("Dados locais desatualizados foram descartados.", "info");
-                return false;
-            }
-
-            console.log("Dados locais são mais recentes, sincronizando para Firebase...");
-            await saveProjectData();
-            showToast("Dados locais sincronizados com a nuvem", "success");
-            return true;
-        }
-
-        if (!isAuthenticated && hasSanitizedDiff) {
-            console.log(
-                "Dados com timestamps iguais mas diferenças detectadas; limpando cache local."
-            );
-            clearLocalData();
-            showToast("Dados locais desatualizados foram descartados.", "info");
-        }
-
-        return false; // Dados estão sincronizados
+        syncLocalStateToModule();
+        const resolved = await detectAndResolveDataConflictsModule(db, currentProjectId);
+        syncModuleStateToLocal();
+        return resolved;
     } catch (error) {
         console.error("Erro ao detectar conflitos:", error);
         return false;
@@ -1977,126 +1692,21 @@ async function detectAndResolveDataConflicts() {
 }
 
 let unsubscribeListener = null;
-let reconnectAttempts = 0;
-const maxReconnectAttempts = 3;
 
 function setupRealtimeListener() {
     if (!db || !currentProjectId || unsubscribeListener) {
         return;
     }
 
-    unsubscribeListener = db
-        .collection("projects")
-        .doc(currentProjectId)
-        .onSnapshot(
-            {
-                includeMetadataChanges: false,
-            },
-            (doc) => {
-                // Verificar se a página ainda está ativa e o listener não foi cancelado
-                if (
-                    document.visibilityState === "hidden" ||
-                    document.hidden ||
-                    !unsubscribeListener
-                ) {
-                    return;
-                }
-
-                try {
-                    if (doc.exists && !doc.metadata.fromCache) {
-                        const data = doc.data();
-                        const newProgressData = data.progressData
-                            ? sanitizeProgressData(data.progressData)
-                            : null;
-                        const newLineStepsStatus = data.lineStepsStatus || {};
-                        const newExecutionDates = sanitizeExecutionDates(data.executionDates || {});
-                        const newLineObservations = data.lineObservations || {};
-                        const newBuiltInformations = data.builtInformations || {};
-
-                        // Verificar se houve mudanças nos dados
-                        let hasChanges = false;
-                        if (
-                            newProgressData &&
-                            JSON.stringify(newProgressData) !== JSON.stringify(progressData)
-                        ) {
-                            progressData = newProgressData;
-                            hasChanges = true;
-                        }
-                        if (
-                            JSON.stringify(newLineStepsStatus) !== JSON.stringify(lineStepsStatus)
-                        ) {
-                            lineStepsStatus = newLineStepsStatus;
-                            hasChanges = true;
-                        }
-                        if (JSON.stringify(newExecutionDates) !== JSON.stringify(executionDates)) {
-                            executionDates = newExecutionDates;
-                            hasChanges = true;
-                        }
-                        if (
-                            JSON.stringify(newLineObservations) !== JSON.stringify(lineObservations)
-                        ) {
-                            lineObservations = newLineObservations;
-                            hasChanges = true;
-                        }
-                        if (
-                            JSON.stringify(newBuiltInformations) !==
-                            JSON.stringify(builtInformations)
-                        ) {
-                            builtInformations = newBuiltInformations;
-                            hasChanges = true;
-                        }
-
-                        // IMPORTANTE: Verificar mudanças na usina ativa
-                        if (
-                            data.manualActiveUsina !== undefined &&
-                            data.manualActiveUsina !== manualActiveUsina
-                        ) {
-                            manualActiveUsina = data.manualActiveUsina;
-                            localStorage.setItem("manualActiveUsina", manualActiveUsina);
-                            hasChanges = true;
-                            console.log("Usina ativa atualizada em tempo real:", manualActiveUsina);
-                        }
-
-                        if (hasChanges) {
-                            updateAllDisplays();
-                            updateCharts();
-                            updateStatusIndicator("online");
-                            reconnectAttempts = 0; // Reset contador em caso de sucesso
-                        }
-                    }
-                } catch (error) {
-                    console.error("Erro ao processar dados do Firebase:", error);
-                }
-            },
-            (error) => {
-                // Filtrar erros conhecidos que não são críticos
-                if (
-                    error.code === "cancelled" ||
-                    error.message?.includes("channel closed") ||
-                    error.message?.includes("asynchronous response") ||
-                    error.message?.includes("message channel closed") ||
-                    error.name === "FirebaseError"
-                ) {
-                    // Erros silenciosos - não mostrar no console nem afetar UI
-                    return;
-                }
-
-                console.error("Erro no listener Firebase:", error);
-                updateStatusIndicator("offline");
-
-                // Tentar reconectar automaticamente em caso de erro de rede
-                if (error.code === "unavailable" && reconnectAttempts < maxReconnectAttempts) {
-                    reconnectAttempts++;
-                    setTimeout(() => {
-                        console.log(
-                            `Tentativa de reconexão ${reconnectAttempts}/${maxReconnectAttempts}`
-                        );
-                        disconnectRealtimeListener();
-                        setupRealtimeListener();
-                    }, 2000 * reconnectAttempts); // Delay progressivo
-                }
-            }
-        );
+    syncLocalStateToModule();
+    unsubscribeListener = setupRealtimeListenerModule(db, currentProjectId, {
+        onChange: () => {
+            syncModuleStateToLocal();
+            updateAllDisplays();
+            updateCharts();
+            updateStatusIndicator("online");
+        },
+    });
 }
 
 function disconnectRealtimeListener() {
@@ -2114,6 +1724,7 @@ async function saveProjectData() {
             "Modo somente leitura: sem conexão com o Firebase. Nenhuma alteração foi salva.",
             "error"
         );
+        saveProgressToStorage();
         return;
     }
 
@@ -2127,48 +1738,18 @@ async function saveProjectData() {
             "belo-monte": { progress: calculateProgressOfUsina("belo-monte") },
         };
 
-        // Salvar versão atual
-        await db.collection("projects").doc(currentProjectId).set({
-            // Dados detalhados (v2.0)
-            progressData: progressData,
-            lineStepsStatus: lineStepsStatus,
-            executionDates: executionDates,
-            teamConfig: teamConfig,
-            manualActiveUsina: manualActiveUsina,
-            projectData: simplifiedData,
-            lineObservations: lineObservations,
-            builtInformations: builtInformations,
+        syncLocalStateToModule();
 
-            // Compatibilidade com v1.0
-            data: simplifiedData,
-
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            version: "2.0",
+        await saveProjectDataModule(db, currentProjectId, {
+            projectDataPartial: simplifiedData,
+            onStatusChange: updateStatusIndicator,
+            onConflict: (error) => {
+                console.error("Erro ao salvar dados:", error);
+                updateStatusIndicator("offline");
+            },
         });
 
-        // Salvar snapshot no histórico (máximo 20 versões)
-        const historyRef = db.collection("projects").doc(currentProjectId).collection("history");
-        await historyRef.add({
-            progressData: progressData,
-            lineStepsStatus: lineStepsStatus,
-            executionDates: executionDates,
-            teamConfig: teamConfig,
-            lineObservations: lineObservations,
-            builtInformations: builtInformations,
-            savedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            version: "2.0",
-        });
-
-        // Limpar versões antigas (manter apenas as 20 mais recentes)
-        const oldSnapshots = await historyRef.orderBy("savedAt", "desc").limit(100).get();
-        if (oldSnapshots.size > 20) {
-            const batch = db.batch();
-            oldSnapshots.docs.slice(20).forEach((doc) => {
-                batch.delete(doc.ref);
-            });
-            await batch.commit();
-        }
-
+        syncModuleStateToLocal();
         updateStatusIndicator("online");
     } catch (error) {
         // Filtrar erros conhecidos que não devem aparecer para o usuário
@@ -2826,7 +2407,7 @@ function updateTable(usinaKey, tableId) {
         const completedItems = completedBases + completedCableSteps;
         const progress = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
         const status = progress === 100 ? "Concluído" : progress > 0 ? "Em Andamento" : "Pendente";
-        const storedExecutionDate = getExecutionDateForLine(usinaKey, linha);
+        const storedExecutionDate = getExecutionDateForLine(usinaKey, linha, executionDates);
         const executionDateDisplay = formatExecutionDateForDisplay(storedExecutionDate);
 
         row.innerHTML = `
@@ -4224,7 +3805,7 @@ async function saveTransversalEdit() {
 
         // Salvar no Firebase se configurado
         if (db && currentProjectId) {
-            await saveProgressToFirebase();
+            await saveProjectData();
         }
 
         // Limpar backup
@@ -4397,7 +3978,7 @@ async function saveTableEdit(usinaKey) {
 
         // Salvar no Firebase se configurado
         if (db && currentProjectId) {
-            await saveProgressToFirebase();
+            await saveProjectData();
         }
 
         // Limpar backup
@@ -4639,7 +4220,7 @@ async function saveLineDetailsEdit() {
         saveLineStepsToStorage();
         saveProgressToStorage();
 
-        await saveProgressToFirebase();
+        await saveProjectData();
 
         // Limpar backup
         lineDetailsEditBackup = null;
@@ -5273,7 +4854,7 @@ function toggleStep(usinaKey, linha, step) {
                 teamConfig.dataAtual = new Date();
             }
 
-            saveProgressToFirebase();
+            saveProjectData();
         } catch (error) {
             console.error("Erro ao salvar no Firebase:", error);
         }
@@ -5331,7 +4912,11 @@ function loadBases() {
         const linhaData = projectData[usinaKey].linhas[linhaSelect.value];
 
         if (executionDateInput) {
-            executionDateInput.value = getExecutionDateForLine(usinaKey, linhaSelect.value);
+            executionDateInput.value = getExecutionDateForLine(
+                usinaKey,
+                linhaSelect.value,
+                executionDates
+            );
         }
 
         for (const tipo in linhaData.bases) {
@@ -5415,7 +5000,11 @@ document.getElementById("updateForm").addEventListener("submit", function (e) {
     const selectedLinha = linhaSelect.value;
     const executionDate = executionDateInput.value;
     const normalizedExecutionDate = executionDate ? executionDate.trim() : "";
-    const storedExecutionDate = getExecutionDateForLine(selectedUsina, selectedLinha);
+    const storedExecutionDate = getExecutionDateForLine(
+        selectedUsina,
+        selectedLinha,
+        executionDates
+    );
 
     if (!selectedUsina) {
         showToast("Por favor, selecione uma usina.", "warning");
@@ -5562,80 +5151,6 @@ window.onclick = function (event) {
         closeModal();
     }
 };
-
-// Função para salvar no Firebase
-async function saveProgressToFirebase() {
-    if (!requireOnlineEdits()) return;
-
-    try {
-        executionDates = sanitizeExecutionDates(executionDates);
-        progressData = sanitizeProgressData(progressData);
-        const simplifiedData = {
-            pimental: { progress: calculateProgressOfUsina("pimental") },
-            "belo-monte": { progress: calculateProgressOfUsina("belo-monte") },
-        };
-
-        // Preparar teamConfig para Firebase (converter datas para strings de forma segura)
-        const teamConfigForFirebase = {
-            ...teamConfig,
-            inicioTrabalhoBruto:
-                teamConfig.inicioTrabalhoBruto &&
-                teamConfig.inicioTrabalhoBruto instanceof Date &&
-                !isNaN(teamConfig.inicioTrabalhoBruto)
-                    ? teamConfig.inicioTrabalhoBruto.toISOString()
-                    : new Date("2025-09-11").toISOString(),
-            dataAtual:
-                teamConfig.dataAtual &&
-                teamConfig.dataAtual instanceof Date &&
-                !isNaN(teamConfig.dataAtual)
-                    ? teamConfig.dataAtual.toISOString()
-                    : new Date().toISOString(),
-        };
-
-        const docRef = db.collection("projects").doc(currentProjectId);
-
-        await docRef.set({
-            // Dados detalhados (v2.0)
-            progressData: progressData,
-            lineStepsStatus: lineStepsStatus,
-            executionDates: executionDates,
-            teamConfig: teamConfigForFirebase,
-            manualActiveUsina: manualActiveUsina,
-            projectData: simplifiedData,
-            builtInformations: builtInformations,
-
-            // Compatibilidade com v1.0
-            data: simplifiedData,
-
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            version: "2.0",
-        });
-
-        // Registrar snapshot no histórico (mesmo payload principal)
-        const historyRef = docRef.collection("history");
-        await historyRef.add({
-            progressData: progressData,
-            lineStepsStatus: lineStepsStatus,
-            executionDates: executionDates,
-            teamConfig: teamConfigForFirebase,
-            lineObservations: lineObservations,
-            builtInformations: builtInformations,
-            savedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            version: "2.0",
-        });
-
-        // Limpar versões antigas (manter 20)
-        const oldSnapshots = await historyRef.orderBy("savedAt", "desc").limit(100).get();
-        if (oldSnapshots.size > 20) {
-            const batch = db.batch();
-            oldSnapshots.docs.slice(20).forEach((doc) => batch.delete(doc.ref));
-            await batch.commit();
-        }
-    } catch (error) {
-        console.error("Erro ao salvar no Firebase:", error);
-        throw error;
-    }
-}
 
 // Funções de persistência (implementadas em persistence.js)
 
@@ -6826,7 +6341,7 @@ function exportToExcel() {
 
             // Obter data de execução
             let executionDate = "";
-            const storedDate = getExecutionDateForLine(usinaKey, linha);
+            const storedDate = getExecutionDateForLine(usinaKey, linha, executionDates);
             if (storedDate) {
                 executionDate = formatExecutionDateForDisplay(storedDate) || storedDate;
             } else if (completedBases > 0) {

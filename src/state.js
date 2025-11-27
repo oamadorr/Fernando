@@ -111,9 +111,9 @@ const projectData = {
     oficina: {
         name: "Oficina",
         linhas: {
-            72: { metragem: 25.0, bases: { M: 2, B: 1 } },
-            73: { metragem: 25.0, bases: { K: 2 } },
-            74: { metragem: 25.0, bases: { B: 1, H: 1 } },
+            72: { metragem: 6.18, bases: { M: 1, B: 1 } },
+            73: { metragem: 62.8, bases: { K: 6 } },
+            74: { metragem: 6.18, bases: { B: 1, H: 1 } },
         },
     },
 };
