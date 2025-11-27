@@ -1,0 +1,6 @@
+node_modules/
+backup-*.json
+localstorage-backup-*.json
+/.firebase/
+.vercel/
+.playwright-mcp/
