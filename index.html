@@ -8670,7 +8670,16 @@
                 showToast('Carregando histórico de versões...', 'info');
 
                 const historyRef = db.collection('projects').doc(currentProjectId).collection('history');
-                const snapshot = await historyRef.orderBy('savedAt', 'desc').limit(20).get();
+
+                // Primeiro, verificar se há documentos sem usar orderBy
+                let snapshot;
+                try {
+                    snapshot = await historyRef.orderBy('savedAt', 'desc').limit(20).get();
+                } catch (error) {
+                    // Se der erro de índice, tentar sem ordenação
+                    console.log('Tentando sem ordenação devido a erro de índice:', error);
+                    snapshot = await historyRef.limit(20).get();
+                }
 
                 if (snapshot.empty) {
                     // Oferecer criar snapshot da versão atual
@@ -8692,8 +8701,24 @@
                 const versionList = document.getElementById('versionHistoryList');
                 versionList.innerHTML = '';
 
-                snapshot.forEach((doc, index) => {
-                    const data = doc.data();
+                // Ordenar manualmente se necessário
+                const versions = [];
+                snapshot.forEach(doc => {
+                    versions.push({
+                        id: doc.id,
+                        data: doc.data()
+                    });
+                });
+
+                versions.sort((a, b) => {
+                    const dateA = a.data.savedAt ? a.data.savedAt.toDate() : new Date(0);
+                    const dateB = b.data.savedAt ? b.data.savedAt.toDate() : new Date(0);
+                    return dateB - dateA; // Ordem decrescente (mais recente primeiro)
+                });
+
+                versions.forEach((version, index) => {
+                    const doc = { id: version.id };
+                    const data = version.data;
                     const savedAt = data.savedAt ? data.savedAt.toDate() : new Date();
                     const formattedDate = savedAt.toLocaleString('pt-BR', {
                         day: '2-digit',
