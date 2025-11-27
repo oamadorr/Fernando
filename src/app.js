@@ -28,6 +28,7 @@ import { showToast } from "./ui/toasts.js";
 import { createTransversalHandlers } from "./ui/transversalModals.js";
 import { createLineModalHandlers } from "./ui/lineModals.js";
 import { createBuiltHandlers } from "./ui/builtModals.js";
+import { createUpdateModalHandlers } from "./ui/updateModal.js";
 import state, {
     setDb,
     setCurrentProjectId,
@@ -163,6 +164,42 @@ const {
         builtInformations = value;
     },
     getProjectData: () => projectData,
+    getIsAuthenticated: () => isAuthenticated,
+    setPendingAction: (action) => {
+        pendingAction = action;
+    },
+    showPasswordModal,
+});
+
+const {
+    openUpdateModal,
+    openLineModal,
+    closeModal,
+    loadLinhas,
+    loadBases,
+    updateSelectAllState,
+    updateSelectAllRemoveState,
+    toggleAllBases,
+    toggleAllRemoveBases,
+    handleUpdateSubmit,
+    closeOnOutsideClick,
+} = createUpdateModalHandlers({
+    requireOnlineEdits,
+    saveProgressToStorage,
+    saveProjectData,
+    showToast,
+    getProjectData: () => projectData,
+    getProgressData: () => progressData,
+    setProgressData: (value) => {
+        progressData = value;
+    },
+    getExecutionDates: () => executionDates,
+    setExecutionDates: (value) => {
+        executionDates = value;
+    },
+    formatExecutionDateForDisplay,
+    getExecutionDateForLine,
+    sanitizeExecutionDates,
     getIsAuthenticated: () => isAuthenticated,
     setPendingAction: (action) => {
         pendingAction = action;
@@ -3078,42 +3115,6 @@ function updateCharts() {
     initChartOficina();
 }
 
-// Funções do modal
-function openUpdateModal() {
-    if (!isAuthenticated) {
-        pendingAction = "openUpdate";
-        showPasswordModal();
-        return;
-    }
-    if (!requireOnlineEdits()) return;
-    document.getElementById("updateModal").style.display = "block";
-}
-
-function openLineModal(usina, linha) {
-    if (!isAuthenticated) {
-        pendingAction = () => openLineModal(usina, linha);
-        showPasswordModal();
-        return;
-    }
-    if (!requireOnlineEdits()) return;
-    document.getElementById("usinaSelect").value = usina;
-    loadLinhas();
-    document.getElementById("linhaSelect").value = linha;
-    loadBases();
-    document.getElementById("updateModal").style.display = "block";
-}
-
-function closeModal() {
-    document.getElementById("updateModal").style.display = "none";
-    document.getElementById("updateForm").reset();
-    document.getElementById("linhaSelect").disabled = true;
-    document.getElementById("basesCheckboxes").innerHTML = "";
-    document.getElementById("removeBasesCheckboxes").innerHTML = "";
-    // Resetar os checkboxes de "todas as bases"
-    document.getElementById("selectAllBases").checked = false;
-    document.getElementById("selectAllRemoveBases").checked = false;
-}
-
 // Atualizar visuais dos grupos transversais no mapa
 // Funções para modo de edição das tabelas principais
 let tableEditBackup = null;
@@ -3436,50 +3437,6 @@ async function loadBuiltFromFirebase(docSnapshot) {
 
 // ========== FIM DAS FUNÇÕES PARA BUILT INFORMATION ==========
 
-function toggleAllBases(checkbox) {
-    const basesCheckboxes = document.querySelectorAll('#basesCheckboxes input[type="checkbox"]');
-    basesCheckboxes.forEach((cb) => {
-        cb.checked = checkbox.checked;
-    });
-}
-
-function toggleAllRemoveBases(checkbox) {
-    const removeBasesCheckboxes = document.querySelectorAll(
-        '#removeBasesCheckboxes input[type="checkbox"]'
-    );
-    removeBasesCheckboxes.forEach((cb) => {
-        cb.checked = checkbox.checked;
-    });
-}
-
-function updateSelectAllState() {
-    const basesCheckboxes = document.querySelectorAll('#basesCheckboxes input[type="checkbox"]');
-    const selectAllCheckbox = document.getElementById("selectAllBases");
-
-    if (basesCheckboxes.length === 0) {
-        selectAllCheckbox.checked = false;
-        return;
-    }
-
-    const allChecked = Array.from(basesCheckboxes).every((cb) => cb.checked);
-    selectAllCheckbox.checked = allChecked;
-}
-
-function updateSelectAllRemoveState() {
-    const removeBasesCheckboxes = document.querySelectorAll(
-        '#removeBasesCheckboxes input[type="checkbox"]'
-    );
-    const selectAllRemoveCheckbox = document.getElementById("selectAllRemoveBases");
-
-    if (removeBasesCheckboxes.length === 0) {
-        selectAllRemoveCheckbox.checked = false;
-        return;
-    }
-
-    const allChecked = Array.from(removeBasesCheckboxes).every((cb) => cb.checked);
-    selectAllRemoveCheckbox.checked = allChecked;
-}
-
 // Funções do sistema de senha
 function showPasswordModal() {
     const modal = document.getElementById("passwordModal");
@@ -3660,293 +3617,9 @@ function toggleStep(usinaKey, linha, step) {
     updateAllDisplays();
 }
 
-function loadLinhas() {
-    const usinaSelect = document.getElementById("usinaSelect");
-    const linhaSelect = document.getElementById("linhaSelect");
-
-    linhaSelect.innerHTML = '<option value="">Selecione uma linha</option>';
-    linhaSelect.disabled = !usinaSelect.value;
-
-    if (usinaSelect.value) {
-        const usina = projectData[usinaSelect.value];
-        // Ordenar linhas numericamente
-        const linhasOrdenadas = Object.keys(usina.linhas).sort((a, b) => {
-            return parseInt(a) - parseInt(b);
-        });
-
-        for (const linha of linhasOrdenadas) {
-            const option = document.createElement("option");
-            option.value = linha;
-            option.textContent = `Linha ${linha}`;
-            linhaSelect.appendChild(option);
-        }
-    }
-
-    document.getElementById("basesCheckboxes").innerHTML = "";
-}
-
-function loadBases() {
-    const usinaSelect = document.getElementById("usinaSelect");
-    const linhaSelect = document.getElementById("linhaSelect");
-    const basesContainer = document.getElementById("basesCheckboxes");
-    const removeBasesContainer = document.getElementById("removeBasesCheckboxes");
-    const executionDateInput = document.getElementById("executionDate");
-
-    basesContainer.innerHTML = "";
-    removeBasesContainer.innerHTML = "";
-
-    // Resetar os checkboxes "selecionar todas"
-    document.getElementById("selectAllBases").checked = false;
-    document.getElementById("selectAllRemoveBases").checked = false;
-
-    if (executionDateInput) {
-        executionDateInput.value = "";
-    }
-
-    if (usinaSelect.value && linhaSelect.value) {
-        const usinaKey = usinaSelect.value;
-        const linhaData = projectData[usinaKey].linhas[linhaSelect.value];
-
-        if (executionDateInput) {
-            executionDateInput.value = getExecutionDateForLine(
-                usinaKey,
-                linhaSelect.value,
-                executionDates
-            );
-        }
-
-        for (const tipo in linhaData.bases) {
-            const quantidade = linhaData.bases[tipo];
-
-            // Calcular quantas bases deste tipo estão concluídas nesta linha específica
-            const completedNaLinha =
-                (progressData[usinaKey] &&
-                    progressData[usinaKey][linhaSelect.value] &&
-                    progressData[usinaKey][linhaSelect.value][tipo]) ||
-                0;
-
-            // Seção para adicionar (apenas bases pendentes)
-            const pendingNaLinha = quantidade - completedNaLinha;
-            for (let i = 1; i <= pendingNaLinha; i++) {
-                const checkboxItem = document.createElement("div");
-                checkboxItem.className = "checkbox-item";
-                checkboxItem.style.borderColor = "#10b981";
-
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.id = `add-base-${tipo}-${i}`;
-                checkbox.name = "addBases";
-                checkbox.value = `${tipo}-${i}`;
-                checkbox.addEventListener("change", updateSelectAllState);
-
-                const label = document.createElement("label");
-                label.htmlFor = checkbox.id;
-                label.textContent = `Base ${tipo} ${completedNaLinha + i}`;
-
-                checkboxItem.appendChild(checkbox);
-                checkboxItem.appendChild(label);
-                basesContainer.appendChild(checkboxItem);
-            }
-
-            // Seção para remover (apenas bases concluídas)
-            for (let i = 1; i <= completedNaLinha; i++) {
-                const checkboxItem = document.createElement("div");
-                checkboxItem.className = "checkbox-item";
-                checkboxItem.style.borderColor = "#ef4444";
-
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.id = `remove-base-${tipo}-${i}`;
-                checkbox.name = "removeBases";
-                checkbox.value = `${tipo}-${i}`;
-                checkbox.addEventListener("change", updateSelectAllRemoveState);
-
-                const label = document.createElement("label");
-                label.htmlFor = checkbox.id;
-                label.textContent = `Base ${tipo} ${i} (concluída)`;
-                label.style.color = "#6b7280";
-
-                checkboxItem.appendChild(checkbox);
-                checkboxItem.appendChild(label);
-                removeBasesContainer.appendChild(checkboxItem);
-            }
-        }
-
-        // Mostrar mensagens se não houver bases disponíveis
-        if (basesContainer.children.length === 0) {
-            basesContainer.innerHTML =
-                '<p style="color: #6b7280; font-style: italic;">Todas as bases desta linha já estão concluídas.</p>';
-        }
-
-        if (removeBasesContainer.children.length === 0) {
-            removeBasesContainer.innerHTML =
-                '<p style="color: #6b7280; font-style: italic;">Nenhuma base concluída nesta linha.</p>';
-        }
-    }
-}
-
 // Event listeners
-document.getElementById("updateForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const usinaSelect = document.getElementById("usinaSelect");
-    const linhaSelect = document.getElementById("linhaSelect");
-    const executionDateInput = document.getElementById("executionDate");
-    const selectedUsina = usinaSelect.value;
-    const selectedLinha = linhaSelect.value;
-    const executionDate = executionDateInput.value;
-    const normalizedExecutionDate = executionDate ? executionDate.trim() : "";
-    const storedExecutionDate = getExecutionDateForLine(
-        selectedUsina,
-        selectedLinha,
-        executionDates
-    );
-
-    if (!selectedUsina) {
-        showToast("Por favor, selecione uma usina.", "warning");
-        return;
-    }
-
-    if (!selectedLinha) {
-        showToast("Por favor, selecione uma linha.", "warning");
-        return;
-    }
-
-    // Processar adições
-    const addCheckboxes = document.querySelectorAll('input[name="addBases"]:checked');
-    let additions = {};
-
-    addCheckboxes.forEach((checkbox) => {
-        const [tipo] = checkbox.value.split("-");
-        additions[tipo] = (additions[tipo] || 0) + 1;
-    });
-
-    // Processar remoções
-    const removeCheckboxes = document.querySelectorAll('input[name="removeBases"]:checked');
-    let removals = {};
-
-    removeCheckboxes.forEach((checkbox) => {
-        const [tipo] = checkbox.value.split("-");
-        removals[tipo] = (removals[tipo] || 0) + 1;
-    });
-
-    // Verificar se há algo para processar (bases ou data)
-    const hasBaseChanges = Object.keys(additions).length > 0 || Object.keys(removals).length > 0;
-    const hasDateChange = normalizedExecutionDate !== storedExecutionDate;
-
-    if (!hasBaseChanges && !hasDateChange) {
-        showToast(
-            "Selecione pelo menos uma base para adicionar/remover ou defina uma data de execução.",
-            "warning"
-        );
-        return;
-    }
-
-    // Atualizar progressData para a linha específica apenas se houver mudanças nas bases
-    if (hasBaseChanges) {
-        if (!progressData[selectedUsina]) {
-            progressData[selectedUsina] = {};
-        }
-        if (!progressData[selectedUsina][selectedLinha]) {
-            progressData[selectedUsina][selectedLinha] = {};
-        }
-
-        // Aplicar adições
-        for (const tipo in additions) {
-            const totalPermitido =
-                projectData[selectedUsina].linhas[selectedLinha].bases[tipo] || 0;
-            const atual = progressData[selectedUsina][selectedLinha][tipo] || 0;
-            progressData[selectedUsina][selectedLinha][tipo] = Math.min(
-                totalPermitido,
-                atual + additions[tipo]
-            );
-        }
-
-        // Aplicar remoções
-        for (const tipo in removals) {
-            const currentValue = progressData[selectedUsina][selectedLinha][tipo] || 0;
-            progressData[selectedUsina][selectedLinha][tipo] = Math.max(
-                0,
-                currentValue - removals[tipo]
-            );
-        }
-    }
-
-    // Salvar data de execução se foi informada (independente de mudanças nas bases)
-    if (hasDateChange) {
-        if (!executionDates[selectedUsina]) {
-            executionDates[selectedUsina] = {};
-        }
-
-        if (normalizedExecutionDate) {
-            const testDate = new Date(normalizedExecutionDate);
-            if (!isNaN(testDate.getTime())) {
-                executionDates[selectedUsina][selectedLinha] = normalizedExecutionDate;
-            } else {
-                const fallbackDate = new Date().toISOString().split("T")[0];
-                console.warn(
-                    "Data inválida fornecida, usando data atual:",
-                    normalizedExecutionDate
-                );
-                executionDates[selectedUsina][selectedLinha] = fallbackDate;
-            }
-        } else {
-            delete executionDates[selectedUsina][selectedLinha];
-            if (Object.keys(executionDates[selectedUsina]).length === 0) {
-                delete executionDates[selectedUsina];
-            }
-        }
-
-        executionDates = sanitizeExecutionDates(executionDates);
-        localStorage.setItem("linhasVidaExecutionDates", JSON.stringify(executionDates));
-    }
-
-    saveProgressToStorage();
-    saveProjectData(); // Salvar no Firebase também
-    updateAllDisplays();
-    closeModal();
-
-    // Mostrar notificação de sucesso detalhada
-    let message = `Progresso da ${projectData[selectedUsina].name} atualizado!\n\n`;
-
-    if (Object.keys(additions).length > 0) {
-        message += "✅ Bases concluídas:\n";
-        for (const tipo in additions) {
-            message += `  • ${additions[tipo]} base(s) tipo ${tipo}\n`;
-        }
-    }
-
-    if (Object.keys(removals).length > 0) {
-        if (Object.keys(additions).length > 0) message += "\n";
-        message += "❌ Bases removidas:\n";
-        for (const tipo in removals) {
-            message += `  • ${removals[tipo]} base(s) tipo ${tipo}\n`;
-        }
-    }
-
-    if (hasDateChange) {
-        if (hasBaseChanges) message += "\n";
-
-        if (normalizedExecutionDate) {
-            const displayDate =
-                formatExecutionDateForDisplay(normalizedExecutionDate) || normalizedExecutionDate;
-            message += `📅 Data de execução: ${displayDate}`;
-        } else if (storedExecutionDate) {
-            message += "📅 Data de execução removida";
-        }
-    }
-
-    showToast(message, "success");
-});
-
-// Fechar modal ao clicar fora
-window.onclick = function (event) {
-    const updateModal = document.getElementById("updateModal");
-
-    if (event.target === updateModal) {
-        closeModal();
-    }
-};
+document.getElementById("updateForm").addEventListener("submit", handleUpdateSubmit);
+window.onclick = closeOnOutsideClick;
 
 // Funções de persistência (implementadas em persistence.js)
 
@@ -5230,6 +4903,11 @@ const exportedFunctions = {
     forceSaveActiveUsina,
     openUpdateModal,
     openLineModal,
+    closeModal,
+    loadLinhas,
+    loadBases,
+    updateSelectAllState,
+    updateSelectAllRemoveState,
     showLineDetails: showLineDetailsHandler,
     openObservationModal,
     closeObservationModal,
