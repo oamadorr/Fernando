@@ -1,6 +1,10 @@
 # Vercel
 .vercel
 
+# Firebase credentials (NEVER commit!)
+.firebase/
+firebase-adminsdk-*.json
+serviceAccountKey.json
 
 # Claude Code
 .claude
