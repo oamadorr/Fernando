@@ -11,6 +11,7 @@ export default [
             ".firebase/**",
             ".vercel/**",
             ".playwright-mcp/**",
+            "tests/**",
         ],
     },
     {
@@ -34,6 +35,13 @@ export default [
                 __dirname: "readonly",
                 setTimeout: "readonly",
                 clearTimeout: "readonly",
+                URLSearchParams: "readonly",
+                confirm: "readonly",
+                Blob: "readonly",
+                FileReader: "readonly",
+                URL: "readonly",
+                TextEncoder: "readonly",
+                crypto: "readonly",
             },
         },
         plugins: {
