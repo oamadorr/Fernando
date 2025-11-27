@@ -6454,6 +6454,8 @@ const exportedFunctions = {
     toggleAllRemoveBases,
     toggleStep,
     clearAllProgress,
+    checkPassword,
+    closePasswordModal,
     exportProgressData,
     importProgressData,
     forceRestoreFromFirebase,
