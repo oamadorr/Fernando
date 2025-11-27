@@ -1,3 +1,11 @@
+import {
+    configurePersistence,
+    loadLineStepsFromStorage,
+    loadProgressFromStorage,
+    migrateProgressDataIfNeeded,
+    saveProgressToStorage,
+} from "./persistence.js";
+
 // Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyCBk1dt3vKyHO3-RIm6TBqC2GpCxiZTvfQ",
@@ -1022,6 +1030,21 @@ let teamConfig = {
 
 // Datas de execução das linhas - estrutura: usina -> linha -> data
 let executionDates = {};
+
+configurePersistence({
+    getAllowOnlineEdits: () => allowOnlineEdits,
+    getProgressData: () => progressData,
+    getLineStepsStatus: () => lineStepsStatus,
+    getExecutionDates: () => executionDates,
+    getLineObservations: () => lineObservations,
+    getBuiltInformations: () => builtInformations,
+    getProjectData: () => projectData,
+    setProgressData: (value) => (progressData = value),
+    setLineStepsStatus: (value) => (lineStepsStatus = value),
+    setExecutionDates: (value) => (executionDates = value),
+    setLineObservations: (value) => (lineObservations = value),
+    setBuiltInformations: (value) => (builtInformations = value),
+});
 
 function normalizeExecutionDateValue(rawValue) {
     if (!rawValue) return "";
@@ -5614,18 +5637,7 @@ async function saveProgressToFirebase() {
     }
 }
 
-// Funções de persistência
-function saveProgressToStorage(force = false) {
-    if (!force && !allowOnlineEdits) return;
-    progressData = sanitizeProgressData(progressData);
-    localStorage.setItem("linhasVidaProgress", JSON.stringify(progressData));
-    localStorage.setItem("linhasVidaLineSteps", JSON.stringify(lineStepsStatus));
-    localStorage.setItem("linhasVidaExecutionDates", JSON.stringify(executionDates));
-    localStorage.setItem("linhasVidaObservations", JSON.stringify(lineObservations));
-    localStorage.setItem("linhasVidaBuiltInformations", JSON.stringify(builtInformations));
-    // Salvar timestamp da última atualização
-    localStorage.setItem("linhasVidaLastUpdate", new Date().toISOString());
-}
+// Funções de persistência (implementadas em persistence.js)
 
 function saveTeamConfigToStorage(force = false) {
     if (!force && !allowOnlineEdits) return;
@@ -5678,117 +5690,6 @@ function saveLineStepsToStorage(force = false) {
     if (!force && !allowOnlineEdits) return;
     localStorage.setItem("linhasVidaLineSteps", JSON.stringify(lineStepsStatus));
     localStorage.setItem("linhasVidaLastUpdate", new Date().toISOString());
-}
-
-function loadLineStepsFromStorage() {
-    const stored = localStorage.getItem("linhasVidaLineSteps");
-    if (stored) {
-        lineStepsStatus = JSON.parse(stored);
-    }
-}
-
-function loadProgressFromStorage() {
-    const stored = localStorage.getItem("linhasVidaProgress");
-    if (stored) {
-        const loadedData = JSON.parse(stored);
-        // Check if data is in old format (type-based) and migrate to new format (line-based)
-        progressData = migrateProgressDataIfNeeded(loadedData);
-    }
-
-    progressData = sanitizeProgressData(progressData);
-
-    // Carregar status das etapas
-    const storedSteps = localStorage.getItem("linhasVidaLineSteps");
-    if (storedSteps) {
-        try {
-            lineStepsStatus = JSON.parse(storedSteps);
-        } catch (error) {
-            console.warn("Erro ao carregar etapas do storage:", error);
-        }
-    }
-
-    // Carregar datas de execução
-    const storedDates = localStorage.getItem("linhasVidaExecutionDates");
-    if (storedDates) {
-        try {
-            const parsedDates = JSON.parse(storedDates);
-            executionDates = sanitizeExecutionDates(parsedDates);
-        } catch (error) {
-            console.warn("Erro ao carregar datas de execução do storage, limpando...", error);
-            executionDates = {};
-        }
-    }
-
-    // Carregar observações
-    const storedObservations = localStorage.getItem("linhasVidaObservations");
-    if (storedObservations) {
-        try {
-            lineObservations = JSON.parse(storedObservations);
-        } catch (error) {
-            console.warn("Erro ao carregar observações do storage:", error);
-        }
-    }
-
-    // Carregar informações para Built
-    const storedBuilt = localStorage.getItem("linhasVidaBuiltInformations");
-    if (storedBuilt) {
-        try {
-            builtInformations = JSON.parse(storedBuilt);
-        } catch (error) {
-            console.warn("Erro ao carregar built informations do storage:", error);
-        }
-    }
-}
-
-function migrateProgressDataIfNeeded(data) {
-    // Check if data is already in new format (has line numbers as keys)
-    for (const usina in data) {
-        if (data[usina]) {
-            const firstKey = Object.keys(data[usina])[0];
-            // If first key looks like a line number (01, 02, etc.), it's already new format
-            if (firstKey && firstKey.match(/^\d+$/)) {
-                return data; // Already migrated
-            }
-            // If first key is a single letter (A, B, C, etc.), it's old format - needs migration
-            if (firstKey && firstKey.match(/^[A-Z]$/)) {
-                console.log("Migrating old progress data format to line-specific format");
-                // Reset to new structure - old data can't be accurately migrated since it wasn't line-specific
-                return {
-                    pimental: {
-                        "01": { C: 0, E: 0, K: 0 },
-                        "02": { C: 0, G: 0, K: 0 },
-                        "03": { D: 0, F: 0, K: 0 },
-                        "04": { D: 0, H: 0, K: 0 },
-                        "05": { A: 0, B: 0, K: 0 },
-                        18: { K: 0 },
-                    },
-                    "belo-monte": {
-                        "01": { C: 0, E: 0, K: 0 },
-                        "02": { C: 0, E: 0, K: 0 },
-                        "03": { C: 0, E: 0, K: 0 },
-                        "04": { C: 0, E: 0, K: 0 },
-                        "05": { C: 0, E: 0, K: 0 },
-                        "06": { C: 0, E: 0, K: 0 },
-                        "07": { C: 0, E: 0, K: 0 },
-                        "08": { C: 0, E: 0, K: 0 },
-                        "09": { C: 0, K: 0 },
-                        10: { C: 0, F: 0, K: 0 },
-                        11: { C: 0, F: 0, K: 0 },
-                        12: { C: 0, F: 0, K: 0 },
-                        13: { C: 0, F: 0, K: 0 },
-                        14: { C: 0, F: 0, K: 0 },
-                        15: { C: 0, F: 0, K: 0 },
-                        16: { C: 0, F: 0, K: 0 },
-                        17: { C: 0, F: 0, K: 0 },
-                        18: { C: 0, F: 0, K: 0 },
-                        19: { A: 0, B: 0, J: 0 },
-                        71: { A: 0, B: 0, J: 0 },
-                    },
-                };
-            }
-        }
-    }
-    return data; // Unknown format, return as is
 }
 
 function clearAllProgress() {

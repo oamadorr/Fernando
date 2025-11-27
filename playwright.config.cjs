@@ -5,7 +5,8 @@ module.exports = {
         timeout: 10_000,
     },
     use: {
-        browserName: "chromium",
+        // Firefox costuma contornar restrições de sandbox no macOS
+        browserName: "firefox",
         headless: true,
         trace: "on-first-retry",
     },

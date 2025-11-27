@@ -1,15 +1,9 @@
-// Main module stub
-
-import * as app from './app.js';
-
-// Reexport functions needed in HTML
-const exported = app;
-
-Object.assign(window, exported);
+// Carrega o app e expõe as funções registradas no window
+import "./app.js";
 
 // Initialize on load
-window.addEventListener('load', () => {
-  if (typeof app.updateAllDisplays === 'function') {
-    app.updateAllDisplays();
-  }
+window.addEventListener("load", () => {
+    if (typeof window.updateAllDisplays === "function") {
+        window.updateAllDisplays();
+    }
 });
