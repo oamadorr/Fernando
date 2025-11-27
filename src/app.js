@@ -27,6 +27,7 @@ import { createObservationHandlers } from "./ui/modals.js";
 import { showToast } from "./ui/toasts.js";
 import { createTransversalHandlers } from "./ui/transversalModals.js";
 import { createLineModalHandlers } from "./ui/lineModals.js";
+import { createBuiltHandlers } from "./ui/builtModals.js";
 import state, {
     setDb,
     setCurrentProjectId,
@@ -145,6 +146,28 @@ const {
     setProgressData: (value) => {
         progressData = value;
     },
+});
+
+const {
+    renderBuiltTables,
+    enableBuiltEdit,
+    cancelBuiltEdit,
+    saveBuiltEdit,
+} = createBuiltHandlers({
+    requireOnlineEdits,
+    showToast,
+    saveBuiltToStorage,
+    saveBuiltToFirebase,
+    getBuiltInformations: () => builtInformations,
+    setBuiltInformations: (value) => {
+        builtInformations = value;
+    },
+    getProjectData: () => projectData,
+    getIsAuthenticated: () => isAuthenticated,
+    setPendingAction: (action) => {
+        pendingAction = action;
+    },
+    showPasswordModal,
 });
 
 // Dados do projeto
@@ -1085,9 +1108,6 @@ let lineObservations = {
 // Informações para as Built - distâncias entre bases consecutivas
 // Estrutura: usina -> linha -> par de bases (ex: "01-02") -> metragem
 let builtInformations = {};
-
-// Backup para cancelamento de edição
-let builtEditBackup = null;
 
 // Configurações da equipe
 let teamConfig = {
@@ -3296,203 +3316,6 @@ function initializeBuiltData() {
 /**
  * Renderiza as tabelas de Built para as 3 usinas
  */
-function renderBuiltTables() {
-    renderBuiltTable("pimental");
-    renderBuiltTable("belo-monte");
-    renderBuiltTable("oficina");
-}
-
-/**
- * Renderiza tabela de Built para uma usina específica
- */
-function renderBuiltTable(usinaKey) {
-    const tableId = `tableBuilt${usinaKey === "pimental" ? "Pimental" : usinaKey === "belo-monte" ? "BeloMonte" : "Oficina"}`;
-    const table = document.getElementById(tableId);
-    if (!table) return;
-
-    const tbody = table.querySelector("tbody");
-    if (!tbody) return;
-
-    let html = "";
-
-    const linhas = Object.keys(projectData[usinaKey].linhas).sort((a, b) => {
-        return parseInt(a) - parseInt(b);
-    });
-
-    linhas.forEach((linha) => {
-        // Verificar se a estrutura existe antes de acessar
-        if (!builtInformations[usinaKey] || !builtInformations[usinaKey][linha]) {
-            return;
-        }
-        const pares = builtInformations[usinaKey][linha];
-        if (!pares) return;
-
-        const pairKeys = Object.keys(pares).sort((a, b) => {
-            const aNum = parseInt(a.split("-")[0]);
-            const bNum = parseInt(b.split("-")[0]);
-            return aNum - bNum;
-        });
-
-        let rowHTML = `<tr>`;
-        rowHTML += `<td style="font-weight: bold; color: var(--primary-blue);">Linha ${linha}</td>`;
-
-        pairKeys.forEach((pair) => {
-            const value = pares[pair] || "";
-            rowHTML += `
-                        <td class="built-input-cell view-mode" data-pair="${pair}" data-linha="${linha}" data-usina="${usinaKey}">
-                            <div style="font-size: 0.75rem; color: #666; margin-bottom: 2px;">${pair}</div>
-                            <span class="built-display">${value || "-"}</span>
-                            <input type="text" class="built-input" value="${value}" placeholder="-" />
-                        </td>
-                    `;
-        });
-
-        // Preencher colunas vazias para alinhamento
-        const maxCols = 13;
-        const currentCols = pairKeys.length;
-        for (let i = currentCols; i < maxCols; i++) {
-            rowHTML += `<td class="empty-cell"></td>`;
-        }
-
-        rowHTML += `</tr>`;
-        html += rowHTML;
-    });
-
-    tbody.innerHTML = html;
-}
-
-/**
- * Ativa modo de edição para Built (com autenticação)
- */
-function enableBuiltEdit() {
-    if (!isAuthenticated) {
-        pendingAction = () => enableBuiltEdit();
-        showPasswordModal();
-        return;
-    }
-    if (!requireOnlineEdits()) return;
-
-    // Fazer backup antes de editar
-    builtEditBackup = JSON.parse(JSON.stringify(builtInformations));
-
-    // Ativar modo de edição para todas as tabelas
-    ["tableBuiltBeloMonte", "tableBuiltPimental", "tableBuiltOficina"].forEach((tableId) => {
-        const table = document.getElementById(tableId);
-        if (!table) return;
-
-        table.classList.add("edit-mode");
-
-        // Mostrar inputs
-        table.querySelectorAll(".built-input-cell").forEach((cell) => {
-            cell.classList.remove("view-mode");
-            const display = cell.querySelector(".built-display");
-            const input = cell.querySelector(".built-input");
-
-            if (display) display.style.display = "none";
-            if (input) input.style.display = "inline-block";
-        });
-    });
-
-    // Alternar botões
-    document.getElementById("builtViewButtons").style.display = "none";
-    document.getElementById("builtEditButtons").style.display = "flex";
-}
-
-/**
- * Cancela edição de Built (restaura backup)
- */
-function cancelBuiltEdit() {
-    if (builtEditBackup) {
-        builtInformations = JSON.parse(JSON.stringify(builtEditBackup));
-        builtEditBackup = null;
-    }
-
-    // Desativar modo de edição para todas as tabelas
-    ["tableBuiltBeloMonte", "tableBuiltPimental", "tableBuiltOficina"].forEach((tableId) => {
-        const table = document.getElementById(tableId);
-        if (!table) return;
-
-        table.classList.remove("edit-mode");
-
-        table.querySelectorAll(".built-input-cell").forEach((cell) => {
-            cell.classList.add("view-mode");
-            const display = cell.querySelector(".built-display");
-            const input = cell.querySelector(".built-input");
-
-            if (display) display.style.display = "inline";
-            if (input) input.style.display = "none";
-        });
-    });
-
-    // Alternar botões
-    document.getElementById("builtViewButtons").style.display = "flex";
-    document.getElementById("builtEditButtons").style.display = "none";
-
-    // Recarregar tabelas
-    renderBuiltTables();
-}
-
-/**
- * Salva edições de Built (localStorage + Firebase)
- */
-async function saveBuiltEdit() {
-    if (!requireOnlineEdits()) return;
-    try {
-        // Atualizar builtInformations com valores dos inputs
-        ["tableBuiltBeloMonte", "tableBuiltPimental", "tableBuiltOficina"].forEach((tableId) => {
-            const table = document.getElementById(tableId);
-            if (!table) return;
-
-            table.querySelectorAll(".built-input-cell").forEach((cell) => {
-                const pair = cell.dataset.pair;
-                const linha = cell.dataset.linha;
-                const usinaKey = cell.dataset.usina;
-                const input = cell.querySelector(".built-input");
-
-                if (usinaKey && builtInformations[usinaKey] && builtInformations[usinaKey][linha]) {
-                    builtInformations[usinaKey][linha][pair] = input.value.trim();
-                }
-            });
-        });
-
-        // Salvar no localStorage
-        saveBuiltToStorage();
-
-        // Desativar modo de edição
-        ["tableBuiltBeloMonte", "tableBuiltPimental", "tableBuiltOficina"].forEach((tableId) => {
-            const table = document.getElementById(tableId);
-            if (!table) return;
-
-            table.classList.remove("edit-mode");
-
-            table.querySelectorAll(".built-input-cell").forEach((cell) => {
-                cell.classList.add("view-mode");
-                const display = cell.querySelector(".built-display");
-                const input = cell.querySelector(".built-input");
-
-                if (display) display.style.display = "inline";
-                if (input) input.style.display = "none";
-            });
-        });
-
-        // Alternar botões
-        document.getElementById("builtViewButtons").style.display = "flex";
-        document.getElementById("builtEditButtons").style.display = "none";
-
-        // Sincronizar com Firebase se autenticado
-        await saveBuiltToFirebase();
-
-        // Recarregar tabelas
-        renderBuiltTables();
-
-        showToast("Informações de Built salvas com sucesso!", "success");
-        builtEditBackup = null;
-    } catch (error) {
-        console.error("Erro ao salvar Built:", error);
-        showToast("Erro ao salvar informações de Built", "error");
-    }
-}
-
 /**
  * Salva Built no localStorage
  */
