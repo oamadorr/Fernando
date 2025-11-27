@@ -8859,32 +8859,43 @@
                 const versionData = versionDoc.data();
 
                 // Restaurar todos os dados
+                console.log('🔄 Restaurando dados da versão:', versionId);
+
                 if (versionData.progressData) {
                     progressData = sanitizeProgressData(versionData.progressData);
+                    console.log('✓ progressData restaurado');
                 }
                 if (versionData.lineStepsStatus) {
                     lineStepsStatus = versionData.lineStepsStatus;
+                    console.log('✓ lineStepsStatus restaurado');
                 }
                 if (versionData.executionDates) {
                     executionDates = sanitizeExecutionDates(versionData.executionDates);
+                    console.log('✓ executionDates restaurado');
                 }
                 if (versionData.lineObservations) {
                     lineObservations = versionData.lineObservations;
+                    console.log('✓ lineObservations restaurado');
                 }
                 if (versionData.builtInformations) {
                     builtInformations = versionData.builtInformations;
+                    console.log('✓ builtInformations restaurado');
                 }
                 if (versionData.teamConfig) {
                     const currentDate = teamConfig.dataAtual;
                     Object.assign(teamConfig, versionData.teamConfig);
                     teamConfig.dataAtual = currentDate;
+                    console.log('✓ teamConfig restaurado');
                 }
                 if (versionData.manualActiveUsina !== undefined) {
                     manualActiveUsina = versionData.manualActiveUsina;
+                    console.log('✓ manualActiveUsina restaurado');
                 }
 
+                console.log('💾 Salvando no localStorage...');
                 // Salvar no localStorage
                 saveProgressToStorage();
+                saveTeamConfigToStorage();
 
                 // Salvar como versão atual no Firebase
                 await saveProjectData();
