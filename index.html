@@ -3676,6 +3676,29 @@
         </div>
     </div>
 
+    <!-- Modal de Histórico de Versões -->
+    <div id="versionHistoryModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title">🕒 Histórico de Versões</h2>
+                <button class="close-btn" onclick="closeVersionHistoryModal()">&times;</button>
+            </div>
+            <div>
+                <p style="color: var(--medium-gray); margin-bottom: 20px;">
+                    Selecione uma versão anterior para restaurar. As últimas 20 versões são mantidas automaticamente.
+                </p>
+
+                <div id="versionHistoryList" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Lista preenchida dinamicamente -->
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeVersionHistoryModal()">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal para Detalhamento de Linha Individual -->
     <div id="lineDetailsModal" class="modal">
         <div class="modal-content transversal-modal-content">
@@ -5073,6 +5096,7 @@
                     "belo-monte": { progress: calculateProgressOfUsina('belo-monte') }
                 };
 
+                // Salvar versão atual
                 await db.collection('projects').doc(currentProjectId).set({
                     // Dados detalhados (v2.0)
                     progressData: progressData,
@@ -5081,14 +5105,39 @@
                     teamConfig: teamConfig,
                     manualActiveUsina: manualActiveUsina,
                     projectData: simplifiedData,
-                    
+                    lineObservations: lineObservations,
+                    builtInformations: builtInformations,
+
                     // Compatibilidade com v1.0
                     data: simplifiedData,
-                    
+
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     version: '2.0'
                 });
-                
+
+                // Salvar snapshot no histórico (máximo 20 versões)
+                const historyRef = db.collection('projects').doc(currentProjectId).collection('history');
+                await historyRef.add({
+                    progressData: progressData,
+                    lineStepsStatus: lineStepsStatus,
+                    executionDates: executionDates,
+                    teamConfig: teamConfig,
+                    lineObservations: lineObservations,
+                    builtInformations: builtInformations,
+                    savedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    version: '2.0'
+                });
+
+                // Limpar versões antigas (manter apenas as 20 mais recentes)
+                const oldSnapshots = await historyRef.orderBy('savedAt', 'desc').limit(100).get();
+                if (oldSnapshots.size > 20) {
+                    const batch = db.batch();
+                    oldSnapshots.docs.slice(20).forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    await batch.commit();
+                }
+
                 updateStatusIndicator('online');
                 
             } catch (error) {
@@ -8574,7 +8623,7 @@
             event.target.value = '';
         }
 
-        // Função para restaurar dados do Firebase manualmente
+        // Função para abrir modal de histórico de versões
         async function forceRestoreFromFirebase() {
             if (!isAuthenticated) {
                 pendingAction = forceRestoreFromFirebase;
@@ -8587,8 +8636,113 @@
                 return;
             }
 
-            const confirmMessage = 'Deseja restaurar TODOS os dados do Firebase?\n\n' +
-                'ATENÇÃO: Isso irá substituir todos os dados locais pelos dados salvos na nuvem.\n\n' +
+            await showVersionHistoryModal();
+        }
+
+        // Mostrar modal de histórico
+        async function showVersionHistoryModal() {
+            try {
+                showToast('Carregando histórico de versões...', 'info');
+
+                const historyRef = db.collection('projects').doc(currentProjectId).collection('history');
+                const snapshot = await historyRef.orderBy('savedAt', 'desc').limit(20).get();
+
+                if (snapshot.empty) {
+                    showToast('Nenhuma versão anterior encontrada no histórico.', 'warning');
+                    return;
+                }
+
+                const versionList = document.getElementById('versionHistoryList');
+                versionList.innerHTML = '';
+
+                snapshot.forEach((doc, index) => {
+                    const data = doc.data();
+                    const savedAt = data.savedAt ? data.savedAt.toDate() : new Date();
+                    const formattedDate = savedAt.toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+
+                    // Calcular progresso desta versão
+                    let completedBases = 0;
+                    let totalBases = 0;
+                    if (data.progressData) {
+                        for (const usina in data.progressData) {
+                            for (const linha in data.progressData[usina]) {
+                                for (const tipo in data.progressData[usina][linha]) {
+                                    const valor = data.progressData[usina][linha][tipo];
+                                    completedBases += valor;
+                                    if (projectData[usina]?.linhas?.[linha]?.bases?.[tipo]) {
+                                        totalBases += projectData[usina].linhas[linha].bases[tipo];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    const progress = totalBases > 0 ? ((completedBases / totalBases) * 100).toFixed(1) : 0;
+
+                    const versionCard = document.createElement('div');
+                    versionCard.style.cssText = `
+                        border: 2px solid var(--border-gray);
+                        border-radius: 8px;
+                        padding: 15px;
+                        margin-bottom: 10px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        background-color: ${index === 0 ? 'var(--light-blue)' : 'white'};
+                    `;
+                    versionCard.onmouseover = () => {
+                        versionCard.style.borderColor = 'var(--primary-blue)';
+                        versionCard.style.backgroundColor = 'var(--light-blue)';
+                    };
+                    versionCard.onmouseout = () => {
+                        versionCard.style.borderColor = 'var(--border-gray)';
+                        versionCard.style.backgroundColor = index === 0 ? 'var(--light-blue)' : 'white';
+                    };
+
+                    versionCard.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: bold; color: var(--primary-blue); margin-bottom: 5px;">
+                                    ${index === 0 ? '🌟 Versão Mais Recente' : `📦 Versão ${index + 1}`}
+                                </div>
+                                <div style="color: var(--medium-gray); font-size: 0.9rem;">
+                                    📅 ${formattedDate}
+                                </div>
+                                <div style="color: var(--dark-gray); font-size: 0.9rem; margin-top: 5px;">
+                                    📊 Progresso: ${progress}% (${completedBases}/${totalBases} bases)
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="restoreVersion('${doc.id}'); event.stopPropagation();">
+                                <i class="fas fa-undo"></i> Restaurar
+                            </button>
+                        </div>
+                    `;
+
+                    versionList.appendChild(versionCard);
+                });
+
+                document.getElementById('versionHistoryModal').style.display = 'flex';
+
+            } catch (error) {
+                console.error('Erro ao carregar histórico:', error);
+                showToast('Erro ao carregar histórico de versões.', 'error');
+            }
+        }
+
+        // Fechar modal de histórico
+        function closeVersionHistoryModal() {
+            document.getElementById('versionHistoryModal').style.display = 'none';
+        }
+
+        // Restaurar versão específica
+        async function restoreVersion(versionId) {
+            const confirmMessage = 'Deseja restaurar esta versão?\n\n' +
+                'ATENÇÃO: Isso irá substituir todos os dados atuais.\n\n' +
                 'Esta ação não pode ser desfeita.';
 
             if (!confirm(confirmMessage)) {
@@ -8596,59 +8750,58 @@
             }
 
             try {
-                showToast('Restaurando dados do Firebase...', 'info');
+                showToast('Restaurando versão...', 'info');
 
-                const doc = await db.collection('projects').doc(currentProjectId).get();
+                const versionDoc = await db.collection('projects').doc(currentProjectId)
+                    .collection('history').doc(versionId).get();
 
-                if (!doc.exists) {
-                    showToast('Nenhum dado encontrado no Firebase.', 'warning');
+                if (!versionDoc.exists) {
+                    showToast('Versão não encontrada.', 'error');
                     return;
                 }
 
-                const firebaseData = doc.data();
+                const versionData = versionDoc.data();
 
-                // Restaurar progressData
-                if (firebaseData.progressData) {
-                    progressData = sanitizeProgressData(firebaseData.progressData);
+                // Restaurar todos os dados
+                if (versionData.progressData) {
+                    progressData = sanitizeProgressData(versionData.progressData);
                 }
-
-                // Restaurar lineStepsStatus
-                if (firebaseData.lineStepsStatus) {
-                    lineStepsStatus = firebaseData.lineStepsStatus;
+                if (versionData.lineStepsStatus) {
+                    lineStepsStatus = versionData.lineStepsStatus;
                 }
-
-                // Restaurar lineObservations
-                if (firebaseData.lineObservations) {
-                    lineObservations = firebaseData.lineObservations;
+                if (versionData.lineObservations) {
+                    lineObservations = versionData.lineObservations;
                 }
-
-                // Restaurar builtInformations
-                if (firebaseData.builtInformations) {
-                    builtInformations = firebaseData.builtInformations;
+                if (versionData.builtInformations) {
+                    builtInformations = versionData.builtInformations;
                 }
-
-                // Restaurar teamConfig (mantendo dataAtual local)
-                if (firebaseData.teamConfig) {
+                if (versionData.teamConfig) {
                     const currentDate = teamConfig.dataAtual;
-                    Object.assign(teamConfig, firebaseData.teamConfig);
+                    Object.assign(teamConfig, versionData.teamConfig);
                     teamConfig.dataAtual = currentDate;
                 }
 
-                // Salvar dados restaurados no localStorage
+                // Salvar no localStorage
                 saveProgressToStorage();
 
-                // Atualizar toda a interface
+                // Salvar como versão atual no Firebase
+                await saveProjectData();
+
+                // Atualizar interface
                 updateAllDisplays();
 
-                const timestamp = firebaseData.lastUpdated
-                    ? new Date(firebaseData.lastUpdated.toDate()).toLocaleString('pt-BR')
+                // Fechar modal
+                closeVersionHistoryModal();
+
+                const timestamp = versionData.savedAt
+                    ? new Date(versionData.savedAt.toDate()).toLocaleString('pt-BR')
                     : 'N/A';
 
-                showToast(`Dados restaurados do Firebase com sucesso!\nÚltima atualização: ${timestamp}`, 'success');
+                showToast(`Versão restaurada com sucesso!\nData da versão: ${timestamp}`, 'success');
 
             } catch (error) {
-                console.error('Erro ao restaurar do Firebase:', error);
-                showToast('Erro ao restaurar dados do Firebase. Verifique sua conexão.', 'error');
+                console.error('Erro ao restaurar versão:', error);
+                showToast('Erro ao restaurar versão.', 'error');
             }
         }
 
