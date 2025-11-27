@@ -7677,6 +7677,7 @@
                 showPasswordModal();
                 return;
             }
+            if (!requireOnlineEdits()) return;
 
             // Fazer backup antes de editar
             builtEditBackup = JSON.parse(JSON.stringify(builtInformations));
@@ -8038,6 +8039,7 @@
 
         // Função para alternar status das etapas do cabo
         function toggleStep(usinaKey, linha, step) {
+            if (!requireOnlineEdits()) return;
             // Verificar se está em modo de edição
             const tableId = usinaKey === 'pimental' ? 'tablePimental' :
                            usinaKey === 'belo-monte' ? 'tableBeloMonte' : 'tableOficina';
