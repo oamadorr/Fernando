@@ -4322,11 +4322,11 @@ function exportToPDF() {
     showToast("Relatório PDF completo gerado com sucesso!", "success");
 }
 
-function exportToExcel() {
-    const workbook = XLSX.utils.book_new();
+    function exportToExcel() {
+        const workbook = XLSX.utils.book_new();
 
-    // Função auxiliar para formatar tipos de bases
-    function formatBasesTypes(bases) {
+        // Função auxiliar para formatar tipos de bases
+        function formatBasesTypes(bases) {
         const tipos = [];
         for (const [tipo, quantidade] of Object.entries(bases)) {
             if (quantidade > 0) {
@@ -4334,12 +4334,17 @@ function exportToExcel() {
             }
         }
         return tipos.join(", ");
-    }
+        }
 
-    // Planilha para cada usina no formato solicitado
-    for (const usinaKey in projectData) {
-        const usina = projectData[usinaKey];
-        const usinaData = [
+        function parseBuiltNumber(value) {
+            if (value === null || value === undefined || value === "") return NaN;
+            return parseFloat(String(value).replace(",", "."));
+        }
+
+        // Planilha para cada usina no formato solicitado
+        for (const usinaKey in projectData) {
+            const usina = projectData[usinaKey];
+            const usinaData = [
             [
                 "LINHA",
                 "COMPRIMENTO",
@@ -4431,6 +4436,113 @@ function exportToExcel() {
         XLSX.utils.book_append_sheet(workbook, usinaSheet, usina.name);
     }
 
+        // Planilha de Built (distâncias entre bases)
+        const builtSheetData = [["USINA", "LINHA", "PAR", "DISTÂNCIA (m)", "TOTAL DA LINHA"]];
+
+        for (const usinaKey of Object.keys(builtInformations)) {
+            const linhas = Object.keys(builtInformations[usinaKey] || {}).sort(
+                (a, b) => parseInt(a, 10) - parseInt(b, 10)
+            );
+
+            linhas.forEach((linha) => {
+                const pairs = builtInformations[usinaKey][linha] || {};
+                const pairKeys = Object.keys(pairs).sort((a, b) => {
+                    const aNum = parseInt(a.split("-")[0], 10);
+                    const bNum = parseInt(b.split("-")[0], 10);
+                    return aNum - bNum;
+                });
+
+                const totalLinha = pairKeys.reduce((acc, key) => {
+                    const num = parseBuiltNumber(pairs[key]);
+                    return Number.isNaN(num) ? acc : acc + num;
+                }, 0);
+
+                pairKeys.forEach((pairKey) => {
+                    builtSheetData.push([
+                        projectData[usinaKey].name,
+                        linha,
+                        pairKey,
+                        pairs[pairKey] || "-",
+                        "",
+                    ]);
+                });
+
+                builtSheetData.push([
+                    projectData[usinaKey].name,
+                    linha,
+                    "TOTAL",
+                    "",
+                    totalLinha > 0 ? totalLinha.toFixed(2) : "-",
+                ]);
+                builtSheetData.push([]);
+            });
+        }
+
+        const builtSheet = XLSX.utils.aoa_to_sheet(builtSheetData);
+        builtSheet["!cols"] = [
+            { wch: 18 },
+            { wch: 8 },
+            { wch: 10 },
+            { wch: 14 },
+            { wch: 16 },
+        ];
+        XLSX.utils.book_append_sheet(workbook, builtSheet, "Built");
+
+        // Planilha de Etapas do Cabo
+        const stepsSheetData = [
+            [
+                "USINA",
+                "LINHA",
+                "PASSAGEM",
+                "CRIMPAGEM",
+                "AFERIÇÃO",
+                "TENSIONAMENTO",
+                "TOTAL CONCLUÍDAS",
+                "PROGRESSO (%)",
+            ],
+        ];
+
+        for (const usinaKey of Object.keys(projectData)) {
+            const linhasOrdenadas = Object.keys(projectData[usinaKey].linhas).sort(
+                (a, b) => parseInt(a, 10) - parseInt(b, 10)
+            );
+
+            linhasOrdenadas.forEach((linha) => {
+                const steps = lineStepsStatus?.[usinaKey]?.[linha] || {};
+                const completedCount =
+                    (steps.passagemCabo ? 1 : 0) +
+                    (steps.crimpagemCabo ? 1 : 0) +
+                    (steps.afericaoCrimpagem ? 1 : 0) +
+                    (steps.tensionamentoCabo ? 1 : 0);
+                const progressStep = ((completedCount / 4) * 100).toFixed(0) + "%";
+
+                stepsSheetData.push([
+                    projectData[usinaKey].name,
+                    linha,
+                    steps.passagemCabo ? "OK" : "Pendente",
+                    steps.crimpagemCabo ? "OK" : "Pendente",
+                    steps.afericaoCrimpagem ? "OK" : "Pendente",
+                    steps.tensionamentoCabo ? "OK" : "Pendente",
+                    completedCount,
+                    progressStep,
+                ]);
+            });
+            stepsSheetData.push([]);
+        }
+
+        const stepsSheet = XLSX.utils.aoa_to_sheet(stepsSheetData);
+        stepsSheet["!cols"] = [
+            { wch: 18 },
+            { wch: 8 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 16 },
+            { wch: 18 },
+            { wch: 14 },
+        ];
+        XLSX.utils.book_append_sheet(workbook, stepsSheet, "Etapas do Cabo");
+
     // Adicionar planilha de resumo
     const resumoData = [
         ["RELATÓRIO - LINHAS DE VIDA"],
@@ -4438,6 +4550,7 @@ function exportToExcel() {
         [
             `Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`,
         ],
+        [`Usina ativa: ${manualActiveUsina || "Não definida"}`],
         [],
         ["RESUMO EXECUTIVO"],
         [`Progresso Geral: ${calculateProgress().toFixed(1)}%`],
