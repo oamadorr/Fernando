@@ -3100,6 +3100,11 @@ body {
     background: #eef2ff;
 }
 
+/* Evitar cursor de ajuda na tabela de Built */
+.built-table tbody tr {
+    cursor: default;
+}
+
 .built-input-cell {
     transition: background-color 0.15s ease;
 }
