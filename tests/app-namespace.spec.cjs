@@ -1,5 +1,7 @@
 const { test, expect } = require("@playwright/test");
 
+const password = process.env.SMOKE_PASSWORD || "thommen2025";
+
 test.describe("Namespace App", () => {
     test("expõe handlers essenciais e abre modal de atualização", async ({ page }) => {
         await page.goto("/index.html", { waitUntil: "domcontentloaded" });
@@ -17,6 +19,13 @@ test.describe("Namespace App", () => {
         expect(hasUpdate).toBe(true);
 
         await page.evaluate(() => window.App.openUpdateModal());
+
+        const passwordModal = page.locator("#passwordModal");
+        if (await passwordModal.isVisible()) {
+            await page.fill("#passwordInput", password);
+            await page.getByRole("button", { name: /Confirmar/i }).click();
+        }
+
         await expect(page.locator("#updateModal")).toBeVisible();
 
         // Fechar para não interferir em outros testes locais
