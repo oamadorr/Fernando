@@ -3509,6 +3509,79 @@ async function createCurrentSnapshot() {
     }
 }
 
+// Garantir que o modal de histórico use o layout novo mesmo com caches antigos
+function ensureVersionHistoryStyles() {
+    const existing = document.getElementById("version-history-inline-style");
+    if (existing) return;
+
+    const style = document.createElement("style");
+    style.id = "version-history-inline-style";
+    style.textContent = `
+        #versionHistoryModal .modal-content {
+            border-radius: 18px;
+            padding: 22px;
+            max-width: 820px;
+            border: 1px solid var(--border-gray);
+            box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.25);
+        }
+        #versionHistoryList {
+            max-height: 450px;
+            overflow-y: auto;
+            margin: 12px 0 4px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #versionHistoryList .version-item {
+            border: 1px solid var(--border-gray);
+            border-radius: 12px;
+            padding: 12px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+        #versionHistoryList .version-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 32px -18px rgba(0, 0, 0, 0.35);
+            border-color: var(--primary-blue);
+        }
+        #versionHistoryList .version-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        #versionHistoryList .version-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            color: var(--dark-gray);
+        }
+        #versionHistoryList .version-item-title {
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+        #versionHistoryList .version-item-meta {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+        }
+        #versionHistoryList .version-item-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        #versionHistoryList .version-item--latest {
+            box-shadow: 0 8px 24px -12px rgba(37, 99, 235, 0.25);
+            border-color: rgba(37, 99, 235, 0.35);
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 // Função para abrir modal de histórico de versões
 async function forceRestoreFromFirebase() {
     if (!requireOnlineEdits()) return;
@@ -3529,6 +3602,7 @@ async function forceRestoreFromFirebase() {
 // Mostrar modal de histórico
 async function showVersionHistoryModal() {
     try {
+        ensureVersionHistoryStyles();
         showToast("Carregando histórico de versões...", "info");
 
         const historyRef = db.collection("projects").doc(currentProjectId).collection("history");
