@@ -1426,6 +1426,8 @@ body {
     background: var(--error-red);
     border: 2px dashed var(--error-red);
     box-sizing: border-box;
+    background-clip: padding-box;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25);
 }
 
 .transversal-group-label {
