@@ -1423,7 +1423,9 @@ body {
 }
 
 .transversal-line-mini.pending {
-    background: linear-gradient(135deg, var(--error-red) 0%, #ff6b6b 100%);
+    background: var(--error-red);
+    border: 2px dashed var(--error-red);
+    box-sizing: border-box;
 }
 
 .transversal-group-label {
