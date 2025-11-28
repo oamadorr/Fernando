@@ -37,7 +37,7 @@ import state, {
     setProgressData,
     setLineStepsStatus,
     setLineObservations,
-    setBuiltInformations,
+    setBuiltInformations as setBuiltInformationsState,
     setTeamConfig,
     setExecutionDates,
     setManualActiveUsina,
@@ -176,9 +176,11 @@ const {
     showToast,
     saveBuiltToStorage,
     saveBuiltToFirebase,
+    saveProjectData,
     getBuiltInformations: () => builtInformations,
     setBuiltInformations: (value) => {
         builtInformations = value;
+        setBuiltInformationsState(value);
     },
     getProjectData: () => projectData,
     getIsAuthenticated: () => isAuthenticated,
@@ -1187,7 +1189,10 @@ configurePersistence({
     setLineStepsStatus: (value) => (lineStepsStatus = value),
     setExecutionDates: (value) => (executionDates = value),
     setLineObservations: (value) => (lineObservations = value),
-    setBuiltInformations: (value) => (builtInformations = value),
+    setBuiltInformations: (value) => {
+        builtInformations = value;
+        setBuiltInformationsState(value);
+    },
 });
 
 function syncLocalStateToModule() {
@@ -1198,7 +1203,7 @@ function syncLocalStateToModule() {
     setLineStepsStatus(lineStepsStatus);
     setExecutionDates(executionDates);
     setLineObservations(lineObservations);
-    setBuiltInformations(builtInformations);
+    setBuiltInformationsState(builtInformations);
     setTeamConfig(teamConfig);
     setManualActiveUsina(manualActiveUsina);
 }
@@ -2908,7 +2913,11 @@ function initializeBuiltData() {
  */
 function saveBuiltToStorage(force = false) {
     if (!force && !allowOnlineEdits) return;
-    localStorage.setItem("linhasVidaBuilt", JSON.stringify(builtInformations));
+    const serialized = JSON.stringify(builtInformations);
+    // Chave oficial usada pelo listener/persistência
+    localStorage.setItem("linhasVidaBuiltInformations", serialized);
+    // Chave legada mantida por compatibilidade com backups antigos
+    localStorage.setItem("linhasVidaBuilt", serialized);
     localStorage.setItem("linhasVidaLastUpdate", new Date().toISOString());
 }
 
@@ -2916,16 +2925,19 @@ function saveBuiltToStorage(force = false) {
  * Carrega Built do localStorage
  */
 function loadBuiltFromStorage() {
-    const stored = localStorage.getItem("linhasVidaBuilt");
-    if (stored) {
-        try {
-            const loadedData = JSON.parse(stored);
-            builtInformations = sanitizeBuiltData(loadedData);
-        } catch (error) {
-            console.warn("Erro ao carregar Built do storage:", error);
-            initializeBuiltData();
-        }
-    } else {
+    const stored =
+        localStorage.getItem("linhasVidaBuiltInformations") ||
+        localStorage.getItem("linhasVidaBuilt");
+    if (!stored) {
+        initializeBuiltData();
+        return;
+    }
+
+    try {
+        const loadedData = JSON.parse(stored);
+        builtInformations = sanitizeBuiltData(loadedData);
+    } catch (error) {
+        console.warn("Erro ao carregar Built do storage:", error);
         initializeBuiltData();
     }
 }

@@ -3,6 +3,7 @@ export function createBuiltHandlers({
     showToast,
     saveBuiltToStorage,
     saveBuiltToFirebase,
+    saveProjectData,
     getBuiltInformations,
     setBuiltInformations,
     getProjectData,
@@ -160,6 +161,7 @@ export function createBuiltHandlers({
             );
 
             saveBuiltToStorage();
+            setBuiltInformations(builtInformations);
 
             ["tableBuiltBeloMonte", "tableBuiltPimental", "tableBuiltOficina"].forEach(
                 (tableId) => {
@@ -182,7 +184,9 @@ export function createBuiltHandlers({
             document.getElementById("builtViewButtons").style.display = "flex";
             document.getElementById("builtEditButtons").style.display = "none";
 
-            if (saveBuiltToFirebase) {
+            if (saveProjectData) {
+                await saveProjectData();
+            } else if (saveBuiltToFirebase) {
                 await saveBuiltToFirebase();
             }
 
