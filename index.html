@@ -1425,37 +1425,47 @@
 
         <!-- Password Modal -->
         <div id="passwordModal" class="modal password-modal" onclick="App.closePasswordModal()">
-            <div class="modal-content" onclick="event.stopPropagation()">
-                <div class="modal-header">
-                    <h2 class="modal-title">🔒 Autorização Necessária</h2>
-                    <button class="close-btn" onclick="App.closePasswordModal()">&times;</button>
+            <div class="modal-content password-card" onclick="event.stopPropagation()">
+                <button class="close-btn close-btn-ghost" onclick="App.closePasswordModal()">
+                    &times;
+                </button>
+                <div class="password-hero">
+                    <div class="password-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div>
+                        <p class="password-eyebrow">Acesso restrito</p>
+                        <h2 class="modal-title" style="margin: 0">Digite a senha para editar</h2>
+                        <p class="password-subtitle">
+                            Somente usuários autorizados podem salvar alterações no projeto.
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <p>Para realizar modificações no projeto, digite a senha:</p>
+
+                <label class="password-label" for="passwordInput">Senha do projeto</label>
+                <div class="password-input-wrapper">
+                    <i class="fas fa-lock"></i>
                     <input
                         type="password"
                         id="passwordInput"
                         class="password-input"
-                        placeholder="Digite a senha"
+                        placeholder="••••••••"
                         maxlength="20"
                     />
-                    <div id="passwordError" class="password-error">
-                        Senha incorreta. Tente novamente.
-                    </div>
-                    <div
-                        style="display: flex; gap: 15px; justify-content: center; margin-top: 20px"
-                    >
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            onclick="App.closePasswordModal()"
-                        >
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-primary" onclick="App.checkPassword()">
-                            <i class="fas fa-unlock"></i> Confirmar
-                        </button>
-                    </div>
+                </div>
+                <div id="passwordError" class="password-error">Senha incorreta. Tente novamente.</div>
+
+                <div class="password-actions">
+                    <button type="button" class="btn btn-secondary" onclick="App.closePasswordModal()">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="App.checkPassword()">
+                        <i class="fas fa-unlock"></i> Confirmar
+                    </button>
+                </div>
+                <div class="password-note">
+                    <i class="fas fa-info-circle"></i>
+                    Alterações só são gravadas quando a conexão online está ativa.
                 </div>
             </div>
         </div>
