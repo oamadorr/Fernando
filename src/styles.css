@@ -3078,6 +3078,14 @@ body {
     border-left: 2px solid var(--border-gray);
 }
 
+.built-total-line {
+    background-color: #eef2ff;
+}
+
+.built-total-group {
+    background-color: #e0e7ff;
+}
+
 .built-table-wrapper {
     overflow-x: auto;
 }

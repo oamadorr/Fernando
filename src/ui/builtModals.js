@@ -377,7 +377,11 @@ export function createBuiltHandlers({
             }
 
             const totalDisplay = hasNumericValues ? total.toFixed(2) : "-";
-            rowHTML += `<td class="built-total-cell">${totalDisplay}</td>`;
+            const totalGroupDisplay = hasNumericValues
+                ? (total * group.lines.length).toFixed(2)
+                : "-";
+            rowHTML += `<td class="built-total-cell built-total-line">${totalDisplay}</td>`;
+            rowHTML += `<td class="built-total-cell built-total-group">${totalGroupDisplay}</td>`;
 
             rowHTML += `</tr>`;
             html += rowHTML;
