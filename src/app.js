@@ -3523,6 +3523,11 @@ function ensureVersionHistoryStyles() {
             max-width: 820px;
             border: 1px solid var(--border-gray);
             box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: 90vh;
+            margin: 24px auto;
         }
         #versionHistoryList {
             max-height: 450px;
@@ -3531,6 +3536,8 @@ function ensureVersionHistoryStyles() {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            flex: 1;
+            min-height: 0;
         }
         #versionHistoryList .version-item {
             border: 1px solid var(--border-gray);
@@ -3573,6 +3580,7 @@ function ensureVersionHistoryStyles() {
             display: flex;
             gap: 12px;
             justify-content: center;
+            margin-top: 8px;
         }
         #versionHistoryList .version-item--latest {
             box-shadow: 0 8px 24px -12px rgba(37, 99, 235, 0.25);
