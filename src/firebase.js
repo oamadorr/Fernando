@@ -9,7 +9,11 @@ import state, {
     setProgressData,
     setTeamConfig,
 } from "./state.js";
-import { sanitizeProgressData, sanitizeExecutionDates } from "./utils/sanitize.js";
+import {
+    sanitizeProgressData,
+    sanitizeExecutionDates,
+    sanitizeBuiltInformations,
+} from "./utils/sanitize.js";
 import { migrateProgressDataIfNeeded } from "./persistence.js";
 
 function initializeFirebase(onReady, onFallback) {
@@ -122,7 +126,7 @@ function applyFirebaseDataSnapshot(doc, opts) {
         }
 
         if (data.builtInformations) {
-            setBuiltInformations(data.builtInformations);
+            setBuiltInformations(sanitizeBuiltInformations(data.builtInformations));
         }
     }
 }
@@ -313,7 +317,7 @@ function setupRealtimeListener(db, currentProjectId, opts) {
                     const newLineStepsStatus = data.lineStepsStatus || {};
                     const newExecutionDates = sanitizeExecutionDates(data.executionDates || {});
                     const newLineObservations = data.lineObservations || {};
-                    const newBuiltInformations = data.builtInformations || {};
+                    const newBuiltInformations = sanitizeBuiltInformations(data.builtInformations || {});
 
                     let hasChanges = false;
                     if (

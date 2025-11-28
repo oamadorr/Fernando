@@ -9,6 +9,8 @@ import {
     sanitizeExecutionDates,
     formatExecutionDateForDisplay,
     getExecutionDateForLine,
+    sanitizeBuiltInformations,
+    getBuiltPairCount,
 } from "./utils/sanitize.js";
 import {
     initializeFirebase as initializeFirebaseModule,
@@ -2846,49 +2848,6 @@ async function saveTableEdit(usinaKey) {
 
 // ========== FUNÇÕES PARA BUILT INFORMATION ==========
 
-function getBuiltPairCount(usinaKey, linhaKey) {
-    const linha = String(linhaKey);
-
-    if (usinaKey === "pimental") {
-        if (linha === "01" || linha === "03") return 12;
-        if (linha === "02" || linha === "04") return 13;
-        return 2; // transversais 05-18
-    }
-
-    if (usinaKey === "belo-monte") {
-        if (linha === "01" || linha === "10") return 11;
-        if (
-            [
-                "02",
-                "03",
-                "04",
-                "05",
-                "06",
-                "07",
-                "08",
-                "11",
-                "12",
-                "13",
-                "14",
-                "15",
-                "16",
-                "17",
-            ].includes(linha)
-        ) {
-            return 12;
-        }
-        if (linha === "09" || linha === "18") return 7;
-        return 4; // transversais 19-71
-    }
-
-    if (usinaKey === "oficina") {
-        if (linha === "73") return 7;
-        return 1; // 72 e 74
-    }
-
-    return 1;
-}
-
 /**
  * Inicializa dados de Built vazios baseado em projectData
  */
@@ -2943,39 +2902,11 @@ function loadBuiltFromStorage() {
 
     try {
         const loadedData = JSON.parse(stored);
-        builtInformations = sanitizeBuiltData(loadedData);
+        builtInformations = sanitizeBuiltInformations(loadedData, projectData);
     } catch (error) {
         console.warn("Erro ao carregar Built do storage:", error);
         initializeBuiltData();
     }
-}
-
-/**
- * Sanitiza dados de Built (garante estrutura correta)
- */
-function sanitizeBuiltData(raw) {
-    const sanitized = {};
-
-    for (const usinaKey of Object.keys(projectData)) {
-        sanitized[usinaKey] = {};
-
-        const linhas = projectData[usinaKey].linhas;
-        for (const linhaKey of Object.keys(linhas)) {
-            // Determinar número de pares para esta linha
-            const pairCount = getBuiltPairCount(usinaKey, linhaKey);
-
-            sanitized[usinaKey][linhaKey] = {};
-            const rawLine = raw?.[usinaKey]?.[linhaKey] || {};
-
-            // Preencher pares com valores do backup ou strings vazias
-            for (let i = 1; i <= pairCount; i++) {
-                const pairKey = `${String(i).padStart(2, "0")}-${String(i + 1).padStart(2, "0")}`;
-                sanitized[usinaKey][linhaKey][pairKey] = rawLine[pairKey] || "";
-            }
-        }
-    }
-
-    return sanitized;
 }
 
 /**
@@ -3000,7 +2931,7 @@ async function saveBuiltToFirebase() {
  */
 async function loadBuiltFromFirebase(docSnapshot) {
     if (docSnapshot.data()?.builtInformations) {
-        builtInformations = sanitizeBuiltData(docSnapshot.data().builtInformations);
+        builtInformations = sanitizeBuiltInformations(docSnapshot.data().builtInformations, projectData);
     } else {
         initializeBuiltData();
     }
