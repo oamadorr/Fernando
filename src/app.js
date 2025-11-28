@@ -3574,6 +3574,12 @@ async function showVersionHistoryModal() {
 
         const versionList = document.getElementById("versionHistoryList");
         versionList.innerHTML = "";
+        versionList.classList.add("version-list");
+
+        const modalContent = document.querySelector("#versionHistoryModal .modal-content");
+        if (modalContent) {
+            modalContent.classList.add("version-modal");
+        }
 
         // Ordenar manualmente se necessário
         const versions = [];

@@ -2434,6 +2434,14 @@ body {
     padding: 22px;
     border-radius: 18px;
     box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-gray);
+}
+
+#versionHistoryModal .modal-content {
+    /* fallback para quando a classe não estiver no HTML cacheado */
+    border-radius: 18px;
+    padding: 22px;
+    max-width: 820px;
 }
 
 .version-eyebrow {
