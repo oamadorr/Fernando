@@ -1904,17 +1904,6 @@ body {
     color: #3b82f6;
 }
 
-.toast-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #374151;
-    background: #e5e7eb;
-    padding: 4px 8px;
-    border-radius: 6px;
-}
-
 .toast-content {
     flex: 1;
     font-size: 14px;
@@ -2446,6 +2435,25 @@ body {
     text-align: center;
     color: var(--primary-blue);
     border: 1px solid var(--primary-blue);
+}
+
+.status-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.readonly-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    background: rgba(255, 193, 7, 0.12);
+    color: #92400e;
 }
 
 @media (max-width: 480px) {

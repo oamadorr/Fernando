@@ -3118,7 +3118,10 @@ function showReadOnlyNotice() {
 }
 
 function hideReadOnlyNotice() {
-    document.getElementById("readOnlyNotice").style.display = "none";
+    const badge = document.getElementById("readOnlyBadge");
+    if (badge) {
+        badge.style.display = "none";
+    }
 }
 
 // Função para alternar status das etapas do cabo
