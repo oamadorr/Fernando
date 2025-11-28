@@ -1573,24 +1573,23 @@
 
         <!-- Modal de Histórico de Versões -->
         <div id="versionHistoryModal" class="modal">
-            <div class="modal-content" style="max-width: 800px">
+            <div class="modal-content version-modal">
                 <div class="modal-header">
-                    <h2 class="modal-title">🕒 Histórico de Versões</h2>
+                    <div>
+                        <p class="version-eyebrow">Histórico</p>
+                        <h2 class="modal-title" style="margin: 0">🕒 Histórico de Versões</h2>
+                        <p class="version-subtitle">
+                            Últimas 20 versões salvas automaticamente. Selecione para restaurar.
+                        </p>
+                    </div>
                     <button class="close-btn" onclick="App.closeVersionHistoryModal()">&times;</button>
                 </div>
                 <div>
-                    <p style="color: var(--medium-gray); margin-bottom: 20px">
-                        Selecione uma versão anterior para restaurar. As últimas 20 versões são
-                        mantidas automaticamente.
-                    </p>
-
-                    <div id="versionHistoryList" style="max-height: 400px; overflow-y: auto">
+                    <div id="versionHistoryList" class="version-list">
                         <!-- Lista preenchida dinamicamente -->
                     </div>
 
-                    <div
-                        style="display: flex; gap: 15px; justify-content: center; margin-top: 20px"
-                    >
+                    <div class="version-actions">
                         <button
                             type="button"
                             class="btn btn-secondary"
