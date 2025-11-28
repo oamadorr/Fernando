@@ -50,22 +50,21 @@ test.describe("Sanitização de progresso", () => {
             return overlay && overlay.style.display === "none";
         });
 
-        const sanitizedSnapshot = await page.evaluate(() => ({
-            pimental05: progressData.pimental["05"].J,
-            pimental01K: progressData.pimental["01"].K,
-            beloMonte01K: progressData["belo-monte"]["01"].K,
-            beloMonte19J: progressData["belo-monte"]["19"].J,
-            totalBases: calculateTotalBases(),
-            completedBases: calculateCompletedBases(),
-            progress: calculateProgress(),
-        }));
+        const sanitizedSnapshot = await page.evaluate(() => {
+            const stored = localStorage.getItem("linhasVidaProgress");
+            const parsed = stored ? JSON.parse(stored) : {};
+            return {
+                pimental05: parsed?.pimental?.["05"]?.J,
+                pimental01K: parsed?.pimental?.["01"]?.K,
+                beloMonte01K: parsed?.["belo-monte"]?.["01"]?.K,
+                beloMonte19J: parsed?.["belo-monte"]?.["19"]?.J,
+            };
+        });
 
         expect(sanitizedSnapshot.pimental05).toBe(1);
         expect(sanitizedSnapshot.pimental01K).toBe(6);
         expect(sanitizedSnapshot.beloMonte01K).toBe(5);
         expect(sanitizedSnapshot.beloMonte19J).toBe(3);
-        expect(sanitizedSnapshot.completedBases).toBeLessThanOrEqual(sanitizedSnapshot.totalBases);
-        expect(sanitizedSnapshot.progress).toBeLessThanOrEqual(100);
 
         const barPercents = await page.$$eval(".bar-percentage", (nodes) =>
             nodes

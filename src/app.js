@@ -3114,7 +3114,9 @@ async function checkPassword() {
 }
 
 function showReadOnlyNotice() {
-    document.getElementById("readOnlyNotice").style.display = "block";
+    const badge = document.getElementById("readOnlyBadge");
+    if (!badge) return;
+    badge.style.display = "inline-flex";
 }
 
 function hideReadOnlyNotice() {
