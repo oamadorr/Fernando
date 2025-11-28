@@ -4127,6 +4127,31 @@ function exportToPDF() {
     );
     currentY += 10;
 
+    // Calcular totais de distâncias entre bases (Built)
+    function parseBuiltNumber(value) {
+        if (value === null || value === undefined || value === "") return NaN;
+        return parseFloat(String(value).replace(",", "."));
+    }
+
+    function getBuiltTotals() {
+        const totals = {};
+        for (const usinaKey in builtInformations) {
+            totals[usinaKey] = {};
+            const linhas = builtInformations[usinaKey];
+            for (const linha in linhas) {
+                const pairs = linhas[linha];
+                const sum = Object.keys(pairs || {}).reduce((acc, key) => {
+                    const num = parseBuiltNumber(pairs[key]);
+                    return Number.isNaN(num) ? acc : acc + num;
+                }, 0);
+                totals[usinaKey][linha] = sum;
+            }
+        }
+        return totals;
+    }
+
+    const builtTotals = getBuiltTotals();
+
     function renderBuiltTotalsSection(usinaKey, titulo) {
         doc.setFont("helvetica", "bold");
         doc.text(titulo, 25, currentY);
