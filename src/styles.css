@@ -583,19 +583,6 @@ body {
     overflow-x: auto;
 }
 
-.table-container.sticky-headers {
-    position: relative;
-    overflow-y: auto;
-    max-height: 520px;
-}
-
-.table-container.sticky-headers thead th {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
 .data-table {
     width: 100%;
     border-collapse: collapse;
