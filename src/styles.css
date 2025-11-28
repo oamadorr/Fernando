@@ -22,6 +22,10 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 /* Estilos base */
 body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -2785,4 +2789,100 @@ body {
 
 .built-table tbody td.empty-cell {
     background-color: var(--light-gray);
+}
+
+/* Navegação rápida */
+.quick-nav {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.quick-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+}
+
+.quick-nav-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px -4px rgba(0, 0, 0, 0.18);
+}
+
+.quick-nav-toggle:active {
+    transform: translateY(0);
+}
+
+.quick-nav-panel {
+    display: none;
+    background: var(--white);
+    border-radius: 14px;
+    padding: 12px;
+    width: 240px;
+    box-shadow: 0 18px 38px -10px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-gray);
+}
+
+.quick-nav.open .quick-nav-panel {
+    display: block;
+}
+
+.quick-nav-title {
+    font-weight: 700;
+    color: var(--dark-gray);
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+}
+
+.quick-nav-item {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--light-gray);
+    color: var(--dark-gray);
+    border: 1px solid var(--border-gray);
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.quick-nav-item i {
+    color: var(--primary-blue);
+}
+
+.quick-nav-item:hover {
+    background: var(--white);
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+    transform: translateX(-2px);
+}
+
+@media (max-width: 768px) {
+    .quick-nav {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .quick-nav-panel {
+        width: 90vw;
+        max-width: 320px;
+    }
 }

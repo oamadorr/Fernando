@@ -37,6 +37,35 @@
         <!-- Tooltip para detalhes das bases -->
         <div id="basesTooltip" class="tooltip"></div>
 
+        <!-- Atalhos de navegação rápida -->
+        <nav class="quick-nav" id="quickNav">
+            <button class="quick-nav-toggle" aria-label="Abrir atalhos rápidos">
+                <i class="fas fa-list-ul"></i>
+                <span>Atalhos</span>
+            </button>
+            <div class="quick-nav-panel">
+                <div class="quick-nav-title">Ir para</div>
+                <button type="button" class="quick-nav-item" data-target="#section-dashboard">
+                    <i class="fas fa-gauge-high"></i> Dashboard
+                </button>
+                <button type="button" class="quick-nav-item" data-target="#section-mapa">
+                    <i class="fas fa-map-marked-alt"></i> Mapa Interativo
+                </button>
+                <button type="button" class="quick-nav-item" data-target="#section-execucao">
+                    <i class="fas fa-exchange-alt"></i> Controle de Execução
+                </button>
+                <button type="button" class="quick-nav-item" data-target="#section-tabelas">
+                    <i class="fas fa-table"></i> Tabelas de Linhas
+                </button>
+                <button type="button" class="quick-nav-item" data-target="#section-built">
+                    <i class="fas fa-ruler-combined"></i> Built (Bases)
+                </button>
+                <button type="button" class="quick-nav-item" data-target="#section-footer">
+                    <i class="fas fa-info-circle"></i> Rodapé
+                </button>
+            </div>
+        </nav>
+
         <!-- Header -->
         <header class="header">
             <div class="container">
@@ -128,7 +157,7 @@
         <main class="main-content">
             <div class="container">
                 <!-- Dashboard -->
-                <section class="dashboard">
+                <section class="dashboard" id="section-dashboard">
                     <div class="dashboard-grid">
                         <div class="dashboard-card">
                             <h3>
@@ -265,7 +294,7 @@
                 </section>
 
                 <!-- Mapa Interativo -->
-                <section class="map-section">
+                <section class="map-section" id="section-mapa">
                     <div class="section-header">
                         <h2><i class="fas fa-map-marked-alt"></i> Mapa Interativo de Linhas</h2>
                     </div>
@@ -800,7 +829,7 @@
                 </section>
 
                 <!-- Controle de Execução -->
-                <section class="execution-control-section">
+                <section class="execution-control-section" id="section-execucao">
                     <div class="container">
                         <div class="execution-control-card">
                             <div class="control-header">
@@ -881,7 +910,7 @@
                 </section>
 
                 <!-- Usina Pimental -->
-                <section class="usina-section">
+                <section class="usina-section" id="section-tabelas">
                     <div class="usina-header">
                         <h2 class="usina-title"><i class="fas fa-industry"></i> Usina Pimental</h2>
                         <div class="usina-stats">
@@ -1198,7 +1227,7 @@
                 </section>
 
                 <!-- SEÇÃO: Informações para as Built -->
-                <section class="usina-section">
+                <section class="usina-section" id="section-built">
                     <div class="usina-header">
                         <h2 class="usina-title">
                             <i class="fas fa-ruler-combined"></i> Informações para as Built
@@ -1676,10 +1705,44 @@
             </div>
         </div>
 
-    <script type="module" src="src/main.js"></script>
+        <script>
+            (function () {
+                const nav = document.getElementById("quickNav");
+                if (!nav) return;
+
+                const toggle = nav.querySelector(".quick-nav-toggle");
+                const items = nav.querySelectorAll(".quick-nav-item");
+
+                const closeNav = () => nav.classList.remove("open");
+
+                toggle?.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    nav.classList.toggle("open");
+                });
+
+                items.forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const targetSelector = btn.dataset.target;
+                        const target = targetSelector ? document.querySelector(targetSelector) : null;
+                        if (target) {
+                            target.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }
+                        closeNav();
+                    });
+                });
+
+                document.addEventListener("click", (event) => {
+                    if (!nav.contains(event.target)) {
+                        closeNav();
+                    }
+                });
+            })();
+        </script>
+
+        <script type="module" src="src/main.js"></script>
 
         <!-- Footer -->
-        <footer class="footer">
+        <footer class="footer" id="section-footer">
             <div class="container">
                 <div class="footer-content">
                     <div class="footer-text">
