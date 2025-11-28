@@ -1,3 +1,4 @@
+import state from "../state.js";
 import {
     calculateCompletedBasesOfUsina,
     calculateTotalBasesOfUsina,
@@ -131,8 +132,8 @@ function initChartConclusaoGeral() {
 
 function initHorizontalChart(usinaKey, tipos, containerId) {
     const container = document.getElementById(containerId);
-    const projectData = window.projectData || {};
-    const progressData = window.progressData || {};
+    const projectData = state.projectData || {};
+    const progressData = state.progressData || {};
 
     const totalByType = {};
     const completedByType = {};
