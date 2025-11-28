@@ -2750,6 +2750,11 @@ body {
     text-align: left;
     font-weight: 600;
     color: var(--primary-blue);
+    background: #f8fafc;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    border-right: 2px solid var(--border-gray);
 }
 
 .built-table tbody td.built-pair-label {
@@ -2801,6 +2806,44 @@ body {
     text-align: center;
     background-color: #eef2ff;
     border-left: 2px solid var(--border-gray);
+}
+
+.built-table-wrapper {
+    overflow-x: auto;
+}
+
+.built-table th {
+    background: #f3f4f6;
+    color: var(--dark-gray);
+    font-weight: 700;
+}
+
+.built-table tbody tr:nth-child(every) {
+    background: transparent;
+}
+
+.built-table tbody tr:nth-child(odd) {
+    background: #f9fafb;
+}
+
+.built-table tbody tr:hover {
+    background: #eef2ff;
+}
+
+.built-input-cell {
+    transition: background-color 0.15s ease;
+}
+
+.built-table.edit-mode .built-input-cell {
+    background: #fff;
+}
+
+.built-table.edit-mode .built-input {
+    background-color: #fff;
+}
+
+.built-total-cell::after {
+    content: "";
 }
 
 /* Navegação rápida */
