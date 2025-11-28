@@ -73,6 +73,7 @@ function setReadOnlyMode(isReadOnly) {
     allowOnlineEdits = !isReadOnly;
     document.body.classList.toggle("readonly-mode", isReadOnly);
     applyReadOnlyUI(isReadOnly);
+    updateUpdateModalBadge(isReadOnly);
 }
 
 function requireOnlineEdits() {
@@ -82,6 +83,21 @@ function requireOnlineEdits() {
         return false;
     }
     return true;
+}
+
+function updateUpdateModalBadge(isReadOnly) {
+    const badge = document.getElementById("updateModalBadge");
+    if (!badge) return;
+    if (isReadOnly) {
+        badge.textContent = "Modo offline";
+        badge.classList.remove("badge-online");
+        badge.classList.add("badge-offline");
+    } else {
+        badge.textContent = "Online";
+        badge.classList.remove("badge-offline");
+        badge.classList.add("badge-online");
+    }
+    badge.style.display = "inline-flex";
 }
 
 const {
@@ -2493,6 +2509,7 @@ function updateTable(usinaKey, tableId) {
                             <div class="step-item">
                                 <span class="step-label">Passagem:</span>
                                 <button class="step-toggle ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].passagemCabo ? "step-done" : "step-pending"}" 
+                                        title="Clique para alternar o status da passagem"
                                         onclick="App.toggleStep('${usinaKey}', '${linha}', 'passagemCabo')">
                                     ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].passagemCabo ? "Realizado" : "Pendente"}
                                 </button>
@@ -2500,6 +2517,7 @@ function updateTable(usinaKey, tableId) {
                             <div class="step-item">
                                 <span class="step-label">Crimpagem:</span>
                                 <button class="step-toggle ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].crimpagemCabo ? "step-done" : "step-pending"}" 
+                                        title="Clique para alternar o status da crimpagem"
                                         onclick="App.toggleStep('${usinaKey}', '${linha}', 'crimpagemCabo')">
                                     ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].crimpagemCabo ? "Realizado" : "Pendente"}
                                 </button>
@@ -2507,6 +2525,7 @@ function updateTable(usinaKey, tableId) {
                             <div class="step-item">
                                 <span class="step-label">Aferição:</span>
                                 <button class="step-toggle ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].afericaoCrimpagem ? "step-done" : "step-pending"}" 
+                                        title="Clique para alternar o status da aferição"
                                         onclick="App.toggleStep('${usinaKey}', '${linha}', 'afericaoCrimpagem')">
                                     ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].afericaoCrimpagem ? "Realizado" : "Pendente"}
                                 </button>
@@ -2514,6 +2533,7 @@ function updateTable(usinaKey, tableId) {
                             <div class="step-item">
                                 <span class="step-label">Tensionamento:</span>
                                 <button class="step-toggle ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].tensionamentoCabo ? "step-done" : "step-pending"}"
+                                        title="Clique para alternar o status do tensionamento"
                                         onclick="App.toggleStep('${usinaKey}', '${linha}', 'tensionamentoCabo')">
                                     ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].tensionamentoCabo ? "Realizado" : "Pendente"}
                                 </button>

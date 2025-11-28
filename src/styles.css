@@ -583,6 +583,19 @@ body {
     overflow-x: auto;
 }
 
+.table-container.sticky-headers {
+    position: relative;
+    overflow-y: auto;
+    max-height: 520px;
+}
+
+.table-container.sticky-headers thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
 .data-table {
     width: 100%;
     border-collapse: collapse;
@@ -1852,18 +1865,22 @@ body {
 
 .toast.success {
     border-left-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), #fff);
 }
 
 .toast.error {
     border-left-color: #ef4444;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), #fff);
 }
 
 .toast.warning {
     border-left-color: #f59e0b;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), #fffaf5);
 }
 
 .toast.info {
     border-left-color: #3b82f6;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), #f8fbff);
 }
 
 .toast-icon {
@@ -1885,6 +1902,17 @@ body {
 
 .toast.info .toast-icon {
     color: #3b82f6;
+}
+
+.toast-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #374151;
+    background: #e5e7eb;
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 
 .toast-content {
@@ -2434,6 +2462,46 @@ body {
     .checkbox-group {
         grid-template-columns: 1fr;
     }
+
+    #lineDetailsTable .editable-seal,
+    #transversalLinesTable .editable-seal {
+        white-space: normal;
+        line-height: 1.3;
+    }
+
+    #lineDetailsTable .seal-input,
+    #transversalLinesTable .seal-input {
+        width: 100% !important;
+    }
+}
+
+/* Badge no modal de atualização */
+.modal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.badge-offline {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.badge-online {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.input-warning {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
 }
 
 /* Animações */

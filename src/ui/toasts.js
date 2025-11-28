@@ -23,9 +23,19 @@ export function showToast(message, type = "info", duration = 4000) {
         info: "fas fa-info-circle",
     };
 
+    const labels = {
+        success: "Sucesso",
+        error: "Erro",
+        warning: "Atenção",
+        info: "Info",
+    };
+
     toast.innerHTML = `
                 <i class="toast-icon ${icons[type]}"></i>
-                <div class="toast-content">${message}</div>
+                <div class="toast-content">
+                    <div class="toast-label">${labels[type] || "Info"}</div>
+                    <div>${message}</div>
+                </div>
                 <button class="toast-close">
                     <i class="fas fa-times"></i>
                 </button>

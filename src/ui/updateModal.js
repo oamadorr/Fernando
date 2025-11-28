@@ -16,6 +16,18 @@ export function createUpdateModalHandlers({
     setPendingAction,
     showPasswordModal,
 }) {
+    function highlightSelectStates() {
+        const usinaSelect = document.getElementById("usinaSelect");
+        const linhaSelect = document.getElementById("linhaSelect");
+
+        if (usinaSelect) {
+            usinaSelect.classList.toggle("input-warning", !usinaSelect.value);
+        }
+        if (linhaSelect) {
+            linhaSelect.classList.toggle("input-warning", !linhaSelect.value);
+        }
+    }
+
     function openUpdateModal() {
         if (!getIsAuthenticated()) {
             setPendingAction("openUpdate");
@@ -24,6 +36,7 @@ export function createUpdateModalHandlers({
         }
         if (!requireOnlineEdits()) return;
         document.getElementById("updateModal").style.display = "block";
+        highlightSelectStates();
     }
 
     function openLineModal(usina, linha) {
@@ -73,6 +86,7 @@ export function createUpdateModalHandlers({
         }
 
         document.getElementById("basesCheckboxes").innerHTML = "";
+        highlightSelectStates();
     }
 
     function loadBases() {
@@ -170,6 +184,7 @@ export function createUpdateModalHandlers({
                     '<p style="color: #6b7280; font-style: italic;">Nenhuma base concluída nesta linha.</p>';
             }
         }
+        highlightSelectStates();
     }
 
     function updateSelectAllState() {
@@ -231,11 +246,13 @@ export function createUpdateModalHandlers({
 
         if (!selectedUsina) {
             showToast("Por favor, selecione uma usina.", "warning");
+            highlightSelectStates();
             return;
         }
 
         if (!selectedLinha) {
             showToast("Por favor, selecione uma linha.", "warning");
+            highlightSelectStates();
             return;
         }
 

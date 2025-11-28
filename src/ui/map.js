@@ -328,6 +328,8 @@ function initializeMapEvents() {
         const usinaKey = group.dataset.usina;
         const grupo = group.dataset.grupo;
 
+        group.setAttribute("title", `Grupo ${grupo} • Linhas transversais ${grupo}`);
+
         group.addEventListener("mouseenter", (event) => {
             showTransversalTooltip(event, usinaKey, grupo);
         });
