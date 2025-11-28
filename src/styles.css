@@ -2442,6 +2442,21 @@ body {
     border-radius: 18px;
     padding: 22px;
     max-width: 820px;
+    border: 1px solid var(--border-gray);
+}
+
+#versionHistoryList > div {
+    border: 1px solid var(--border-gray) !important;
+    border-radius: 12px;
+    padding: 12px !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+    transition: transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+#versionHistoryList > div:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 32px -18px rgba(0, 0, 0, 0.35);
+    border-color: var(--primary-blue) !important;
 }
 
 .version-eyebrow {

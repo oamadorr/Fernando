@@ -3651,6 +3651,7 @@ async function showVersionHistoryModal() {
             const versionCard = document.createElement("div");
             versionCard.classList.add("version-item");
             if (index === 0) versionCard.classList.add("version-item--latest");
+            versionCard.removeAttribute("style");
 
             const header = document.createElement("div");
             header.classList.add("version-item-header");
@@ -3689,6 +3690,7 @@ async function showVersionHistoryModal() {
             header.appendChild(actions);
 
             versionCard.appendChild(header);
+            versionCard.onclick = () => restoreVersion(doc.id, data, formattedDate);
 
             versionList.appendChild(versionCard);
         });
