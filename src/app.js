@@ -1548,6 +1548,30 @@ function getActiveUsina() {
     const beloMonteStats = calculateUsinaStats("belo-monte");
     const oficinaStats = calculateUsinaStats("oficina");
 
+    function parseBuiltNumber(value) {
+        if (value === null || value === undefined || value === "") return NaN;
+        return parseFloat(String(value).replace(",", "."));
+    }
+
+    function getBuiltTotals() {
+        const totals = {};
+        for (const usinaKey in builtInformations) {
+            totals[usinaKey] = {};
+            const linhas = builtInformations[usinaKey];
+            for (const linha in linhas) {
+                const pairs = linhas[linha];
+                const sum = Object.keys(pairs || {}).reduce((acc, key) => {
+                    const num = parseBuiltNumber(pairs[key]);
+                    return Number.isNaN(num) ? acc : acc + num;
+                }, 0);
+                totals[usinaKey][linha] = sum;
+            }
+        }
+        return totals;
+    }
+
+    const builtTotals = getBuiltTotals();
+
     // Se todas estão 100% concluídas, retorna null
     if (
         pimentalStats.progress >= 100 &&
@@ -3887,11 +3911,66 @@ function exportToPDF() {
     doc.text(`• Extensão Total: 75,2m`, 30, currentY);
     currentY += 15;
 
+    // Seção de Built - totais por linha
+    checkPageBreak(20);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("3. DISTÂNCIAS ENTRE BASES (BUILT) - TOTAIS", 20, currentY);
+    currentY += 10;
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+        "Totais por linha (soma das distâncias informadas). Valores vazios são ignorados.",
+        20,
+        currentY
+    );
+    currentY += 10;
+
+    function renderBuiltTotalsSection(usinaKey, titulo) {
+        doc.setFont("helvetica", "bold");
+        doc.text(titulo, 25, currentY);
+        currentY += 8;
+        doc.setFont("helvetica", "normal");
+
+        const linhas = Object.keys(builtTotals[usinaKey] || {}).sort(
+            (a, b) => parseInt(a, 10) - parseInt(b, 10)
+        );
+
+        let colCount = 0;
+        linhas.forEach((linha) => {
+            const total = builtTotals[usinaKey][linha];
+            const display = total > 0 ? `${total.toFixed(2)} m` : "-";
+            doc.text(`L ${linha}: ${display}`, 30 + colCount * 60, currentY);
+            colCount++;
+            if (colCount >= 3) {
+                colCount = 0;
+                currentY += 8;
+                if (checkPageBreak(16)) {
+                    doc.setFont("helvetica", "bold");
+                    doc.text(titulo, 25, currentY);
+                    currentY += 8;
+                    doc.setFont("helvetica", "normal");
+                }
+            }
+        });
+        if (colCount > 0) {
+            currentY += 10;
+        } else {
+            currentY += 4;
+        }
+        currentY += 6;
+    }
+
+    renderBuiltTotalsSection("pimental", "Pimental");
+    renderBuiltTotalsSection("belo-monte", "Belo Monte");
+    renderBuiltTotalsSection("oficina", "Oficina");
+
     // Análise por tipo de base
     checkPageBreak(60);
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("3. ANÁLISE POR TIPO DE BASE", 20, currentY);
+    doc.text("4. ANÁLISE POR TIPO DE BASE", 20, currentY);
     currentY += 12;
 
     const tiposBases = ["extremidade", "J", "C", "K", "E", "E/F", "D"];
@@ -3916,11 +3995,11 @@ function exportToPDF() {
     checkPageBreak(80);
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("4. DETALHAMENTO LINHA POR LINHA", 20, currentY);
+    doc.text("5. DETALHAMENTO LINHA POR LINHA", 20, currentY);
     currentY += 12;
 
     doc.setFontSize(14);
-    doc.text("4.1 Pimental - Detalhamento", 25, currentY);
+    doc.text("5.1 Pimental - Detalhamento", 25, currentY);
     currentY += 10;
 
     for (const linha in projectData.pimental.linhas) {
@@ -3970,7 +4049,7 @@ function exportToPDF() {
     checkPageBreak(80);
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("4.2 Belo Monte - Detalhamento", 25, currentY);
+    doc.text("5.2 Belo Monte - Detalhamento", 25, currentY);
     currentY += 10;
 
     for (const linha in projectData["belo-monte"].linhas) {
@@ -4126,17 +4205,17 @@ function exportToPDF() {
     checkPageBreak(40);
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    // Seção 4: Informações para as Built
+    // Seção 6: Informações para as Built
     checkPageBreak(80);
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("4. INFORMAÇÕES PARA AS BUILT", 20, currentY);
+    doc.text("6. INFORMAÇÕES PARA AS BUILT", 20, currentY);
     currentY += 12;
 
     // Belo Monte Built
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("4.1 Belo Monte", 25, currentY);
+    doc.text("6.1 Belo Monte", 25, currentY);
     currentY += 10;
 
     doc.setFontSize(10);
@@ -4163,7 +4242,7 @@ function exportToPDF() {
     checkPageBreak(20);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("4.2 Pimental", 25, currentY);
+    doc.text("6.2 Pimental", 25, currentY);
     currentY += 10;
 
     doc.setFontSize(10);
@@ -4190,7 +4269,7 @@ function exportToPDF() {
     checkPageBreak(20);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("4.3 Oficina", 25, currentY);
+    doc.text("6.3 Oficina", 25, currentY);
     currentY += 10;
 
     doc.setFontSize(10);
@@ -4213,7 +4292,7 @@ function exportToPDF() {
 
     currentY += 10;
 
-    doc.text("6. OBSERVAÇÕES E PRÓXIMOS PASSOS", 20, currentY);
+    doc.text("7. OBSERVAÇÕES E PRÓXIMOS PASSOS", 20, currentY);
     currentY += 12;
 
     doc.setFontSize(11);
