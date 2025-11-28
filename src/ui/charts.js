@@ -19,6 +19,7 @@ function getProgressGradient(percentage) {
 function addProgressTooltip(barItem, tipo, lineData, usinaKey) {
     const tooltip = document.createElement("div");
     tooltip.className = "progress-tooltip";
+    let tooltipAdded = false;
 
     const completedLines = lineData.completed.length > 0 ? lineData.completed.join(", ") : "Nenhuma";
     const pendingLines = lineData.pending.length > 0 ? lineData.pending.join(", ") : "Nenhuma";
@@ -29,19 +30,45 @@ function addProgressTooltip(barItem, tipo, lineData, usinaKey) {
             <div><strong>Linhas pendentes:</strong> ${pendingLines}</div>
         `;
 
-    barItem.appendChild(tooltip);
+    function ensureTooltip() {
+        if (!tooltipAdded) {
+            document.body.appendChild(tooltip);
+            tooltipAdded = true;
+        }
+    }
 
     barItem.addEventListener("mouseenter", () => {
+        ensureTooltip();
         tooltip.classList.add("show");
     });
 
     barItem.addEventListener("mousemove", (event) => {
-        tooltip.style.top = `${event.clientY - 60}px`;
-        tooltip.style.left = `${event.clientX + 10}px`;
+        ensureTooltip();
+        const offset = 12;
+        let left = event.clientX + offset;
+        let top = event.clientY + offset;
+
+        const rect = tooltip.getBoundingClientRect();
+        if (left + rect.width > window.innerWidth - 8) {
+            left = window.innerWidth - rect.width - 8;
+        }
+        if (top + rect.height > window.innerHeight - 8) {
+            top = event.clientY - rect.height - offset;
+            if (top < 8) {
+                top = 8;
+            }
+        }
+
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
     });
 
     barItem.addEventListener("mouseleave", () => {
         tooltip.classList.remove("show");
+        if (tooltipAdded) {
+            tooltip.remove();
+            tooltipAdded = false;
+        }
     });
 }
 
