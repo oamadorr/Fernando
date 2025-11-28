@@ -3519,18 +3519,18 @@ function ensureVersionHistoryStyles() {
     style.textContent = `
         #versionHistoryModal .modal-content {
             border-radius: 18px;
-            padding: 22px;
+            padding: 18px 20px;
             max-width: 820px;
             border: 1px solid var(--border-gray);
             box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.25);
             display: flex;
             flex-direction: column;
             gap: 14px;
-            max-height: 90vh;
-            margin: 24px auto;
+            max-height: 75vh;
+            margin: 18px auto;
         }
         #versionHistoryList {
-            max-height: 450px;
+            max-height: calc(75vh - 180px);
             overflow-y: auto;
             margin: 12px 0 4px 0;
             display: flex;
