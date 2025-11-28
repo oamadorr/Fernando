@@ -2493,28 +2493,28 @@ function updateTable(usinaKey, tableId) {
                             <div class="step-item">
                                 <span class="step-label">Passagem:</span>
                                 <button class="step-toggle ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].passagemCabo ? "step-done" : "step-pending"}" 
-                                        onclick="toggleStep('${usinaKey}', '${linha}', 'passagemCabo')">
+                                        onclick="App.toggleStep('${usinaKey}', '${linha}', 'passagemCabo')">
                                     ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].passagemCabo ? "Realizado" : "Pendente"}
                                 </button>
                             </div>
                             <div class="step-item">
                                 <span class="step-label">Crimpagem:</span>
                                 <button class="step-toggle ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].crimpagemCabo ? "step-done" : "step-pending"}" 
-                                        onclick="toggleStep('${usinaKey}', '${linha}', 'crimpagemCabo')">
+                                        onclick="App.toggleStep('${usinaKey}', '${linha}', 'crimpagemCabo')">
                                     ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].crimpagemCabo ? "Realizado" : "Pendente"}
                                 </button>
                             </div>
                             <div class="step-item">
                                 <span class="step-label">Aferição:</span>
                                 <button class="step-toggle ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].afericaoCrimpagem ? "step-done" : "step-pending"}" 
-                                        onclick="toggleStep('${usinaKey}', '${linha}', 'afericaoCrimpagem')">
+                                        onclick="App.toggleStep('${usinaKey}', '${linha}', 'afericaoCrimpagem')">
                                     ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].afericaoCrimpagem ? "Realizado" : "Pendente"}
                                 </button>
                             </div>
                             <div class="step-item">
                                 <span class="step-label">Tensionamento:</span>
                                 <button class="step-toggle ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].tensionamentoCabo ? "step-done" : "step-pending"}"
-                                        onclick="toggleStep('${usinaKey}', '${linha}', 'tensionamentoCabo')">
+                                        onclick="App.toggleStep('${usinaKey}', '${linha}', 'tensionamentoCabo')">
                                     ${lineStepsStatus[usinaKey] && lineStepsStatus[usinaKey][linha] && lineStepsStatus[usinaKey][linha].tensionamentoCabo ? "Realizado" : "Pendente"}
                                 </button>
                             </div>
@@ -2533,10 +2533,10 @@ function updateTable(usinaKey, tableId) {
                         </div>
                     </td>
                     <td>
-                        <button class="btn btn-primary btn-small" onclick="openLineModal('${usinaKey}', '${linha}')">
+                        <button class="btn btn-primary btn-small" onclick="App.openLineModal('${usinaKey}', '${linha}')">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-secondary btn-small" onclick="openObservationModal('${usinaKey}', '${linha}')" style="margin-left: 5px;">
+                        <button class="btn btn-secondary btn-small" onclick="App.openObservationModal('${usinaKey}', '${linha}')" style="margin-left: 5px;">
                             <i class="fas fa-comment"></i>
                         </button>
                     </td>
@@ -3698,7 +3698,7 @@ async function showVersionHistoryModal() {
                                     • ${completedBases}/${totalBases} bases • ${completedCableSteps}/${totalCableSteps} etapas
                                 </div>
                             </div>
-                            <button class="btn btn-primary" onclick="restoreVersion('${doc.id}'); event.stopPropagation();">
+                            <button class="btn btn-primary" onclick="App.restoreVersion('${doc.id}'); event.stopPropagation();">
                                 <i class="fas fa-undo"></i> Restaurar
                             </button>
                         </div>
@@ -4500,6 +4500,7 @@ const exportedFunctions = {
     clearAllProgress,
     checkPassword,
     closePasswordModal,
+    closeVersionHistoryModal,
     exportProgressData,
     importProgressData,
     forceRestoreFromFirebase,
@@ -4508,6 +4509,8 @@ const exportedFunctions = {
     exportToExcel,
 };
 
+// Encapsular handlers públicos em um único namespace para uso futuro (mantém globais atuais)
+window.App = Object.freeze({ ...exportedFunctions });
 Object.assign(window, exportedFunctions);
 
 // Inicializar aplicação quando a página carregar

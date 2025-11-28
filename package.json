@@ -11,6 +11,7 @@
     },
     "scripts": {
         "test:playwright": "playwright test",
+        "smoke:public": "node -e \"if(!process.env.SMOKE_URL){console.error('Defina SMOKE_URL para rodar o smoke público');process.exit(1)}\" && playwright test tests/smoke-public.spec.cjs --browser=chromium --headed --reporter=line",
         "lint": "eslint . --ext .js --max-warnings=0",
         "format": "prettier --write \"**/*.{js,json,css,html,md}\""
     },

@@ -19,6 +19,16 @@ Sistema web para gerenciamento da instalação de linhas de vida nas usinas hidr
 - Coluna de data de execução
 - Sincronização Firebase em tempo real
 
+## Smoke Playwright (deploy público)
+
+- Arquivo de teste: `tests/smoke-public.spec.cjs`
+- Requer variáveis: `SMOKE_URL` (ex.: https://linhasdevida.vercel.app), `SMOKE_PASSWORD` (padrão `thommen2025`), `SMOKE_PROJECT_ID` (opcional, define o doc no Firebase).
+- Execução:
+  - Com npm script (Chromium headed): `SMOKE_URL="https://linhasdevida.vercel.app" SMOKE_PROJECT_ID="smoke-$(date +%s)" npm run smoke:public`
+  - Direto: `SMOKE_URL="..." SMOKE_PASSWORD="..." SMOKE_PROJECT_ID="..." npx playwright test tests/smoke-public.spec.cjs --browser=chromium`
+- O teste é pulado se `SMOKE_URL` não estiver definida.
+- Artefatos: screenshots e vídeos são salvos em `test-results/` apenas em caso de falha; traces permanecem ativados no primeiro retry.
+
 ## Tecnologias
 
 - HTML5, CSS3, JavaScript (Vanilla)

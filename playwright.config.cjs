@@ -9,5 +9,7 @@ module.exports = {
         browserName: "firefox",
         headless: true,
         trace: "on-first-retry",
+        screenshot: "only-on-failure",
+        video: "retain-on-failure",
     },
 };

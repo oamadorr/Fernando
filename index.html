@@ -67,13 +67,13 @@
                         />
                     </div>
                     <div class="header-actions">
-                        <button class="btn btn-secondary" onclick="exportToPDF()">
+                        <button class="btn btn-secondary" onclick="App.exportToPDF()">
                             <i class="fas fa-file-pdf"></i> Exportar PDF
                         </button>
-                        <button class="btn btn-secondary" onclick="exportToExcel()">
+                        <button class="btn btn-secondary" onclick="App.exportToExcel()">
                             <i class="fas fa-file-excel"></i> Exportar Excel
                         </button>
-                        <button class="btn btn-secondary" onclick="exportProgressData()">
+                        <button class="btn btn-secondary" onclick="App.exportProgressData()">
                             <i class="fas fa-download"></i> Backup Dados
                         </button>
                         <button
@@ -92,13 +92,13 @@
                         <button
                             class="btn btn-secondary"
                             data-online-only="true"
-                            onclick="forceRestoreFromFirebase()"
+                            onclick="App.forceRestoreFromFirebase()"
                         >
                             <i class="fas fa-cloud-download-alt"></i> Restaurar do Firebase
                         </button>
                         <button
                             class="btn btn-warning"
-                            onclick="clearAllProgress()"
+                            onclick="App.clearAllProgress()"
                             style="background-color: #ef4444; border-color: #dc2626"
                         >
                             <i class="fas fa-trash"></i> Limpar Tudo
@@ -106,7 +106,7 @@
                         <button
                             class="btn btn-primary"
                             data-online-only="true"
-                            onclick="openUpdateModal()"
+                            onclick="App.openUpdateModal()"
                         >
                             <i class="fas fa-edit"></i> Atualizar Progresso
                         </button>
@@ -268,13 +268,13 @@
 
                     <!-- Abas das Usinas -->
                     <div class="map-tabs">
-                        <button class="map-tab-btn active" onclick="switchMapTab('pimental', event)">
+                        <button class="map-tab-btn active" onclick="App.switchMapTab('pimental', event)">
                             <i class="fas fa-industry"></i> Pimental
                         </button>
-                        <button class="map-tab-btn" onclick="switchMapTab('belo-monte', event)">
+                        <button class="map-tab-btn" onclick="App.switchMapTab('belo-monte', event)">
                             <i class="fas fa-industry"></i> Belo Monte
                         </button>
-                        <button class="map-tab-btn" onclick="switchMapTab('oficina', event)">
+                        <button class="map-tab-btn" onclick="App.switchMapTab('oficina', event)">
                             <i class="fas fa-tools"></i> Oficina
                         </button>
                     </div>
@@ -307,7 +307,7 @@
                                 class="map-line pimental-vertical pimental-left"
                                 data-linha="05"
                                 data-usina="pimental"
-                                onclick="showLineDetails('pimental', '05')"
+                                onclick="App.showLineDetails('pimental', '05')"
                             >
                                 <div class="line-bar vertical"></div>
                                 <div class="line-label">05</div>
@@ -318,7 +318,7 @@
                                 class="map-line pimental-vertical pimental-right"
                                 data-linha="18"
                                 data-usina="pimental"
-                                onclick="showLineDetails('pimental', '18')"
+                                onclick="App.showLineDetails('pimental', '18')"
                             >
                                 <div class="line-bar vertical"></div>
                                 <div class="line-label">18</div>
@@ -329,7 +329,7 @@
                                 class="map-line pimental-01"
                                 data-linha="01"
                                 data-usina="pimental"
-                                onclick="showLineDetails('pimental', '01')"
+                                onclick="App.showLineDetails('pimental', '01')"
                             >
                                 <div class="line-bar horizontal pimental-bar"></div>
                                 <div class="line-label">01</div>
@@ -340,7 +340,7 @@
                                 class="map-line pimental-02"
                                 data-linha="02"
                                 data-usina="pimental"
-                                onclick="showLineDetails('pimental', '02')"
+                                onclick="App.showLineDetails('pimental', '02')"
                             >
                                 <div class="line-bar horizontal pimental-bar"></div>
                                 <div class="line-label">02</div>
@@ -351,7 +351,7 @@
                                 class="map-line pimental-03"
                                 data-linha="03"
                                 data-usina="pimental"
-                                onclick="showLineDetails('pimental', '03')"
+                                onclick="App.showLineDetails('pimental', '03')"
                             >
                                 <div class="line-bar horizontal pimental-bar"></div>
                                 <div class="line-label">03</div>
@@ -362,7 +362,7 @@
                                 class="map-line pimental-04"
                                 data-linha="04"
                                 data-usina="pimental"
-                                onclick="showLineDetails('pimental', '04')"
+                                onclick="App.showLineDetails('pimental', '04')"
                             >
                                 <div class="line-bar horizontal pimental-bar"></div>
                                 <div class="line-label">04</div>
@@ -373,7 +373,7 @@
                                 class="transversal-group pm-transversal-01"
                                 data-grupo="06-10"
                                 data-usina="pimental"
-                                onclick="showTransversalDetails('pimental', '06-10')"
+                                onclick="App.showTransversalDetails('pimental', '06-10')"
                             >
                                 <div class="transversal-line-mini" data-linha="06"></div>
                                 <div class="transversal-line-mini" data-linha="07"></div>
@@ -387,7 +387,7 @@
                                 class="transversal-group pm-transversal-02"
                                 data-grupo="11-17"
                                 data-usina="pimental"
-                                onclick="showTransversalDetails('pimental', '11-17')"
+                                onclick="App.showTransversalDetails('pimental', '11-17')"
                             >
                                 <div class="transversal-line-mini" data-linha="11"></div>
                                 <div class="transversal-line-mini" data-linha="12"></div>
@@ -409,7 +409,7 @@
                                 class="map-line vertical left"
                                 data-linha="19"
                                 data-usina="belo-monte"
-                                onclick="showLineDetails('belo-monte', '19')"
+                                onclick="App.showLineDetails('belo-monte', '19')"
                             >
                                 <div class="line-bar vertical"></div>
                                 <div class="line-label">19</div>
@@ -420,7 +420,7 @@
                                 class="map-line vertical right"
                                 data-linha="71"
                                 data-usina="belo-monte"
-                                onclick="showLineDetails('belo-monte', '71')"
+                                onclick="App.showLineDetails('belo-monte', '71')"
                             >
                                 <div class="line-bar vertical"></div>
                                 <div class="line-label">71</div>
@@ -432,7 +432,7 @@
                                     class="map-line grid-item"
                                     data-linha="01"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '01')"
+                                    onclick="App.showLineDetails('belo-monte', '01')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">01</div>
@@ -441,7 +441,7 @@
                                     class="map-line grid-item"
                                     data-linha="02"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '02')"
+                                    onclick="App.showLineDetails('belo-monte', '02')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">02</div>
@@ -450,7 +450,7 @@
                                     class="map-line grid-item"
                                     data-linha="03"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '03')"
+                                    onclick="App.showLineDetails('belo-monte', '03')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">03</div>
@@ -459,7 +459,7 @@
                                     class="map-line grid-item"
                                     data-linha="04"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '04')"
+                                    onclick="App.showLineDetails('belo-monte', '04')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">04</div>
@@ -468,7 +468,7 @@
                                     class="map-line grid-item"
                                     data-linha="05"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '05')"
+                                    onclick="App.showLineDetails('belo-monte', '05')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">05</div>
@@ -477,7 +477,7 @@
                                     class="map-line grid-item"
                                     data-linha="06"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '06')"
+                                    onclick="App.showLineDetails('belo-monte', '06')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">06</div>
@@ -486,7 +486,7 @@
                                     class="map-line grid-item"
                                     data-linha="07"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '07')"
+                                    onclick="App.showLineDetails('belo-monte', '07')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">07</div>
@@ -495,7 +495,7 @@
                                     class="map-line grid-item"
                                     data-linha="08"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '08')"
+                                    onclick="App.showLineDetails('belo-monte', '08')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">08</div>
@@ -504,7 +504,7 @@
                                     class="map-line grid-item"
                                     data-linha="09"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '09')"
+                                    onclick="App.showLineDetails('belo-monte', '09')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">09</div>
@@ -517,7 +517,7 @@
                                     class="map-line grid-item"
                                     data-linha="10"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '10')"
+                                    onclick="App.showLineDetails('belo-monte', '10')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">10</div>
@@ -526,7 +526,7 @@
                                     class="map-line grid-item"
                                     data-linha="11"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '11')"
+                                    onclick="App.showLineDetails('belo-monte', '11')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">11</div>
@@ -535,7 +535,7 @@
                                     class="map-line grid-item"
                                     data-linha="12"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '12')"
+                                    onclick="App.showLineDetails('belo-monte', '12')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">12</div>
@@ -544,7 +544,7 @@
                                     class="map-line grid-item"
                                     data-linha="13"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '13')"
+                                    onclick="App.showLineDetails('belo-monte', '13')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">13</div>
@@ -553,7 +553,7 @@
                                     class="map-line grid-item"
                                     data-linha="14"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '14')"
+                                    onclick="App.showLineDetails('belo-monte', '14')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">14</div>
@@ -562,7 +562,7 @@
                                     class="map-line grid-item"
                                     data-linha="15"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '15')"
+                                    onclick="App.showLineDetails('belo-monte', '15')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">15</div>
@@ -571,7 +571,7 @@
                                     class="map-line grid-item"
                                     data-linha="16"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '16')"
+                                    onclick="App.showLineDetails('belo-monte', '16')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">16</div>
@@ -580,7 +580,7 @@
                                     class="map-line grid-item"
                                     data-linha="17"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '17')"
+                                    onclick="App.showLineDetails('belo-monte', '17')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">17</div>
@@ -589,7 +589,7 @@
                                     class="map-line grid-item"
                                     data-linha="18"
                                     data-usina="belo-monte"
-                                    onclick="showLineDetails('belo-monte', '18')"
+                                    onclick="App.showLineDetails('belo-monte', '18')"
                                 >
                                     <div class="line-bar horizontal small"></div>
                                     <div class="line-label">18</div>
@@ -601,7 +601,7 @@
                                 class="transversal-group bm-transversal-01-10"
                                 data-grupo="20-25"
                                 data-usina="belo-monte"
-                                onclick="showTransversalDetails('belo-monte', '20-25')"
+                                onclick="App.showTransversalDetails('belo-monte', '20-25')"
                             >
                                 <div class="transversal-line-mini" data-linha="20"></div>
                                 <div class="transversal-line-mini" data-linha="21"></div>
@@ -616,7 +616,7 @@
                                 class="transversal-group bm-transversal-02-11"
                                 data-grupo="26-31"
                                 data-usina="belo-monte"
-                                onclick="showTransversalDetails('belo-monte', '26-31')"
+                                onclick="App.showTransversalDetails('belo-monte', '26-31')"
                             >
                                 <div class="transversal-line-mini" data-linha="26"></div>
                                 <div class="transversal-line-mini" data-linha="27"></div>
@@ -631,7 +631,7 @@
                                 class="transversal-group bm-transversal-03-12"
                                 data-grupo="32-37"
                                 data-usina="belo-monte"
-                                onclick="showTransversalDetails('belo-monte', '32-37')"
+                                onclick="App.showTransversalDetails('belo-monte', '32-37')"
                             >
                                 <div class="transversal-line-mini" data-linha="32"></div>
                                 <div class="transversal-line-mini" data-linha="33"></div>
@@ -646,7 +646,7 @@
                                 class="transversal-group bm-transversal-04-13"
                                 data-grupo="38-43"
                                 data-usina="belo-monte"
-                                onclick="showTransversalDetails('belo-monte', '38-43')"
+                                onclick="App.showTransversalDetails('belo-monte', '38-43')"
                             >
                                 <div class="transversal-line-mini" data-linha="38"></div>
                                 <div class="transversal-line-mini" data-linha="39"></div>
@@ -661,7 +661,7 @@
                                 class="transversal-group bm-transversal-05-14"
                                 data-grupo="44-49"
                                 data-usina="belo-monte"
-                                onclick="showTransversalDetails('belo-monte', '44-49')"
+                                onclick="App.showTransversalDetails('belo-monte', '44-49')"
                             >
                                 <div class="transversal-line-mini" data-linha="44"></div>
                                 <div class="transversal-line-mini" data-linha="45"></div>
@@ -676,7 +676,7 @@
                                 class="transversal-group bm-transversal-06-15"
                                 data-grupo="50-55"
                                 data-usina="belo-monte"
-                                onclick="showTransversalDetails('belo-monte', '50-55')"
+                                onclick="App.showTransversalDetails('belo-monte', '50-55')"
                             >
                                 <div class="transversal-line-mini" data-linha="50"></div>
                                 <div class="transversal-line-mini" data-linha="51"></div>
@@ -691,7 +691,7 @@
                                 class="transversal-group bm-transversal-07-16"
                                 data-grupo="56-61"
                                 data-usina="belo-monte"
-                                onclick="showTransversalDetails('belo-monte', '56-61')"
+                                onclick="App.showTransversalDetails('belo-monte', '56-61')"
                             >
                                 <div class="transversal-line-mini" data-linha="56"></div>
                                 <div class="transversal-line-mini" data-linha="57"></div>
@@ -706,7 +706,7 @@
                                 class="transversal-group bm-transversal-08-17"
                                 data-grupo="62-67"
                                 data-usina="belo-monte"
-                                onclick="showTransversalDetails('belo-monte', '62-67')"
+                                onclick="App.showTransversalDetails('belo-monte', '62-67')"
                             >
                                 <div class="transversal-line-mini" data-linha="62"></div>
                                 <div class="transversal-line-mini" data-linha="63"></div>
@@ -721,7 +721,7 @@
                                 class="transversal-group bm-transversal-09-18"
                                 data-grupo="68-70"
                                 data-usina="belo-monte"
-                                onclick="showTransversalDetails('belo-monte', '68-70')"
+                                onclick="App.showTransversalDetails('belo-monte', '68-70')"
                             >
                                 <div class="transversal-line-mini" data-linha="68"></div>
                                 <div class="transversal-line-mini" data-linha="69"></div>
@@ -739,7 +739,7 @@
                                 class="map-line oficina-vertical oficina-left"
                                 data-linha="72"
                                 data-usina="oficina"
-                                onclick="showLineDetails('oficina', '72')"
+                                onclick="App.showLineDetails('oficina', '72')"
                             >
                                 <div class="line-bar vertical oficina-72"></div>
                                 <div class="line-label">72</div>
@@ -750,7 +750,7 @@
                                 class="map-line oficina-vertical oficina-right"
                                 data-linha="74"
                                 data-usina="oficina"
-                                onclick="showLineDetails('oficina', '74')"
+                                onclick="App.showLineDetails('oficina', '74')"
                             >
                                 <div class="line-bar vertical oficina-74"></div>
                                 <div class="line-label">74</div>
@@ -761,7 +761,7 @@
                                 class="map-line oficina-73"
                                 data-linha="73"
                                 data-usina="oficina"
-                                onclick="showLineDetails('oficina', '73')"
+                                onclick="App.showLineDetails('oficina', '73')"
                             >
                                 <div class="line-bar horizontal oficina-73-bar"></div>
                                 <div class="line-label">73</div>
@@ -815,7 +815,7 @@
                                     <button
                                         id="btnActivePimental"
                                         class="btn-usina-wide"
-                                        onclick="setActiveUsina('pimental')"
+                                        onclick="App.setActiveUsina('pimental')"
                                     >
                                         <div class="btn-icon"><i class="fas fa-industry"></i></div>
                                         <div class="btn-content">
@@ -827,7 +827,7 @@
                                     <button
                                         id="btnActiveBelo"
                                         class="btn-usina-wide"
-                                        onclick="setActiveUsina('belo-monte')"
+                                        onclick="App.setActiveUsina('belo-monte')"
                                     >
                                         <div class="btn-icon"><i class="fas fa-industry"></i></div>
                                         <div class="btn-content">
@@ -841,7 +841,7 @@
                                     <button
                                         id="btnActiveOficina"
                                         class="btn-usina-wide"
-                                        onclick="setActiveUsina('oficina')"
+                                        onclick="App.setActiveUsina('oficina')"
                                     >
                                         <div class="btn-icon"><i class="fas fa-tools"></i></div>
                                         <div class="btn-content">
@@ -857,7 +857,7 @@
                                 </div>
                                 <div style="margin-top: 15px; text-align: center">
                                     <button
-                                        onclick="forceSaveActiveUsina()"
+                                        onclick="App.forceSaveActiveUsina()"
                                         style="
                                             background: var(--primary-blue);
                                             color: white;
@@ -938,7 +938,7 @@
                                 type="button"
                                 class="btn btn-primary btn-small"
                                 data-online-only="true"
-                                onclick="enableTableEdit('pimental')"
+                                onclick="App.enableTableEdit('pimental')"
                             >
                                 <i class="fas fa-edit"></i> Editar Etapas
                             </button>
@@ -947,14 +947,14 @@
                             <button
                                 type="button"
                                 class="btn btn-primary btn-small"
-                                onclick="saveTableEdit('pimental')"
+                                onclick="App.saveTableEdit('pimental')"
                             >
                                 <i class="fas fa-save"></i> Salvar
                             </button>
                             <button
                                 type="button"
                                 class="btn btn-secondary btn-small"
-                                onclick="cancelTableEdit('pimental')"
+                                onclick="App.cancelTableEdit('pimental')"
                             >
                                 Cancelar
                             </button>
@@ -1045,7 +1045,7 @@
                                 type="button"
                                 class="btn btn-primary btn-small"
                                 data-online-only="true"
-                                onclick="enableTableEdit('belo-monte')"
+                                onclick="App.enableTableEdit('belo-monte')"
                             >
                                 <i class="fas fa-edit"></i> Editar Etapas
                             </button>
@@ -1054,14 +1054,14 @@
                             <button
                                 type="button"
                                 class="btn btn-primary btn-small"
-                                onclick="saveTableEdit('belo-monte')"
+                                onclick="App.saveTableEdit('belo-monte')"
                             >
                                 <i class="fas fa-save"></i> Salvar
                             </button>
                             <button
                                 type="button"
                                 class="btn btn-secondary btn-small"
-                                onclick="cancelTableEdit('belo-monte')"
+                                onclick="App.cancelTableEdit('belo-monte')"
                             >
                                 Cancelar
                             </button>
@@ -1150,7 +1150,7 @@
                                 type="button"
                                 class="btn btn-primary btn-small"
                                 data-online-only="true"
-                                onclick="enableTableEdit('oficina')"
+                                onclick="App.enableTableEdit('oficina')"
                             >
                                 <i class="fas fa-edit"></i> Editar Etapas
                             </button>
@@ -1159,14 +1159,14 @@
                             <button
                                 type="button"
                                 class="btn btn-primary btn-small"
-                                onclick="saveTableEdit('oficina')"
+                                onclick="App.saveTableEdit('oficina')"
                             >
                                 <i class="fas fa-save"></i> Salvar
                             </button>
                             <button
                                 type="button"
                                 class="btn btn-secondary btn-small"
-                                onclick="cancelTableEdit('oficina')"
+                                onclick="App.cancelTableEdit('oficina')"
                             >
                                 Cancelar
                             </button>
@@ -1214,7 +1214,7 @@
                                 type="button"
                                 class="btn btn-primary btn-small"
                                 data-online-only="true"
-                                onclick="enableBuiltEdit()"
+                                onclick="App.enableBuiltEdit()"
                             >
                                 <i class="fas fa-edit"></i> Editar
                             </button>
@@ -1223,14 +1223,14 @@
                             <button
                                 type="button"
                                 class="btn btn-primary btn-small"
-                                onclick="saveBuiltEdit()"
+                                onclick="App.saveBuiltEdit()"
                             >
                                 <i class="fas fa-save"></i> Salvar
                             </button>
                             <button
                                 type="button"
                                 class="btn btn-secondary btn-small"
-                                onclick="cancelBuiltEdit()"
+                                onclick="App.cancelBuiltEdit()"
                             >
                                 Cancelar
                             </button>
@@ -1296,7 +1296,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 class="modal-title">Atualizar Progresso</h2>
-                    <button class="close-btn" onclick="closeModal()">&times;</button>
+                    <button class="close-btn" onclick="App.closeModal()">&times;</button>
                 </div>
                 <form id="updateForm">
                     <div class="form-group">
@@ -1340,7 +1340,7 @@
                                 <input
                                     type="checkbox"
                                     id="selectAllBases"
-                                    onchange="toggleAllBases(this)"
+                                    onchange="App.toggleAllBases(this)"
                                 />
                                 <i class="fas fa-check-double"></i> Selecionar todas as bases da
                                 linha
@@ -1358,7 +1358,7 @@
                                 <input
                                     type="checkbox"
                                     id="selectAllRemoveBases"
-                                    onchange="toggleAllRemoveBases(this)"
+                                    onchange="App.toggleAllRemoveBases(this)"
                                 />
                                 <i class="fas fa-check-double"></i> Selecionar todas as bases
                                 concluídas
@@ -1375,7 +1375,7 @@
                             margin-top: 30px;
                         "
                     >
-                        <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                        <button type="button" class="btn btn-secondary" onclick="App.closeModal()">
                             Cancelar
                         </button>
                         <button type="submit" class="btn btn-primary">
@@ -1387,11 +1387,11 @@
         </div>
 
         <!-- Password Modal -->
-        <div id="passwordModal" class="modal password-modal" onclick="closePasswordModal()">
+        <div id="passwordModal" class="modal password-modal" onclick="App.closePasswordModal()">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <div class="modal-header">
                     <h2 class="modal-title">🔒 Autorização Necessária</h2>
-                    <button class="close-btn" onclick="closePasswordModal()">&times;</button>
+                    <button class="close-btn" onclick="App.closePasswordModal()">&times;</button>
                 </div>
                 <div>
                     <p>Para realizar modificações no projeto, digite a senha:</p>
@@ -1411,11 +1411,11 @@
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            onclick="closePasswordModal()"
+                            onclick="App.closePasswordModal()"
                         >
                             Cancelar
                         </button>
-                        <button type="button" class="btn btn-primary" onclick="checkPassword()">
+                        <button type="button" class="btn btn-primary" onclick="App.checkPassword()">
                             <i class="fas fa-unlock"></i> Confirmar
                         </button>
                     </div>
@@ -1428,7 +1428,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 class="modal-title">📝 Observação da Linha</h2>
-                    <button class="close-btn" onclick="closeObservationModal()">&times;</button>
+                    <button class="close-btn" onclick="App.closeObservationModal()">&times;</button>
                 </div>
                 <div>
                     <div class="form-group">
@@ -1476,11 +1476,11 @@
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            onclick="closeObservationModal()"
+                            onclick="App.closeObservationModal()"
                         >
                             Cancelar
                         </button>
-                        <button type="button" class="btn btn-primary" onclick="saveObservation()">
+                        <button type="button" class="btn btn-primary" onclick="App.saveObservation()">
                             <i class="fas fa-save"></i> Salvar Observação
                         </button>
                     </div>
@@ -1493,7 +1493,7 @@
             <div class="modal-content" style="max-width: 800px">
                 <div class="modal-header">
                     <h2 class="modal-title">🕒 Histórico de Versões</h2>
-                    <button class="close-btn" onclick="closeVersionHistoryModal()">&times;</button>
+                    <button class="close-btn" onclick="App.closeVersionHistoryModal()">&times;</button>
                 </div>
                 <div>
                     <p style="color: var(--medium-gray); margin-bottom: 20px">
@@ -1511,7 +1511,7 @@
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            onclick="closeVersionHistoryModal()"
+                            onclick="App.closeVersionHistoryModal()"
                         >
                             Fechar
                         </button>
@@ -1525,7 +1525,7 @@
             <div class="modal-content transversal-modal-content">
                 <div class="modal-header">
                     <h2 class="modal-title">🔍 Detalhamento da Linha</h2>
-                    <button class="close-btn" onclick="closeLineDetailsModal()">&times;</button>
+                    <button class="close-btn" onclick="App.closeLineDetailsModal()">&times;</button>
                 </div>
                 <div>
                     <div class="form-group">
@@ -1554,14 +1554,14 @@
                         <button
                             type="button"
                             class="btn btn-primary"
-                            onclick="enableLineDetailsEdit()"
+                            onclick="App.enableLineDetailsEdit()"
                         >
                             <i class="fas fa-edit"></i> Editar
                         </button>
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            onclick="closeLineDetailsModal()"
+                            onclick="App.closeLineDetailsModal()"
                         >
                             Fechar
                         </button>
@@ -1573,14 +1573,14 @@
                         <button
                             type="button"
                             class="btn btn-primary"
-                            onclick="saveLineDetailsEdit()"
+                            onclick="App.saveLineDetailsEdit()"
                         >
                             <i class="fas fa-save"></i> Salvar
                         </button>
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            onclick="cancelLineDetailsEdit()"
+                            onclick="App.cancelLineDetailsEdit()"
                         >
                             Cancelar
                         </button>
@@ -1594,7 +1594,7 @@
             <div class="modal-content transversal-modal-content">
                 <div class="modal-header">
                     <h2 class="modal-title">🔍 Detalhamento de Linhas Transversais</h2>
-                    <button class="close-btn" onclick="closeTransversalModal()">&times;</button>
+                    <button class="close-btn" onclick="App.closeTransversalModal()">&times;</button>
                 </div>
                 <div>
                     <div class="form-group">
@@ -1636,14 +1636,14 @@
                             type="button"
                             class="btn btn-primary"
                             data-online-only="true"
-                            onclick="enableTransversalEdit()"
+                            onclick="App.enableTransversalEdit()"
                         >
                             <i class="fas fa-edit"></i> Editar
                         </button>
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            onclick="closeTransversalModal()"
+                            onclick="App.closeTransversalModal()"
                         >
                             Fechar
                         </button>
@@ -1655,14 +1655,14 @@
                         <button
                             type="button"
                             class="btn btn-primary"
-                            onclick="saveTransversalEdit()"
+                            onclick="App.saveTransversalEdit()"
                         >
                             <i class="fas fa-save"></i> Salvar
                         </button>
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            onclick="cancelTransversalEdit()"
+                            onclick="App.cancelTransversalEdit()"
                         >
                             Cancelar
                         </button>
