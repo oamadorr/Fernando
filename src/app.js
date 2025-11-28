@@ -3194,36 +3194,26 @@ function clearAllProgress() {
         "ATENÇÃO: Esta ação irá apagar TODO o progresso de ambas as usinas.\n\nTem certeza que deseja continuar?\n\nEsta ação não pode ser desfeita.";
 
     if (confirm(confirmMessage)) {
-        // Resetar progressData para valores zerados
-        progressData = {
-            pimental: {
-                A: 0,
-                B: 0,
-                C: 0,
-                D: 0,
-                E: 0,
-                F: 0,
-                G: 0,
-                H: 0,
-                J: 0,
-                K: 0,
-            },
-            "belo-monte": {
-                A: 0,
-                B: 0,
-                C: 0,
-                D: 0,
-                E: 0,
-                F: 0,
-                G: 0,
-                H: 0,
-                J: 0,
-                K: 0,
-            },
-        };
+        // Resetar todas as estruturas para o estado inicial
+        progressData = sanitizeProgressData({});
+        lineStepsStatus = ensureLineStepsStructure({}, progressData);
+        executionDates = {};
+        lineObservations = ensureUsinaBuckets({});
+        builtInformations = sanitizeBuiltInformations({}, projectData);
+        manualActiveUsina = null;
+        localStorage.removeItem("manualActiveUsina");
 
-        saveProgressToStorage();
-        saveProjectData(); // Salvar no Firebase também
+        // Persistir limpezas no cache local
+        saveProgressToStorage(true);
+        saveLineStepsToStorage(true);
+        saveBuiltToStorage(true);
+        localStorage.removeItem("linhasVidaObservations");
+        localStorage.removeItem("linhasVidaExecutionDates");
+        localStorage.setItem("linhasVidaLastUpdate", new Date().toISOString());
+
+        // Salvar no Firebase também
+        saveProjectData();
+
         updateAllDisplays();
 
         showToast("Todo o progresso foi limpo com sucesso!", "success");
