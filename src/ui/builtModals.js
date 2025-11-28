@@ -293,6 +293,12 @@ export function createBuiltHandlers({
         ],
     };
 
+    const maxColsByUsina = {
+        "belo-monte": 13,
+        pimental: 13,
+        oficina: 8,
+    };
+
     function renderBuiltTable(usinaKey) {
         const projectData = getProjectData();
         const builtInformations = getBuiltInformations();
@@ -364,7 +370,7 @@ export function createBuiltHandlers({
                     `;
             });
 
-            const maxCols = 13;
+            const maxCols = maxColsByUsina[usinaKey] || pairKeys.length;
             const currentCols = pairKeys.length;
             for (let i = currentCols; i < maxCols; i++) {
                 rowHTML += `<td class="empty-cell"></td>`;
