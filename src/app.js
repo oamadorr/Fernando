@@ -4509,9 +4509,8 @@ const exportedFunctions = {
     exportToExcel,
 };
 
-// Encapsular handlers públicos em um único namespace para uso futuro (mantém globais atuais)
+// Encapsular handlers públicos em um único namespace
 window.App = Object.freeze({ ...exportedFunctions });
-Object.assign(window, exportedFunctions);
 
 // Inicializar aplicação quando a página carregar
 window.addEventListener("load", function () {

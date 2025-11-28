@@ -1,9 +1,9 @@
-// Carrega o app e expõe as funções registradas no window
+// Carrega o app e expõe as funções registradas no window.App
 import "./app.js";
 
 // Initialize on load
 window.addEventListener("load", () => {
-    if (typeof window.updateAllDisplays === "function") {
-        window.updateAllDisplays();
+    if (window.App && typeof window.App.updateAllDisplays === "function") {
+        window.App.updateAllDisplays();
     }
 });
