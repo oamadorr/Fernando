@@ -1,11 +1,8 @@
-const path = require("path");
 const { test, expect } = require("@playwright/test");
-
-const fileUrl = "file://" + path.resolve(__dirname, "../index.html");
 
 test.describe("Namespace App", () => {
     test("expõe handlers essenciais e abre modal de atualização", async ({ page }) => {
-        await page.goto(fileUrl, { waitUntil: "domcontentloaded" });
+        await page.goto("/index.html", { waitUntil: "domcontentloaded" });
 
         // Esperar carregamento inicial
         await page.waitForFunction(() => {

@@ -1,12 +1,9 @@
-const path = require("path");
 const fs = require("fs");
 const { test, expect } = require("@playwright/test");
 
-const fileUrl = "file://" + path.resolve(__dirname, "../index.html");
-
 test.describe("Backup UI", () => {
     test("gera backup JSON com todos os campos críticos", async ({ page, context }) => {
-        await page.goto(fileUrl, { waitUntil: "domcontentloaded" });
+        await page.goto("/index.html", { waitUntil: "domcontentloaded" });
 
         // Esperar carregamento inicial
         await page.waitForFunction(() => {

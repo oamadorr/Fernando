@@ -1,7 +1,4 @@
-const path = require("path");
 const { test, expect } = require("@playwright/test");
-
-const fileUrl = "file://" + path.resolve(__dirname, "../index.html");
 
 const overflownProgress = {
     pimental: {
@@ -46,7 +43,7 @@ test.describe("Sanitização de progresso", () => {
             { progress: overflownProgress }
         );
 
-        await page.goto(fileUrl, { waitUntil: "domcontentloaded" });
+        await page.goto("/index.html", { waitUntil: "domcontentloaded" });
 
         await page.waitForFunction(() => {
             const overlay = document.getElementById("loadingOverlay");
