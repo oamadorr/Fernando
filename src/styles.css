@@ -2361,6 +2361,74 @@ body {
     border: 1px solid var(--border-gray);
 }
 
+.confirm-modal .modal-content {
+    max-width: 540px;
+    padding: 22px;
+    border-radius: 18px;
+    box-shadow: 0 28px 60px -20px rgba(0, 0, 0, 0.35);
+    background: #111827;
+    color: #f9fafb;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.confirm-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+}
+
+.confirm-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.confirm-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(250, 204, 21, 0.14);
+    color: #fbbf24;
+    display: grid;
+    place-items: center;
+    font-size: 1.3rem;
+    box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.2);
+}
+
+.confirm-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    font-size: 0.68rem;
+    color: #cbd5f5;
+    margin: 0 0 4px 0;
+}
+
+.confirm-subtitle {
+    margin: 4px 0 0 0;
+    color: #e5e7eb;
+    font-size: 0.95rem;
+}
+
+.confirm-text {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px;
+    color: #e5e7eb;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    font-family: "Inter", "Segoe UI", Tahoma, sans-serif;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
 /* Modal de Linhas Transversais */
 .transversal-modal-content {
     max-width: 95%;

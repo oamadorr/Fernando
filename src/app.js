@@ -55,6 +55,7 @@ let allowOnlineEdits = false; // controle central de edição (desliga quando of
 let PROJECT_PASSWORD_HASH = null;
 let isAuthenticated = false;
 let pendingAction = null;
+let pendingImportData = null;
 
 function applyReadOnlyUI(isReadOnly) {
     document.querySelectorAll('[data-online-only="true"]').forEach((el) => {
@@ -3373,7 +3374,6 @@ function importProgressData(event) {
             const hasObservations = Boolean(importData.lineObservations);
             const hasBuiltInfo = Boolean(importData.builtInformations);
 
-            // Confirmar importação
             const camposDetalhados =
                 [
                     hasLineSteps ? "lineStepsStatus" : null,
@@ -3384,7 +3384,6 @@ function importProgressData(event) {
                     .filter(Boolean)
                     .join(", ") || "apenas progressData/teamConfig";
 
-            // Confirmar importação
             const confirmMsg =
                 `Importar backup (v${backupVersion}) de ${new Date(importData.timestamp).toLocaleString("pt-BR")}?\n\n` +
                 `Bases concluídas no backup: ${importData.metadata?.completedBases ?? "N/A"}\n` +
@@ -3392,57 +3391,13 @@ function importProgressData(event) {
                 `Campos disponíveis: ${camposDetalhados}\n\n` +
                 `ATENÇÃO: Isso substituirá os dados locais e salvará no Firebase.`;
 
-            if (!confirm(confirmMsg)) {
-                return;
+            pendingImportData = { importData };
+            const confirmTextEl = document.getElementById("importConfirmText");
+            if (confirmTextEl) {
+                confirmTextEl.textContent = confirmMsg;
             }
-
-            // Aplicar dados importados
-            const sanitizedProgress = sanitizeProgressData(importData.progressData);
-            progressData = sanitizedProgress;
-
-            // Atualizar lineStepsStatus se estiver no backup
-            lineStepsStatus = ensureLineStepsStructure(
-                hasLineSteps ? importData.lineStepsStatus : lineStepsStatus,
-                sanitizedProgress
-            );
-
-            // Atualizar datas de execução se disponíveis
-            if (hasExecutionDates) {
-                executionDates = sanitizeExecutionDates(importData.executionDates);
-            }
-
-            // Atualizar observações e built se disponíveis
-            lineObservations = ensureUsinaBuckets(
-                hasObservations ? importData.lineObservations : lineObservations
-            );
-            builtInformations = hasBuiltInfo
-                ? sanitizeBuiltInformations(importData.builtInformations, projectData)
-                : sanitizeBuiltInformations(builtInformations, projectData);
-
-            // Carregar usina ativa se existir no backup
-            if (importData.manualActiveUsina) {
-                manualActiveUsina = importData.manualActiveUsina;
-                localStorage.setItem("manualActiveUsina", manualActiveUsina);
-            }
-
-            // Atualizar teamConfig se disponível
-            if (importData.teamConfig) {
-                // Manter datas atuais, mas permitir outras configurações
-                const currentDate = teamConfig.dataAtual;
-                Object.assign(teamConfig, importData.teamConfig);
-                teamConfig.dataAtual = currentDate;
-            }
-
-            // Salvar no localStorage
-            saveProgressToStorage();
-
-            // Salvar no Firebase também
-            saveProjectData();
-
-            // Atualizar interface
-            updateAllDisplays();
-
-            showToast("Dados importados com sucesso!", "success");
+            const modal = document.getElementById("importConfirmModal");
+            if (modal) modal.style.display = "block";
         } catch (error) {
             console.error("Erro ao importar dados:", error);
             showToast("Erro ao importar arquivo. Verifique se é um backup válido.", "error");
@@ -3453,6 +3408,80 @@ function importProgressData(event) {
 
     // Limpar input para permitir reimportação do mesmo arquivo
     event.target.value = "";
+}
+
+function cancelImportConfirm() {
+    const modal = document.getElementById("importConfirmModal");
+    if (modal) modal.style.display = "none";
+    pendingImportData = null;
+}
+
+function confirmImportData() {
+    if (!pendingImportData || !pendingImportData.importData) {
+        cancelImportConfirm();
+        return;
+    }
+
+    try {
+        const importData = pendingImportData.importData;
+
+        const backupVersion = importData.version || "1.0";
+        const hasLineSteps = Boolean(importData.lineStepsStatus);
+        const hasExecutionDates = Boolean(importData.executionDates);
+        const hasObservations = Boolean(importData.lineObservations);
+        const hasBuiltInfo = Boolean(importData.builtInformations);
+
+        const sanitizedProgress = sanitizeProgressData(importData.progressData);
+        progressData = sanitizedProgress;
+
+        // Atualizar lineStepsStatus se estiver no backup
+        lineStepsStatus = ensureLineStepsStructure(
+            hasLineSteps ? importData.lineStepsStatus : lineStepsStatus,
+            sanitizedProgress
+        );
+
+        // Atualizar datas de execução se disponíveis
+        if (hasExecutionDates) {
+            executionDates = sanitizeExecutionDates(importData.executionDates);
+        }
+
+        // Atualizar observações e built se disponíveis
+        lineObservations = ensureUsinaBuckets(
+            hasObservations ? importData.lineObservations : lineObservations
+        );
+        builtInformations = hasBuiltInfo
+            ? sanitizeBuiltInformations(importData.builtInformations, projectData)
+            : sanitizeBuiltInformations(builtInformations, projectData);
+
+        // Carregar usina ativa se existir no backup
+        if (importData.manualActiveUsina) {
+            manualActiveUsina = importData.manualActiveUsina;
+            localStorage.setItem("manualActiveUsina", manualActiveUsina);
+        }
+
+        // Atualizar teamConfig se disponível
+        if (importData.teamConfig) {
+            const currentDate = teamConfig.dataAtual;
+            Object.assign(teamConfig, importData.teamConfig);
+            teamConfig.dataAtual = currentDate;
+        }
+
+        // Salvar no localStorage
+        saveProgressToStorage();
+
+        // Salvar no Firebase também
+        saveProjectData();
+
+        // Atualizar interface
+        updateAllDisplays();
+
+        showToast(`Backup v${backupVersion} importado com sucesso!`, "success");
+    } catch (error) {
+        console.error("Erro ao confirmar importação:", error);
+        showToast("Erro ao importar arquivo. Verifique se é um backup válido.", "error");
+    } finally {
+        cancelImportConfirm();
+    }
 }
 
 // Função para criar snapshot manual da versão atual
@@ -4621,6 +4650,8 @@ const exportedFunctions = {
     closeVersionHistoryModal,
     exportProgressData,
     importProgressData,
+    confirmImportData,
+    cancelImportConfirm,
     forceRestoreFromFirebase,
     restoreVersion,
     exportToPDF,

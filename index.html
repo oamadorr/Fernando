@@ -1476,6 +1476,36 @@
             </div>
         </div>
 
+        <!-- Import Confirm Modal -->
+        <div id="importConfirmModal" class="modal confirm-modal" onclick="App.cancelImportConfirm()">
+            <div class="modal-content confirm-card" onclick="event.stopPropagation()">
+                <button class="close-btn close-btn-ghost" onclick="App.cancelImportConfirm()">
+                    &times;
+                </button>
+                <div class="confirm-header">
+                    <div class="confirm-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div>
+                        <p class="confirm-eyebrow">Importar Backup</p>
+                        <h2 class="modal-title" style="margin: 0">Confirme a importação</h2>
+                        <p class="confirm-subtitle">
+                            O backup substituirá os dados locais e salvará no Firebase.
+                        </p>
+                    </div>
+                </div>
+                <pre id="importConfirmText" class="confirm-text"></pre>
+                <div class="confirm-actions">
+                    <button type="button" class="btn btn-secondary" onclick="App.cancelImportConfirm()">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="App.confirmImportData()">
+                        <i class="fas fa-check"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal para observações -->
         <div id="observationModal" class="modal">
             <div class="modal-content">
