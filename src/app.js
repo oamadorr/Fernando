@@ -3643,45 +3643,46 @@ async function showVersionHistoryModal() {
             const progress = totalItems > 0 ? ((completedItems / totalItems) * 100).toFixed(1) : 0;
 
             const versionCard = document.createElement("div");
-            versionCard.style.cssText = `
-                        border: 2px solid var(--border-gray);
-                        border-radius: 8px;
-                        padding: 15px;
-                        margin-bottom: 10px;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        background-color: ${index === 0 ? "var(--light-blue)" : "white"};
-                    `;
-            versionCard.onmouseover = () => {
-                versionCard.style.borderColor = "var(--primary-blue)";
-                versionCard.style.backgroundColor = "var(--light-blue)";
-            };
-            versionCard.onmouseout = () => {
-                versionCard.style.borderColor = "var(--border-gray)";
-                versionCard.style.backgroundColor = index === 0 ? "var(--light-blue)" : "white";
+            versionCard.classList.add("version-item");
+            if (index === 0) versionCard.classList.add("version-item--latest");
+
+            const header = document.createElement("div");
+            header.classList.add("version-item-header");
+
+            const title = document.createElement("div");
+            title.classList.add("version-item-title");
+            title.textContent = index === 0 ? "🌟 Versão Mais Recente" : `📦 Versão ${index + 1}`;
+
+            const dateMeta = document.createElement("div");
+            dateMeta.classList.add("version-item-meta");
+            dateMeta.textContent = `📅 ${formattedDate}`;
+
+            const statsMeta = document.createElement("div");
+            statsMeta.classList.add("version-item-meta");
+            statsMeta.textContent = `📊 ${progress}% • ✅ ${completedBases}/${totalBases} bases • 🔧 ${completedCableSteps}/${totalCableSteps} etapas`;
+
+            const info = document.createElement("div");
+            info.classList.add("version-item-info");
+            info.appendChild(title);
+            info.appendChild(dateMeta);
+            info.appendChild(statsMeta);
+
+            const restoreBtn = document.createElement("button");
+            restoreBtn.className = "btn btn-primary btn-small";
+            restoreBtn.innerHTML = `<i class="fas fa-undo"></i> Restaurar`;
+            restoreBtn.onclick = (e) => {
+                e.stopPropagation();
+                restoreVersion(doc.id, data, formattedDate);
             };
 
-            versionCard.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: bold; color: var(--primary-blue); margin-bottom: 5px;">
-                                    ${index === 0 ? "🌟 Versão Mais Recente" : `📦 Versão ${index + 1}`}
-                                </div>
-                                <div style="color: var(--medium-gray); font-size: 0.9rem;">
-                                    📅 ${formattedDate}
-                                </div>
-                                <div style="color: var(--dark-gray); font-size: 0.9rem; margin-top: 5px;">
-                                    📊 Progresso: ${progress}%
-                                </div>
-                                <div style="color: var(--medium-gray); font-size: 0.85rem; margin-top: 3px;">
-                                    • ${completedBases}/${totalBases} bases • ${completedCableSteps}/${totalCableSteps} etapas
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" onclick="App.restoreVersion('${doc.id}'); event.stopPropagation();">
-                                <i class="fas fa-undo"></i> Restaurar
-                            </button>
-                        </div>
-                    `;
+            const actions = document.createElement("div");
+            actions.classList.add("version-item-actions");
+            actions.appendChild(restoreBtn);
+
+            header.appendChild(info);
+            header.appendChild(actions);
+
+            versionCard.appendChild(header);
 
             versionList.appendChild(versionCard);
         });
