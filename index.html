@@ -1301,7 +1301,7 @@
                 <form id="updateForm">
                     <div class="form-group">
                         <label class="form-label" for="usinaSelect">Usina:</label>
-                        <select id="usinaSelect" class="form-select" onchange="loadLinhas()">
+                        <select id="usinaSelect" class="form-select" onchange="App.loadLinhas()">
                             <option value="">Selecione uma usina</option>
                             <option value="pimental">Pimental</option>
                             <option value="belo-monte">Belo Monte</option>
@@ -1314,7 +1314,7 @@
                         <select
                             id="linhaSelect"
                             class="form-select"
-                            onchange="loadBases()"
+                            onchange="App.loadBases()"
                             disabled
                         >
                             <option value="">Selecione uma linha</option>
