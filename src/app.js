@@ -3343,11 +3343,6 @@ function importProgressData(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (file.type !== "application/json") {
-        showToast("Por favor, selecione um arquivo JSON válido.", "error");
-        return;
-    }
-
     const reader = new FileReader();
     reader.onload = function (e) {
         try {
@@ -3406,9 +3401,9 @@ function importProgressData(event) {
             lineObservations = ensureUsinaBuckets(
                 hasObservations ? importData.lineObservations : lineObservations
             );
-            builtInformations = ensureUsinaBuckets(
-                hasBuiltInfo ? importData.builtInformations : builtInformations
-            );
+            builtInformations = hasBuiltInfo
+                ? sanitizeBuiltInformations(importData.builtInformations, projectData)
+                : sanitizeBuiltInformations(builtInformations, projectData);
 
             // Carregar usina ativa se existir no backup
             if (importData.manualActiveUsina) {
