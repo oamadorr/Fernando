@@ -2846,6 +2846,49 @@ async function saveTableEdit(usinaKey) {
 
 // ========== FUNÇÕES PARA BUILT INFORMATION ==========
 
+function getBuiltPairCount(usinaKey, linhaKey) {
+    const linha = String(linhaKey);
+
+    if (usinaKey === "pimental") {
+        if (linha === "01" || linha === "03") return 12;
+        if (linha === "02" || linha === "04") return 13;
+        return 2; // transversais 05-18
+    }
+
+    if (usinaKey === "belo-monte") {
+        if (linha === "01" || linha === "10") return 11;
+        if (
+            [
+                "02",
+                "03",
+                "04",
+                "05",
+                "06",
+                "07",
+                "08",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+            ].includes(linha)
+        ) {
+            return 12;
+        }
+        if (linha === "09" || linha === "18") return 7;
+        return 4; // transversais 19-71
+    }
+
+    if (usinaKey === "oficina") {
+        if (linha === "73") return 7;
+        return 1; // 72 e 74
+    }
+
+    return 1;
+}
+
 /**
  * Inicializa dados de Built vazios baseado em projectData
  */
@@ -2860,42 +2903,7 @@ function initializeBuiltData() {
             builtInformations[usinaKey][linhaKey] = {};
 
             // Determinar número de pares para esta linha
-            let pairCount = 1;
-            if (usinaKey === "pimental") {
-                if (linhaKey === "01" || linhaKey === "03") pairCount = 11;
-                else if (linhaKey === "02" || linhaKey === "04") pairCount = 12;
-                else pairCount = 1;
-            } else if (usinaKey === "belo-monte") {
-                if (
-                    [
-                        "01",
-                        "02",
-                        "03",
-                        "04",
-                        "05",
-                        "06",
-                        "07",
-                        "08",
-                        "10",
-                        "11",
-                        "12",
-                        "13",
-                        "14",
-                        "15",
-                        "16",
-                        "17",
-                    ].includes(linhaKey)
-                ) {
-                    pairCount = 11;
-                } else if (["09", "18"].includes(linhaKey)) {
-                    pairCount = 7;
-                } else {
-                    pairCount = 4;
-                }
-            } else if (usinaKey === "oficina") {
-                if (linhaKey === "72" || linhaKey === "74") pairCount = 1;
-                else if (linhaKey === "73") pairCount = 7;
-            }
+            const pairCount = getBuiltPairCount(usinaKey, linhaKey);
 
             for (let i = 1; i <= pairCount; i++) {
                 const pairKey = `${String(i).padStart(2, "0")}-${String(i + 1).padStart(2, "0")}`;
@@ -2954,42 +2962,7 @@ function sanitizeBuiltData(raw) {
         const linhas = projectData[usinaKey].linhas;
         for (const linhaKey of Object.keys(linhas)) {
             // Determinar número de pares para esta linha
-            let pairCount = 1;
-            if (usinaKey === "pimental") {
-                if (linhaKey === "01" || linhaKey === "03") pairCount = 11;
-                else if (linhaKey === "02" || linhaKey === "04") pairCount = 12;
-                else pairCount = 1;
-            } else if (usinaKey === "belo-monte") {
-                if (
-                    [
-                        "01",
-                        "02",
-                        "03",
-                        "04",
-                        "05",
-                        "06",
-                        "07",
-                        "08",
-                        "10",
-                        "11",
-                        "12",
-                        "13",
-                        "14",
-                        "15",
-                        "16",
-                        "17",
-                    ].includes(linhaKey)
-                ) {
-                    pairCount = 11;
-                } else if (["09", "18"].includes(linhaKey)) {
-                    pairCount = 7;
-                } else {
-                    pairCount = 4;
-                }
-            } else if (usinaKey === "oficina") {
-                if (linhaKey === "72" || linhaKey === "74") pairCount = 1;
-                else if (linhaKey === "73") pairCount = 7;
-            }
+            const pairCount = getBuiltPairCount(usinaKey, linhaKey);
 
             sanitized[usinaKey][linhaKey] = {};
             const rawLine = raw?.[usinaKey]?.[linhaKey] || {};
