@@ -56,6 +56,8 @@ let PROJECT_PASSWORD_HASH = null;
 let isAuthenticated = false;
 let pendingAction = null;
 let pendingImportData = null;
+let pendingConfirmAction = null;
+let confirmResolve = null;
 
 function applyReadOnlyUI(isReadOnly) {
     document.querySelectorAll('[data-online-only="true"]').forEach((el) => {
@@ -3215,34 +3217,36 @@ function clearAllProgress() {
         return;
     }
 
-    const confirmMessage =
-        "ATENÇÃO: Esta ação irá apagar TODO o progresso de ambas as usinas.\n\nTem certeza que deseja continuar?\n\nEsta ação não pode ser desfeita.";
+    confirmActionPrompt({
+        title: "Limpar todos os dados?",
+        subtitle: "Esta ação não pode ser desfeita.",
+        message:
+            "ATENÇÃO: Isso apagará progresso, etapas do cabo, datas, observações e Built de todas as usinas. A limpeza também será salva no Firebase.",
+        confirmLabel: "Apagar tudo",
+        cancelLabel: "Cancelar",
+        icon: "🧹",
+        onConfirm: async () => {
+            progressData = sanitizeProgressData({});
+            lineStepsStatus = ensureLineStepsStructure({}, progressData);
+            executionDates = {};
+            lineObservations = ensureUsinaBuckets({});
+            builtInformations = sanitizeBuiltInformations({}, projectData);
+            manualActiveUsina = null;
+            localStorage.removeItem("manualActiveUsina");
 
-    if (confirm(confirmMessage)) {
-        // Resetar todas as estruturas para o estado inicial
-        progressData = sanitizeProgressData({});
-        lineStepsStatus = ensureLineStepsStructure({}, progressData);
-        executionDates = {};
-        lineObservations = ensureUsinaBuckets({});
-        builtInformations = sanitizeBuiltInformations({}, projectData);
-        manualActiveUsina = null;
-        localStorage.removeItem("manualActiveUsina");
+            saveProgressToStorage(true);
+            saveLineStepsToStorage(true);
+            saveBuiltToStorage(true);
+            localStorage.removeItem("linhasVidaObservations");
+            localStorage.removeItem("linhasVidaExecutionDates");
+            localStorage.setItem("linhasVidaLastUpdate", new Date().toISOString());
 
-        // Persistir limpezas no cache local
-        saveProgressToStorage(true);
-        saveLineStepsToStorage(true);
-        saveBuiltToStorage(true);
-        localStorage.removeItem("linhasVidaObservations");
-        localStorage.removeItem("linhasVidaExecutionDates");
-        localStorage.setItem("linhasVidaLastUpdate", new Date().toISOString());
+            await saveProjectData();
+            updateAllDisplays();
 
-        // Salvar no Firebase também
-        saveProjectData();
-
-        updateAllDisplays();
-
-        showToast("Todo o progresso foi limpo com sucesso!", "success");
-    }
+            showToast("Todo o progresso foi limpo com sucesso!", "success");
+        },
+    });
 }
 
 // Funções de backup e restauração de dados
@@ -3414,6 +3418,67 @@ function cancelImportConfirm() {
     const modal = document.getElementById("importConfirmModal");
     if (modal) modal.style.display = "none";
     pendingImportData = null;
+}
+
+function openConfirmActionModal({
+    title = "Confirmar ação",
+    subtitle = "",
+    message = "",
+    confirmLabel = "Confirmar",
+    cancelLabel = "Cancelar",
+    icon = "!",
+    eyebrow = "Confirmação",
+    onConfirm = null,
+}) {
+    pendingConfirmAction = onConfirm;
+    confirmResolve = null;
+
+    const modal = document.getElementById("confirmActionModal");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+    const el = (id) => document.getElementById(id);
+    if (el("confirmActionTitle")) el("confirmActionTitle").textContent = title;
+    if (el("confirmActionSubtitle")) el("confirmActionSubtitle").textContent = subtitle;
+    if (el("confirmActionText")) el("confirmActionText").textContent = message;
+    if (el("confirmActionConfirm"))
+        el("confirmActionConfirm").innerHTML = `<i class="fas fa-check"></i> ${confirmLabel}`;
+    if (el("confirmActionCancel")) el("confirmActionCancel").textContent = cancelLabel;
+    if (el("confirmActionIcon")) el("confirmActionIcon").textContent = icon;
+    if (el("confirmActionEyebrow")) el("confirmActionEyebrow").textContent = eyebrow;
+}
+
+function confirmActionPrompt(options) {
+    return new Promise((resolve) => {
+        confirmResolve = resolve;
+        openConfirmActionModal(options);
+    });
+}
+
+function cancelConfirmAction() {
+    const modal = document.getElementById("confirmActionModal");
+    if (modal) modal.style.display = "none";
+    if (confirmResolve) confirmResolve(false);
+    confirmResolve = null;
+    pendingConfirmAction = null;
+}
+
+async function confirmActionProceed() {
+    try {
+        if (pendingConfirmAction) {
+            await pendingConfirmAction();
+        }
+        if (confirmResolve) confirmResolve(true);
+    } catch (error) {
+        console.error("Erro ao concluir ação confirmada:", error);
+        showToast("Erro ao concluir a ação. Verifique o console.", "error");
+        if (confirmResolve) confirmResolve(false);
+    } finally {
+        const modal = document.getElementById("confirmActionModal");
+        if (modal) modal.style.display = "none";
+        pendingConfirmAction = null;
+        confirmResolve = null;
+    }
 }
 
 function confirmImportData() {
@@ -3632,12 +3697,19 @@ async function showVersionHistoryModal() {
         }
 
         if (snapshot.empty) {
-            // Oferecer criar snapshot da versão atual
-            const createSnapshot = confirm(
-                "Nenhuma versão anterior encontrada no histórico.\n\n" +
+            // Oferecer criar snapshot da versão atual usando modal customizado
+            const createSnapshot = await confirmActionPrompt({
+                title: "Criar primeiro snapshot?",
+                subtitle: "Nenhuma versão anterior encontrada no histórico.",
+                message:
+                    "Nenhuma versão anterior encontrada no histórico.\n\n" +
                     "Deseja criar um snapshot da versão atual agora?\n\n" +
-                    "Isso permitirá que você tenha um ponto de restauração."
-            );
+                    "Isso permitirá que você tenha um ponto de restauração.",
+                confirmLabel: "Criar snapshot",
+                cancelLabel: "Agora não",
+                icon: "💾",
+                eyebrow: "Histórico vazio",
+            });
 
             if (createSnapshot) {
                 await createCurrentSnapshot();
@@ -3793,89 +3865,97 @@ function closeVersionHistoryModal() {
 // Restaurar versão específica
 async function restoreVersion(versionId) {
     if (!requireOnlineEdits()) return;
-    const confirmMessage =
-        "Deseja restaurar esta versão?\n\n" +
-        "ATENÇÃO: Isso irá substituir todos os dados atuais.\n\n" +
-        "Esta ação não pode ser desfeita.";
+    await confirmActionPrompt({
+        title: "Restaurar versão?",
+        subtitle: "Essa ação substituirá todos os dados atuais.",
+        message:
+            "Deseja restaurar esta versão?\n\n" +
+            "ATENÇÃO: Isso irá substituir todos os dados atuais.\n\n" +
+            "Esta ação não pode ser desfeita.",
+        confirmLabel: "Restaurar",
+        cancelLabel: "Cancelar",
+        icon: "⏪",
+        eyebrow: "Histórico de versões",
+        onConfirm: async () => {
+            try {
+                showToast("Restaurando versão...", "info");
 
-    if (!confirm(confirmMessage)) {
-        return;
-    }
+                const versionDoc = await db
+                    .collection("projects")
+                    .doc(currentProjectId)
+                    .collection("history")
+                    .doc(versionId)
+                    .get();
 
-    try {
-        showToast("Restaurando versão...", "info");
+                if (!versionDoc.exists) {
+                    showToast("Versão não encontrada.", "error");
+                    return;
+                }
 
-        const versionDoc = await db
-            .collection("projects")
-            .doc(currentProjectId)
-            .collection("history")
-            .doc(versionId)
-            .get();
+                const versionData = versionDoc.data();
 
-        if (!versionDoc.exists) {
-            showToast("Versão não encontrada.", "error");
-            return;
-        }
+                // Restaurar todos os dados
+                console.log("🔄 Restaurando dados da versão:", versionId);
 
-        const versionData = versionDoc.data();
+                if (versionData.progressData) {
+                    progressData = sanitizeProgressData(versionData.progressData);
+                    console.log("✓ progressData restaurado");
+                }
+                if (versionData.lineStepsStatus) {
+                    lineStepsStatus = versionData.lineStepsStatus;
+                    console.log("✓ lineStepsStatus restaurado");
+                }
+                if (versionData.executionDates) {
+                    executionDates = sanitizeExecutionDates(versionData.executionDates);
+                    console.log("✓ executionDates restaurado");
+                }
+                if (versionData.lineObservations) {
+                    lineObservations = versionData.lineObservations;
+                    console.log("✓ lineObservations restaurado");
+                }
+                if (versionData.builtInformations) {
+                    builtInformations = versionData.builtInformations;
+                    console.log("✓ builtInformations restaurado");
+                }
+                if (versionData.teamConfig) {
+                    const currentDate = teamConfig.dataAtual;
+                    Object.assign(teamConfig, versionData.teamConfig);
+                    teamConfig.dataAtual = currentDate;
+                    console.log("✓ teamConfig restaurado");
+                }
+                if (versionData.manualActiveUsina !== undefined) {
+                    manualActiveUsina = versionData.manualActiveUsina;
+                    console.log("✓ manualActiveUsina restaurado");
+                }
 
-        // Restaurar todos os dados
-        console.log("🔄 Restaurando dados da versão:", versionId);
+                console.log("💾 Salvando no localStorage...");
+                // Salvar no localStorage
+                saveProgressToStorage();
+                saveTeamConfigToStorage();
 
-        if (versionData.progressData) {
-            progressData = sanitizeProgressData(versionData.progressData);
-            console.log("✓ progressData restaurado");
-        }
-        if (versionData.lineStepsStatus) {
-            lineStepsStatus = versionData.lineStepsStatus;
-            console.log("✓ lineStepsStatus restaurado");
-        }
-        if (versionData.executionDates) {
-            executionDates = sanitizeExecutionDates(versionData.executionDates);
-            console.log("✓ executionDates restaurado");
-        }
-        if (versionData.lineObservations) {
-            lineObservations = versionData.lineObservations;
-            console.log("✓ lineObservations restaurado");
-        }
-        if (versionData.builtInformations) {
-            builtInformations = versionData.builtInformations;
-            console.log("✓ builtInformations restaurado");
-        }
-        if (versionData.teamConfig) {
-            const currentDate = teamConfig.dataAtual;
-            Object.assign(teamConfig, versionData.teamConfig);
-            teamConfig.dataAtual = currentDate;
-            console.log("✓ teamConfig restaurado");
-        }
-        if (versionData.manualActiveUsina !== undefined) {
-            manualActiveUsina = versionData.manualActiveUsina;
-            console.log("✓ manualActiveUsina restaurado");
-        }
+                // Salvar como versão atual no Firebase
+                await saveProjectData();
 
-        console.log("💾 Salvando no localStorage...");
-        // Salvar no localStorage
-        saveProgressToStorage();
-        saveTeamConfigToStorage();
+                // Atualizar interface
+                updateAllDisplays();
 
-        // Salvar como versão atual no Firebase
-        await saveProjectData();
+                // Fechar modal
+                closeVersionHistoryModal();
 
-        // Atualizar interface
-        updateAllDisplays();
+                const timestamp = versionData.savedAt
+                    ? new Date(versionData.savedAt.toDate()).toLocaleString("pt-BR")
+                    : "N/A";
 
-        // Fechar modal
-        closeVersionHistoryModal();
-
-        const timestamp = versionData.savedAt
-            ? new Date(versionData.savedAt.toDate()).toLocaleString("pt-BR")
-            : "N/A";
-
-        showToast(`Versão restaurada com sucesso!\nData da versão: ${timestamp}`, "success");
-    } catch (error) {
-        console.error("Erro ao restaurar versão:", error);
-        showToast("Erro ao restaurar versão.", "error");
-    }
+                showToast(
+                    `Versão restaurada com sucesso!\nData da versão: ${timestamp}`,
+                    "success"
+                );
+            } catch (error) {
+                console.error("Erro ao restaurar versão:", error);
+                showToast("Erro ao restaurar versão.", "error");
+            }
+        },
+    });
 }
 
 // Funções de exportação de relatórios
@@ -4743,6 +4823,8 @@ const exportedFunctions = {
     importProgressData,
     confirmImportData,
     cancelImportConfirm,
+    cancelConfirmAction,
+    confirmActionProceed,
     forceRestoreFromFirebase,
     restoreVersion,
     exportToPDF,

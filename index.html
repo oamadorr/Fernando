@@ -1509,6 +1509,34 @@
             </div>
         </div>
 
+        <!-- Modal genérico de confirmação -->
+        <div id="confirmActionModal" class="modal confirm-modal" onclick="App.cancelConfirmAction()">
+            <div class="modal-content confirm-card" onclick="event.stopPropagation()">
+                <button class="close-btn close-btn-ghost" onclick="App.cancelConfirmAction()">
+                    &times;
+                </button>
+                <div class="confirm-header">
+                    <div class="confirm-icon" id="confirmActionIcon">!</div>
+                    <div>
+                        <p class="confirm-eyebrow" id="confirmActionEyebrow">Confirmação</p>
+                        <h2 class="modal-title" id="confirmActionTitle" style="margin: 0">
+                            Confirmar ação
+                        </h2>
+                        <p class="confirm-subtitle" id="confirmActionSubtitle"></p>
+                    </div>
+                </div>
+                <pre id="confirmActionText" class="confirm-text"></pre>
+                <div class="confirm-actions">
+                    <button type="button" class="btn btn-secondary" onclick="App.cancelConfirmAction()" id="confirmActionCancel">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="App.confirmActionProceed()" id="confirmActionConfirm">
+                        <i class="fas fa-check"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal para observações -->
         <div id="observationModal" class="modal">
             <div class="modal-content">
