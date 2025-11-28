@@ -3086,6 +3086,7 @@ body {
     background: #f3f4f6;
     color: var(--dark-gray);
     font-weight: 700;
+    text-align: center;
 }
 
 .built-table tbody tr:nth-child(every) {
@@ -3103,6 +3104,7 @@ body {
 /* Evitar cursor de ajuda na tabela de Built */
 .built-table tbody tr {
     cursor: default;
+    text-align: center;
 }
 
 .built-input-cell {
