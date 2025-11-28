@@ -1791,12 +1791,12 @@ body {
 
 .progress-tooltip .tooltip-section-title {
     font-weight: 600;
-    color: #10b981;
+    color: #22c55e;
     margin-bottom: 4px;
 }
 
 .progress-tooltip .tooltip-section-title.pending {
-    color: #f59e0b;
+    color: #fbbf24;
 }
 
 .progress-tooltip .tooltip-lines {

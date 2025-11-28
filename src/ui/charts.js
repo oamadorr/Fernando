@@ -25,9 +25,15 @@ function addProgressTooltip(barItem, tipo, lineData, usinaKey) {
     const pendingLines = lineData.pending.length > 0 ? lineData.pending.join(", ") : "Nenhuma";
 
     tooltip.innerHTML = `
-            <div class="tooltip-title">Tipo ${tipo.toUpperCase()} (${usinaKey})</div>
-            <div><strong>Linhas concluídas:</strong> ${completedLines}</div>
-            <div><strong>Linhas pendentes:</strong> ${pendingLines}</div>
+            <div class="tooltip-title">Tipo ${tipo.toUpperCase()} • ${usinaKey}</div>
+            <div class="tooltip-section">
+                <div class="tooltip-section-title success">✅ Concluídas</div>
+                <div class="tooltip-lines">${completedLines}</div>
+            </div>
+            <div class="tooltip-section">
+                <div class="tooltip-section-title pending">⏳ Pendentes</div>
+                <div class="tooltip-lines">${pendingLines}</div>
+            </div>
         `;
 
     function ensureTooltip() {
