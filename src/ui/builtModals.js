@@ -48,11 +48,18 @@ export function createBuiltHandlers({
             });
 
             const total = pairKeys.reduce((sum, pair) => {
-                const value = parseFloat(pares[pair]);
+                const raw = pares[pair];
+                if (raw === null || raw === undefined || raw === "") return sum;
+                const normalized = String(raw).replace(",", ".").trim();
+                const value = parseFloat(normalized);
                 if (Number.isNaN(value)) return sum;
                 return sum + value;
             }, 0);
-            const hasNumericValues = pairKeys.some((pair) => !Number.isNaN(parseFloat(pares[pair])));
+            const hasNumericValues = pairKeys.some((pair) => {
+                const raw = pares[pair];
+                if (raw === null || raw === undefined || raw === "") return false;
+                return !Number.isNaN(parseFloat(String(raw).replace(",", ".").trim()));
+            });
 
             let rowHTML = `<tr>`;
             rowHTML += `<td style="font-weight: bold; color: var(--primary-blue);">Linha ${linha}</td>`;
