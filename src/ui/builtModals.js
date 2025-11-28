@@ -164,7 +164,7 @@ export function createBuiltHandlers({
                 pairs: ["01-02", "02-03", "03-04", "04-05", "05-06", "06-07", "07-08"],
             },
             {
-                label: "Transversais 19-71",
+                label: "Transversais 19 a 71",
                 lines: [
                     "19",
                     "20",
@@ -262,7 +262,7 @@ export function createBuiltHandlers({
                 ],
             },
             {
-                label: "Transversais 05-18",
+                label: "Transversais 05 a 18",
                 lines: [
                     "05",
                     "06",
