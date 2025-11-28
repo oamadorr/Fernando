@@ -2791,6 +2791,14 @@ body {
     background-color: var(--light-gray);
 }
 
+.built-total-cell {
+    font-weight: 700;
+    color: var(--dark-gray);
+    text-align: center;
+    background-color: #eef2ff;
+    border-left: 2px solid var(--border-gray);
+}
+
 /* Navegação rápida */
 .quick-nav {
     position: fixed;

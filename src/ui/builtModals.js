@@ -47,6 +47,13 @@ export function createBuiltHandlers({
                 return aNum - bNum;
             });
 
+            const total = pairKeys.reduce((sum, pair) => {
+                const value = parseFloat(pares[pair]);
+                if (Number.isNaN(value)) return sum;
+                return sum + value;
+            }, 0);
+            const hasNumericValues = pairKeys.some((pair) => !Number.isNaN(parseFloat(pares[pair])));
+
             let rowHTML = `<tr>`;
             rowHTML += `<td style="font-weight: bold; color: var(--primary-blue);">Linha ${linha}</td>`;
 
@@ -66,6 +73,9 @@ export function createBuiltHandlers({
             for (let i = currentCols; i < maxCols; i++) {
                 rowHTML += `<td class="empty-cell"></td>`;
             }
+
+            const totalDisplay = hasNumericValues ? total.toFixed(2) : "-";
+            rowHTML += `<td class="built-total-cell">${totalDisplay}</td>`;
 
             rowHTML += `</tr>`;
             html += rowHTML;
