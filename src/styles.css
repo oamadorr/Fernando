@@ -126,9 +126,9 @@ body {
 }
 
 .btn-secondary {
-    background-color: transparent;
+    background-color: var(--medium-gray);
     color: var(--white);
-    border: 2px solid var(--white);
+    border: 2px solid var(--medium-gray);
 }
 
 .btn:hover {
@@ -137,8 +137,9 @@ body {
 }
 
 .btn-secondary:hover {
-    background-color: var(--white);
-    color: var(--primary-blue);
+    background-color: var(--dark-gray);
+    color: var(--white);
+    border-color: var(--dark-gray);
 }
 
 /* Botão secundário para tabela */
