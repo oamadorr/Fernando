@@ -4842,6 +4842,7 @@ const exportedFunctions = {
     toggleStep,
     clearAllProgress,
     checkPassword,
+    showPasswordModal,
     closePasswordModal,
     closeVersionHistoryModal,
     exportProgressData,
