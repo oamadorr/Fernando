@@ -108,8 +108,8 @@ export function createTransversalHandlers({
     function enableTransversalEdit() {
         if (!getIsAuthenticated()) {
             setPendingAction(() => enableTransversalEdit());
-            if (typeof window.showPasswordModal === "function") {
-                window.showPasswordModal();
+            if (typeof window.App?.showPasswordModal === "function") {
+                window.App.showPasswordModal();
             }
             return;
         }
