@@ -112,8 +112,8 @@ export function createLineModalHandlers({
     function enableLineDetailsEdit() {
         if (!getIsAuthenticated()) {
             setPendingAction(() => enableLineDetailsEdit());
-            if (typeof window.showPasswordModal === "function") {
-                window.showPasswordModal();
+            if (typeof window.App?.showPasswordModal === "function") {
+                window.App.showPasswordModal();
             }
             return;
         }
