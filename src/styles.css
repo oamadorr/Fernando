@@ -126,9 +126,9 @@ body {
 }
 
 .btn-secondary {
-    background-color: var(--medium-gray);
+    background-color: transparent;
     color: var(--white);
-    border: 2px solid var(--medium-gray);
+    border: 2px solid var(--white);
 }
 
 .btn:hover {
@@ -137,6 +137,18 @@ body {
 }
 
 .btn-secondary:hover {
+    background-color: var(--white);
+    color: var(--primary-blue);
+}
+
+/* Botão modal - para botões Fechar nas modais */
+.btn-modal {
+    background-color: var(--medium-gray);
+    color: var(--white);
+    border: 2px solid var(--medium-gray);
+}
+
+.btn-modal:hover {
     background-color: var(--dark-gray);
     color: var(--white);
     border-color: var(--dark-gray);
