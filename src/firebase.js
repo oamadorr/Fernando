@@ -29,10 +29,10 @@ function initializeFirebase(onReady, onFallback) {
 }
 
 function applyTeamConfigFromFirebase(teamConfig, data) {
-    teamConfig = setTeamConfig({
+    const updatedConfig = {
         ...teamConfig,
         ...data.teamConfig,
-    });
+    };
 
     const rawInicio = data.teamConfig.inicioTrabalhoBruto;
     if (rawInicio) {
@@ -40,7 +40,7 @@ function applyTeamConfigFromFirebase(teamConfig, data) {
             typeof rawInicio?.toDate === "function"
                 ? rawInicio.toDate()
                 : new Date(rawInicio);
-        teamConfig.inicioTrabalhoBruto =
+        updatedConfig.inicioTrabalhoBruto =
             parsed instanceof Date && !isNaN(parsed.getTime())
                 ? parsed
                 : new Date("2025-09-11");
@@ -50,11 +50,12 @@ function applyTeamConfigFromFirebase(teamConfig, data) {
     if (rawDataAtual) {
         const parsed =
             typeof rawDataAtual?.toDate === "function" ? rawDataAtual.toDate() : new Date(rawDataAtual);
-        teamConfig.dataAtual =
+        updatedConfig.dataAtual =
             parsed instanceof Date && !isNaN(parsed.getTime()) ? parsed : new Date();
     }
 
-    return teamConfig;
+    setTeamConfig(updatedConfig);
+    return updatedConfig;
 }
 
 function applyFirebaseDataSnapshot(doc, opts) {
@@ -318,6 +319,7 @@ function setupRealtimeListener(db, currentProjectId, opts) {
                     const newExecutionDates = sanitizeExecutionDates(data.executionDates || {});
                     const newLineObservations = data.lineObservations || {};
                     const newBuiltInformations = sanitizeBuiltInformations(data.builtInformations || {});
+                    const newTeamConfig = data.teamConfig || null;
 
                     let hasChanges = false;
                     if (
@@ -349,6 +351,29 @@ function setupRealtimeListener(db, currentProjectId, opts) {
                         JSON.stringify(state.builtInformations)
                     ) {
                         setBuiltInformations(newBuiltInformations);
+                        hasChanges = true;
+                    }
+
+                    if (newTeamConfig && JSON.stringify(newTeamConfig) !== JSON.stringify(state.teamConfig)) {
+                        const updatedTeamConfig = { ...newTeamConfig };
+
+                        // Convert Firebase Timestamps to Date objects
+                        if (newTeamConfig.inicioTrabalhoBruto) {
+                            const rawInicio = newTeamConfig.inicioTrabalhoBruto;
+                            updatedTeamConfig.inicioTrabalhoBruto =
+                                typeof rawInicio?.toDate === "function"
+                                    ? rawInicio.toDate()
+                                    : new Date(rawInicio);
+                        }
+                        if (newTeamConfig.dataAtual) {
+                            const rawDataAtual = newTeamConfig.dataAtual;
+                            updatedTeamConfig.dataAtual =
+                                typeof rawDataAtual?.toDate === "function"
+                                    ? rawDataAtual.toDate()
+                                    : new Date(rawDataAtual);
+                        }
+
+                        setTeamConfig(updatedTeamConfig);
                         hasChanges = true;
                     }
 
