@@ -36,8 +36,8 @@ import state, {
     setDb,
     setCurrentProjectId,
     setAllowOnlineEdits,
-    setProgressData,
-    setLineStepsStatus,
+    setProgressData as setProgressDataState,
+    setLineStepsStatus as setLineStepsStatusState,
     setLineObservations,
     setBuiltInformations as setBuiltInformationsState,
     setTeamConfig,
@@ -133,10 +133,12 @@ const {
     getLineStepsStatus: () => lineStepsStatus,
     setLineStepsStatus: (value) => {
         lineStepsStatus = value;
+        setLineStepsStatusState(value); // Sync with state.js
     },
     getProgressData: () => progressData,
     setProgressData: (value) => {
         progressData = value;
+        setProgressDataState(value); // Sync with state.js
     },
     getProjectData: () => projectData,
 });
@@ -164,10 +166,12 @@ const {
     getLineStepsStatus: () => lineStepsStatus,
     setLineStepsStatus: (value) => {
         lineStepsStatus = value;
+        setLineStepsStatusState(value); // Sync with state.js
     },
     getProgressData: () => progressData,
     setProgressData: (value) => {
         progressData = value;
+        setProgressDataState(value); // Sync with state.js
     },
 });
 
@@ -1190,8 +1194,14 @@ configurePersistence({
     getLineObservations: () => lineObservations,
     getBuiltInformations: () => builtInformations,
     getProjectData: () => projectData,
-    setProgressData: (value) => (progressData = value),
-    setLineStepsStatus: (value) => (lineStepsStatus = value),
+    setProgressData: (value) => {
+        progressData = value;
+        setProgressDataState(value); // Sync with state.js
+    },
+    setLineStepsStatus: (value) => {
+        lineStepsStatus = value;
+        setLineStepsStatusState(value); // Sync with state.js
+    },
     setExecutionDates: (value) => (executionDates = value),
     setLineObservations: (value) => (lineObservations = value),
     setBuiltInformations: (value) => {
@@ -1204,8 +1214,8 @@ function syncLocalStateToModule() {
     setDb(db);
     setCurrentProjectId(currentProjectId);
     setAllowOnlineEdits(allowOnlineEdits);
-    setProgressData(progressData);
-    setLineStepsStatus(lineStepsStatus);
+    setProgressDataState(progressData);
+    setLineStepsStatusState(lineStepsStatus);
     setExecutionDates(executionDates);
     setLineObservations(lineObservations);
     setBuiltInformationsState(builtInformations);
