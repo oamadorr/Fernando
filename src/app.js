@@ -2796,7 +2796,9 @@ function enableTableEdit(usinaKey) {
 function cancelTableEdit(usinaKey) {
     // Restaurar backup
     if (tableEditBackup) {
-        lineStepsStatus = JSON.parse(JSON.stringify(tableEditBackup));
+        const restored = JSON.parse(JSON.stringify(tableEditBackup));
+        lineStepsStatus = restored;
+        setLineStepsStatusState(restored); // Sync with state.js
         tableEditBackup = null;
     }
 
@@ -3236,8 +3238,14 @@ function clearAllProgress() {
         cancelLabel: "Cancelar",
         icon: "🧹",
         onConfirm: async () => {
-            progressData = sanitizeProgressData({});
-            lineStepsStatus = ensureLineStepsStructure({}, progressData);
+            const sanitizedProgress = sanitizeProgressData({});
+            progressData = sanitizedProgress;
+            setProgressDataState(sanitizedProgress); // Sync with state.js
+
+            const ensuredSteps = ensureLineStepsStructure({}, progressData);
+            lineStepsStatus = ensuredSteps;
+            setLineStepsStatusState(ensuredSteps); // Sync with state.js
+
             executionDates = {};
             lineObservations = ensureUsinaBuckets({});
             builtInformations = sanitizeBuiltInformations({}, projectData);
@@ -3508,12 +3516,15 @@ function confirmImportData() {
 
         const sanitizedProgress = sanitizeProgressData(importData.progressData);
         progressData = sanitizedProgress;
+        setProgressDataState(sanitizedProgress); // Sync with state.js
 
         // Atualizar lineStepsStatus se estiver no backup
-        lineStepsStatus = ensureLineStepsStructure(
+        const ensuredLineSteps = ensureLineStepsStructure(
             hasLineSteps ? importData.lineStepsStatus : lineStepsStatus,
             sanitizedProgress
         );
+        lineStepsStatus = ensuredLineSteps;
+        setLineStepsStatusState(ensuredLineSteps); // Sync with state.js
 
         // Atualizar datas de execução se disponíveis
         if (hasExecutionDates) {
@@ -3908,11 +3919,14 @@ async function restoreVersion(versionId) {
                 console.log("🔄 Restaurando dados da versão:", versionId);
 
                 if (versionData.progressData) {
-                    progressData = sanitizeProgressData(versionData.progressData);
+                    const sanitizedProgress = sanitizeProgressData(versionData.progressData);
+                    progressData = sanitizedProgress;
+                    setProgressDataState(sanitizedProgress); // Sync with state.js
                     console.log("✓ progressData restaurado");
                 }
                 if (versionData.lineStepsStatus) {
                     lineStepsStatus = versionData.lineStepsStatus;
+                    setLineStepsStatusState(versionData.lineStepsStatus); // Sync with state.js
                     console.log("✓ lineStepsStatus restaurado");
                 }
                 if (versionData.executionDates) {
