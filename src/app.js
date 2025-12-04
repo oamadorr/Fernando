@@ -3553,7 +3553,8 @@ function confirmImportData() {
         }
 
         // Salvar no localStorage
-        saveProgressToStorage();
+        // Forçar persistência local mesmo em modo somente leitura/offline
+        saveProgressToStorage(true);
 
         // Salvar no Firebase também
         saveProjectData();
