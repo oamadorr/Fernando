@@ -3550,6 +3550,9 @@ function confirmImportData() {
             const currentDate = teamConfig.dataAtual;
             Object.assign(teamConfig, importData.teamConfig);
             teamConfig.dataAtual = currentDate;
+            validateAndFixTeamConfigDates();
+            setTeamConfig(teamConfig);
+            saveTeamConfigToStorage(true);
         }
 
         // Salvar no localStorage
