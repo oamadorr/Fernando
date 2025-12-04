@@ -211,12 +211,14 @@ export function createTransversalHandlers({
                 });
             });
 
+            // Manter state.js sincronizado como nas demais telas de edição
+            setLineStepsStatus(JSON.parse(JSON.stringify(lineStepsStatus)));
+            setProgressData(JSON.parse(JSON.stringify(progressData)));
+
             saveLineStepsToStorage();
             saveProgressToStorage();
 
-            if (typeof window.db !== "undefined" && window.db && window.currentProjectId) {
-                await saveProjectData();
-            }
+            await saveProjectData();
 
             transversalEditBackup = null;
 

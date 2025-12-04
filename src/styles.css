@@ -1428,7 +1428,7 @@ body {
 }
 
 .transversal-line-mini.completed {
-    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+    background: var(--success-green);
 }
 
 .transversal-line-mini.in-progress {
