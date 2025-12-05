@@ -13,6 +13,7 @@ import {
     sanitizeProgressData,
     sanitizeExecutionDates,
     sanitizeBuiltInformations,
+    sanitizeTeamConfig,
 } from "./utils/sanitize.js";
 import { migrateProgressDataIfNeeded } from "./persistence.js";
 
@@ -29,33 +30,13 @@ function initializeFirebase(onReady, onFallback) {
 }
 
 function applyTeamConfigFromFirebase(teamConfig, data) {
-    const updatedConfig = {
+    const mergedConfig = {
         ...teamConfig,
-        ...data.teamConfig,
+        ...(data.teamConfig || {}),
     };
-
-    const rawInicio = data.teamConfig.inicioTrabalhoBruto;
-    if (rawInicio) {
-        const parsed =
-            typeof rawInicio?.toDate === "function"
-                ? rawInicio.toDate()
-                : new Date(rawInicio);
-        updatedConfig.inicioTrabalhoBruto =
-            parsed instanceof Date && !isNaN(parsed.getTime())
-                ? parsed
-                : new Date("2025-09-11");
-    }
-
-    const rawDataAtual = data.teamConfig.dataAtual;
-    if (rawDataAtual) {
-        const parsed =
-            typeof rawDataAtual?.toDate === "function" ? rawDataAtual.toDate() : new Date(rawDataAtual);
-        updatedConfig.dataAtual =
-            parsed instanceof Date && !isNaN(parsed.getTime()) ? parsed : new Date();
-    }
-
-    setTeamConfig(updatedConfig);
-    return updatedConfig;
+    const sanitizedConfig = sanitizeTeamConfig(mergedConfig);
+    setTeamConfig(sanitizedConfig);
+    return sanitizedConfig;
 }
 
 function applyFirebaseDataSnapshot(doc, opts) {
@@ -245,8 +226,10 @@ async function saveProjectData(db, currentProjectId, options = {}) {
     try {
         const sanitizedExec = sanitizeExecutionDates(state.executionDates);
         const sanitizedProgress = sanitizeProgressData(state.progressData);
+        const sanitizedTeamConfig = sanitizeTeamConfig(state.teamConfig);
         setExecutionDates(sanitizedExec);
         setProgressData(sanitizedProgress);
+        setTeamConfig(sanitizedTeamConfig);
 
         const simplifiedData =
             projectDataPartial ||
@@ -259,7 +242,7 @@ async function saveProjectData(db, currentProjectId, options = {}) {
             progressData: sanitizedProgress,
             lineStepsStatus: state.lineStepsStatus,
             executionDates: sanitizedExec,
-            teamConfig: state.teamConfig,
+            teamConfig: sanitizedTeamConfig,
             manualActiveUsina: state.manualActiveUsina,
             projectData: simplifiedData,
             lineObservations: state.lineObservations,
@@ -274,7 +257,7 @@ async function saveProjectData(db, currentProjectId, options = {}) {
             progressData: sanitizedProgress,
             lineStepsStatus: state.lineStepsStatus,
             executionDates: sanitizedExec,
-            teamConfig: state.teamConfig,
+            teamConfig: sanitizedTeamConfig,
             lineObservations: state.lineObservations,
             builtInformations: state.builtInformations,
             savedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -355,25 +338,11 @@ function setupRealtimeListener(db, currentProjectId, opts) {
                     }
 
                     if (newTeamConfig && JSON.stringify(newTeamConfig) !== JSON.stringify(state.teamConfig)) {
-                        const updatedTeamConfig = { ...newTeamConfig };
-
-                        // Convert Firebase Timestamps to Date objects
-                        if (newTeamConfig.inicioTrabalhoBruto) {
-                            const rawInicio = newTeamConfig.inicioTrabalhoBruto;
-                            updatedTeamConfig.inicioTrabalhoBruto =
-                                typeof rawInicio?.toDate === "function"
-                                    ? rawInicio.toDate()
-                                    : new Date(rawInicio);
-                        }
-                        if (newTeamConfig.dataAtual) {
-                            const rawDataAtual = newTeamConfig.dataAtual;
-                            updatedTeamConfig.dataAtual =
-                                typeof rawDataAtual?.toDate === "function"
-                                    ? rawDataAtual.toDate()
-                                    : new Date(rawDataAtual);
-                        }
-
-                        setTeamConfig(updatedTeamConfig);
+                        const sanitizedTeamConfig = sanitizeTeamConfig({
+                            ...state.teamConfig,
+                            ...newTeamConfig,
+                        });
+                        setTeamConfig(sanitizedTeamConfig);
                         hasChanges = true;
                     }
 

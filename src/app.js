@@ -11,6 +11,7 @@ import {
     getExecutionDateForLine,
     sanitizeBuiltInformations,
     getBuiltPairCount,
+    sanitizeTeamConfig,
 } from "./utils/sanitize.js";
 import {
     initializeFirebase as initializeFirebaseModule,
@@ -1246,39 +1247,8 @@ async function initializePasswordHash() {
 
 // Função centralizada para garantir datas válidas no teamConfig
 function validateAndFixTeamConfigDates() {
-    // Sempre garantir data de início fixa
-    if (
-        !teamConfig.inicioTrabalhoBruto ||
-        !(teamConfig.inicioTrabalhoBruto instanceof Date) ||
-        isNaN(teamConfig.inicioTrabalhoBruto.getTime())
-    ) {
-        teamConfig.inicioTrabalhoBruto = new Date("2025-09-11");
-    }
-
-    // Data atual sempre deve ser Date válida
-    if (
-        !teamConfig.dataAtual ||
-        !(teamConfig.dataAtual instanceof Date) ||
-        isNaN(teamConfig.dataAtual.getTime())
-    ) {
-        teamConfig.dataAtual = new Date();
-    }
-
-    // Garantir outras propriedades padrão
-    if (typeof teamConfig.pessoas !== "number" || teamConfig.pessoas <= 0) {
-        teamConfig.pessoas = 4;
-    }
-    if (typeof teamConfig.horasPorDia !== "number" || teamConfig.horasPorDia <= 0) {
-        teamConfig.horasPorDia = 6;
-    }
-    if (
-        typeof teamConfig.aproveitamento !== "number" ||
-        teamConfig.aproveitamento <= 0 ||
-        teamConfig.aproveitamento > 1
-    ) {
-        teamConfig.aproveitamento = 0.8;
-    }
-
+    teamConfig = sanitizeTeamConfig(teamConfig);
+    setTeamConfig(teamConfig);
     console.log("TeamConfig validado:", teamConfig);
 }
 
@@ -1877,6 +1847,8 @@ async function saveProjectData() {
     try {
         executionDates = sanitizeExecutionDates(executionDates);
         progressData = sanitizeProgressData(progressData);
+        teamConfig = sanitizeTeamConfig(teamConfig);
+        setTeamConfig(teamConfig);
         const simplifiedData = {
             pimental: { progress: calculateProgressOfUsina("pimental") },
             "belo-monte": { progress: calculateProgressOfUsina("belo-monte") },
@@ -3181,29 +3153,11 @@ function loadTeamConfigFromStorage() {
     if (stored) {
         try {
             const loadedConfig = JSON.parse(stored);
-
-            // Aplicar dados carregados
-            teamConfig = {
+            teamConfig = sanitizeTeamConfig({
                 ...teamConfig,
                 ...loadedConfig,
-            };
-
-            // Converter datas se necessário
-            if (loadedConfig.inicioTrabalhoBruto) {
-                try {
-                    teamConfig.inicioTrabalhoBruto = new Date(loadedConfig.inicioTrabalhoBruto);
-                } catch {
-                    teamConfig.inicioTrabalhoBruto = new Date("2025-09-11");
-                }
-            }
-
-            if (loadedConfig.dataAtual) {
-                try {
-                    teamConfig.dataAtual = new Date(loadedConfig.dataAtual);
-                } catch {
-                    teamConfig.dataAtual = new Date();
-                }
-            }
+            });
+            setTeamConfig(teamConfig);
         } catch (error) {
             console.error("Erro ao carregar config:", error);
         }
@@ -3213,7 +3167,7 @@ function loadTeamConfigFromStorage() {
     validateAndFixTeamConfigDates();
 
     // Salvar configuração atualizada para garantir persistência
-    saveTeamConfigToStorage();
+    saveTeamConfigToStorage(true);
 }
 
 function saveLineStepsToStorage(force = false) {
@@ -3330,6 +3284,9 @@ function exportProgressData() {
     const totalItems = totalBases + calculateTotalCableSteps();
     const progressPercent =
         totalItems > 0 ? ((completedBases + completedCableSteps) / totalItems) * 100 : 0;
+
+    teamConfig = sanitizeTeamConfig(teamConfig);
+    setTeamConfig(teamConfig);
 
     const teamConfigForExport = {
         ...teamConfig,
@@ -3548,9 +3505,11 @@ function confirmImportData() {
         // Atualizar teamConfig se disponível
         if (importData.teamConfig) {
             const currentDate = teamConfig.dataAtual;
-            Object.assign(teamConfig, importData.teamConfig);
-            teamConfig.dataAtual = currentDate;
-            validateAndFixTeamConfigDates();
+            teamConfig = sanitizeTeamConfig({
+                ...teamConfig,
+                ...importData.teamConfig,
+                dataAtual: currentDate,
+            });
             setTeamConfig(teamConfig);
             saveTeamConfigToStorage(true);
         }

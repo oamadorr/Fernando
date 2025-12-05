@@ -2,6 +2,18 @@ import state from "../state.js";
 
 const { projectData } = state;
 
+function normalizeDate(rawValue, fallbackDate) {
+    if (!rawValue) return new Date(fallbackDate);
+
+    if (typeof rawValue?.toDate === "function") {
+        const parsed = rawValue.toDate();
+        return parsed instanceof Date && !isNaN(parsed.getTime()) ? parsed : new Date(fallbackDate);
+    }
+
+    const parsed = rawValue instanceof Date ? rawValue : new Date(rawValue);
+    return parsed instanceof Date && !isNaN(parsed.getTime()) ? parsed : new Date(fallbackDate);
+}
+
 function getBuiltPairCount(usinaKey, linhaKey, projectDataOverride = projectData) {
     const linha = String(linhaKey);
 
@@ -152,6 +164,42 @@ function formatExecutionDateForDisplay(value) {
     return `${day}/${month}/${year}`;
 }
 
+function sanitizeTeamConfig(rawConfig = {}) {
+    const defaults = {
+        pessoas: 4,
+        horasPorDia: 6,
+        aproveitamento: 0.8,
+        inicioTrabalhoBruto: new Date("2025-09-11"),
+        dataAtual: new Date(),
+    };
+
+    const merged = {
+        ...defaults,
+        ...(rawConfig || {}),
+    };
+
+    const inicioTrabalhoBruto = normalizeDate(merged.inicioTrabalhoBruto, defaults.inicioTrabalhoBruto);
+    const dataAtual = normalizeDate(merged.dataAtual, new Date());
+
+    const pessoas = typeof merged.pessoas === "number" && merged.pessoas > 0 ? merged.pessoas : defaults.pessoas;
+    const horasPorDia =
+        typeof merged.horasPorDia === "number" && merged.horasPorDia > 0 ? merged.horasPorDia : defaults.horasPorDia;
+    const aproveitamento =
+        typeof merged.aproveitamento === "number" &&
+        merged.aproveitamento > 0 &&
+        merged.aproveitamento <= 1
+            ? merged.aproveitamento
+            : defaults.aproveitamento;
+
+    return {
+        pessoas,
+        horasPorDia,
+        aproveitamento,
+        inicioTrabalhoBruto,
+        dataAtual,
+    };
+}
+
 export {
     sanitizeProgressData,
     normalizeExecutionDateValue,
@@ -160,4 +208,5 @@ export {
     formatExecutionDateForDisplay,
     sanitizeBuiltInformations,
     getBuiltPairCount,
+    sanitizeTeamConfig,
 };
