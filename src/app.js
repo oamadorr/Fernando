@@ -33,6 +33,7 @@ import { createLineModalHandlers } from "./ui/lineModals.js";
 import { createBuiltHandlers } from "./ui/builtModals.js";
 import { createUpdateModalHandlers } from "./ui/updateModal.js";
 import { initializeCharts, updateCharts, updateChartInfos } from "./ui/charts.js";
+import { createPWAInstallManager } from "./pwa-install.js";
 import state, {
     setDb,
     setCurrentProjectId,
@@ -4846,6 +4847,10 @@ const exportedFunctions = {
 
 // Encapsular handlers públicos em um único namespace
 window.App = Object.freeze({ ...exportedFunctions });
+
+// Inicializar PWA Install Manager
+const pwaInstallManager = createPWAInstallManager();
+pwaInstallManager.init();
 
 // Inicializar aplicação quando a página carregar
 window.addEventListener("load", function () {
