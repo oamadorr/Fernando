@@ -6,28 +6,66 @@
 export function createPWAInstallManager() {
     let deferredPrompt = null;
     let installBanner = null;
-
-    // Detectar se é mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-    );
-
-    // Detectar se já está instalado
-    const isInstalled = window.matchMedia("(display-mode: standalone)").matches ||
-                       window.navigator.standalone === true;
-
-    // Detectar iOS
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    let hasShownBanner = false;
 
     /**
-     * Mostrar banner de instalação customizado (para iOS e fallback)
+     * Detectar se é mobile
+     */
+    function isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+        );
+    }
+
+    /**
+     * Detectar iOS
+     */
+    function isIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    }
+
+    /**
+     * Detectar se já está instalado
+     */
+    function isInstalled() {
+        return window.matchMedia("(display-mode: standalone)").matches ||
+               window.navigator.standalone === true;
+    }
+
+    /**
+     * Verificar se usuário dispensou recentemente
+     */
+    function wasRecentlyDismissed() {
+        try {
+            const dismissedUntil = localStorage.getItem("pwa-install-dismissed");
+            if (!dismissedUntil) return false;
+            return Date.now() < parseInt(dismissedUntil, 10);
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Mostrar banner de instalação
      */
     function showInstallBanner() {
-        // Não mostrar se já estiver instalado
-        if (isInstalled) return;
+        // Não mostrar se já está instalado
+        if (isInstalled()) {
+            console.log("📱 PWA já está instalado");
+            return;
+        }
 
         // Não mostrar se já recusou anteriormente
-        if (localStorage.getItem("pwa-install-dismissed")) return;
+        if (wasRecentlyDismissed()) {
+            console.log("⏭️ PWA install banner dispensado recentemente");
+            return;
+        }
+
+        // Não mostrar se já apareceu antes
+        if (hasShownBanner) return;
+        hasShownBanner = true;
+
+        const ios = isIOS();
 
         // Criar banner
         installBanner = document.createElement("div");
@@ -40,41 +78,48 @@ export function createPWAInstallManager() {
                 <div class="pwa-banner-text">
                     <div class="pwa-banner-title">Instalar App</div>
                     <div class="pwa-banner-message">
-                        ${isIOS
+                        ${ios
                             ? 'Adicione à tela inicial para acesso rápido'
                             : 'Instale o aplicativo para melhor experiência'
                         }
                     </div>
-                    ${isIOS ? `
+                    ${ios ? `
                         <div class="pwa-banner-ios-hint">
-                            <i class="fas fa-share-square"></i>
+                            <span class="ios-icon-share"></span>
                             Toque em Compartilhar e depois "Adicionar à Tela de Início"
                         </div>
                     ` : ''}
                 </div>
                 <button class="pwa-banner-install-btn" id="pwaInstallBtn">
-                    ${isIOS ? 'OK' : 'Instalar'}
+                    ${ios ? 'OK' : 'Instalar'}
                 </button>
                 <button class="pwa-banner-close-btn" id="pwaCloseBtn" aria-label="Fechar">
-                    <i class="fas fa-times"></i>
+                    <span class="close-icon">×</span>
                 </button>
             </div>
         `;
 
         document.body.appendChild(installBanner);
 
-        // Adicionar evento de fechar
-        document.getElementById("pwaCloseBtn").addEventListener("click", dismissBanner);
-        document.getElementById("pwaInstallBtn").addEventListener("click", handleInstallClick);
+        // Adicionar eventos
+        const closeBtn = document.getElementById("pwaCloseBtn");
+        const installBtn = document.getElementById("pwaInstallBtn");
+
+        if (closeBtn) closeBtn.addEventListener("click", dismissBanner);
+        if (installBtn) installBtn.addEventListener("click", handleInstallClick);
 
         // Animar entrada
-        setTimeout(() => {
-            installBanner.classList.add("pwa-banner-visible");
-        }, 1000);
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                if (installBanner) {
+                    installBanner.classList.add("pwa-banner-visible");
+                }
+            }, 100);
+        });
     }
 
     /**
-     * Dispensar banner e lembrar preferência
+     * Dispensar banner
      */
     function dismissBanner() {
         if (installBanner) {
@@ -85,10 +130,14 @@ export function createPWAInstallManager() {
                     installBanner = null;
                 }
             }, 300);
+        }
 
-            // Lembrar que usuário dispensou (só mostrar novamente após 7 dias)
+        // Lembrar preferência por 7 dias
+        try {
             const dismissedUntil = Date.now() + (7 * 24 * 60 * 60 * 1000);
             localStorage.setItem("pwa-install-dismissed", dismissedUntil.toString());
+        } catch (e) {
+            console.warn("Não foi possível salvar preferência:", e);
         }
     }
 
@@ -97,85 +146,84 @@ export function createPWAInstallManager() {
      */
     function handleInstallClick() {
         if (deferredPrompt) {
-            // Instalação nativa (Android/Desktop)
+            // Instalação nativa (Chrome/Edge)
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === "accepted") {
-                    console.log("✅ PWA instalado com sucesso");
+                    console.log("✅ PWA instalado");
                 } else {
                     console.log("❌ Instalação recusada");
                 }
                 deferredPrompt = null;
-                if (installBanner) {
-                    dismissBanner();
-                }
+                if (installBanner) dismissBanner();
+            }).catch(() => {
+                if (installBanner) dismissBanner();
             });
-        } else if (isIOS) {
-            // iOS - mostrar instruções
-            const iOSHint = installBanner.querySelector(".pwa-banner-ios-hint");
-            if (iOSHint) {
-                iOSHint.style.display = iOSHint.style.display === "none" ? "block" : "none";
-            }
+        } else if (isIOS()) {
+            // iOS - fechar após instruções
             setTimeout(() => {
-                dismissBanner();
-            }, 5000);
+                if (installBanner) dismissBanner();
+            }, 3000);
         } else {
-            // Fallback - dispenser
-            dismissBanner();
+            if (installBanner) dismissBanner();
         }
     }
 
     /**
-     * Inicializar gerenciador de instalação
+     * Inicializar
      */
     function init() {
         // Se já está instalado, não fazer nada
-        if (isInstalled) {
-            console.log("📱 PWA já está instalado");
+        if (isInstalled()) {
+            console.log("📱 App já está rodando como PWA instalado");
             return;
         }
 
-        // Verificar se usuário dispensou recentemente
-        const dismissedUntil = localStorage.getItem("pwa-install-dismissed");
-        if (dismissedUntil && Date.now() < parseInt(dismissedUntil, 10)) {
-            console.log("⏭️ PWA install banner dispensado recentemente");
+        // Se dispensou recentemente, não mostrar
+        if (wasRecentlyDismissed()) {
+            console.log("⏭️ Banner dispensado recentemente");
             return;
         }
 
-        // Listener para instalação nativa (Chrome/Edge Android)
+        // Listener para beforeinstallprompt (Chrome/Edge Android)
         window.addEventListener("beforeinstallprompt", (e) => {
-            console.log("📱 Evento beforeinstallprompt detectado");
+            console.log("📱 beforeinstallprompt detectado");
             e.preventDefault();
             deferredPrompt = e;
 
-            // Mostrar banner após 3 segundos
+            // Mostrar banner após 2 segundos
             setTimeout(() => {
-                showInstallBanner();
-            }, 3000);
+                if (!hasShownBanner) {
+                    showInstallBanner();
+                }
+            }, 2000);
         });
 
         // Listener para app instalado
         window.addEventListener("appinstalled", () => {
-            console.log("✅ PWA instalado com sucesso!");
-            if (installBanner) {
-                dismissBanner();
-            }
-            localStorage.removeItem("pwa-install-dismissed");
+            console.log("✅ PWA instalado!");
+            if (installBanner) dismissBanner();
+            try {
+                localStorage.removeItem("pwa-install-dismissed");
+            } catch (e) {}
         });
 
-        // Para iOS, mostrar banner após alguns segundos
-        // (pois não há evento nativo de instalação)
-        if (isIOS && isMobile) {
+        // Para iOS, mostrar banner automaticamente
+        if (isIOS()) {
             setTimeout(() => {
-                showInstallBanner();
-            }, 5000);
+                if (!hasShownBanner && !deferredPrompt) {
+                    showInstallBanner();
+                }
+            }, 4000);
         }
 
-        // Para mobile Android sem beforeinstallprompt (fallback)
-        if (isMobile && !isIOS && !deferredPrompt) {
+        // Para Android/iOS geral, mostrar após delay se beforeinstallprompt não disparou
+        if (isMobile()) {
             setTimeout(() => {
-                showInstallBanner();
-            }, 5000);
+                if (!hasShownBanner && !deferredPrompt) {
+                    showInstallBanner();
+                }
+            }, 6000);
         }
     }
 

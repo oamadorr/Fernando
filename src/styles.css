@@ -3442,3 +3442,32 @@ body {
 .pwa-install-banner.pwa-banner-visible .pwa-banner-install-btn {
     animation: pwa-pulse 2s ease-in-out infinite;
 }
+
+/* Ícones do banner PWA (sem Font Awesome) */
+.pwa-banner-close-btn .close-icon {
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 300;
+}
+
+.pwa-banner-ios-hint .ios-icon-share {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+    position: relative;
+}
+
+.pwa-banner-ios-hint .ios-icon-share::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 6px;
+    height: 6px;
+    border: 2px solid white;
+    border-radius: 50%;
+}
