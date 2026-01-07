@@ -306,8 +306,8 @@ export function createBuiltHandlers({
             usinaKey === "pimental"
                 ? "tableBuiltPimental"
                 : usinaKey === "belo-monte"
-                  ? "tableBuiltBeloMonte"
-                  : "tableBuiltOficina";
+                    ? "tableBuiltBeloMonte"
+                    : "tableBuiltOficina";
         const table = document.getElementById(tableId);
         if (!table) return;
 
