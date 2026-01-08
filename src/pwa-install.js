@@ -7,23 +7,32 @@ export function createPWAInstallManager() {
     let deferredPrompt = null;
     let installBanner = null;
     let hasShownBanner = false;
+    let initTimeout = null;
 
-    console.log('📱 [PWA] Module loaded');
+    console.log('[PWA] Module loaded');
 
     /**
      * Detectar se é mobile
      */
     function isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-            navigator.userAgent
-        );
+        const ua = navigator.userAgent;
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
     }
 
     /**
      * Detectar iOS
      */
     function isIOS() {
-        return /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const ua = navigator.userAgent;
+        return /iPad|iPhone|iPod/.test(ua);
+    }
+
+    /**
+     * Detectar Android
+     */
+    function isAndroid() {
+        const ua = navigator.userAgent;
+        return /Android/i.test(ua);
     }
 
     /**
@@ -51,29 +60,36 @@ export function createPWAInstallManager() {
      * Mostrar banner de instalação
      */
     function showInstallBanner() {
-        console.log('📱 [PWA] showInstallBanner called');
+        console.log('[PWA] showInstallBanner called');
 
-        // Não mostrar se já está instalado
+        // Verificações antes de mostrar
         if (isInstalled()) {
-            console.log("📱 [PWA] Já está instalado, não mostrando banner");
+            console.log('[PWA] App já instalado');
             return;
         }
 
-        // Não mostrar se já recusou anteriormente
         if (wasRecentlyDismissed()) {
-            console.log("📱 [PWA] Banner dispensado recentemente");
+            console.log('[PWA] Dispensado recentemente');
             return;
         }
 
-        // Não mostrar se já apareceu antes
         if (hasShownBanner) {
-            console.log("📱 [PWA] Banner já foi mostrado nesta sessão");
+            console.log('[PWA] Já mostrado nesta sessão');
             return;
         }
+
+        // Limpar timeout pendente
+        if (initTimeout) {
+            clearTimeout(initTimeout);
+            initTimeout = null;
+        }
+
         hasShownBanner = true;
 
         const ios = isIOS();
-        console.log('📱 [PWA] Criando banner - iOS:', ios);
+        const android = isAndroid();
+
+        console.log('[PWA] Criando banner - iOS:', ios, 'Android:', android);
 
         // Criar banner
         installBanner = document.createElement("div");
@@ -87,13 +103,13 @@ export function createPWAInstallManager() {
                     <div class="pwa-banner-title">Instalar App</div>
                     <div class="pwa-banner-message">
                         ${ios
-                            ? 'Adicione à tela inicial'
-                            : 'Instale o aplicativo'
+                            ? 'Adicione à tela inicial para acesso rápido'
+                            : 'Instale o aplicativo para melhor experiência'
                         }
                     </div>
                     ${ios ? `
                         <div class="pwa-banner-ios-hint">
-                            Toque em Compartilhar → Adicionar à Tela de Início
+                            Toque em Compartilhar → "Adicionar à Tela de Início"
                         </div>
                     ` : ''}
                 </div>
@@ -107,21 +123,25 @@ export function createPWAInstallManager() {
         `;
 
         document.body.appendChild(installBanner);
-        console.log('📱 [PWA] Banner adicionado ao DOM');
+        console.log('[PWA] Banner adicionado ao DOM');
 
         // Adicionar eventos
         const closeBtn = document.getElementById("pwaCloseBtn");
         const installBtn = document.getElementById("pwaInstallBtn");
 
-        if (closeBtn) closeBtn.addEventListener("click", dismissBanner);
-        if (installBtn) installBtn.addEventListener("click", handleInstallClick);
+        if (closeBtn) {
+            closeBtn.addEventListener("click", dismissBanner);
+        }
+        if (installBtn) {
+            installBtn.addEventListener("click", handleInstallClick);
+        }
 
         // Animar entrada
         requestAnimationFrame(() => {
             setTimeout(() => {
                 if (installBanner) {
                     installBanner.classList.add("pwa-banner-visible");
-                    console.log('📱 [PWA] Banner tornando visível');
+                    console.log('[PWA] Banner visível');
                 }
             }, 100);
         });
@@ -131,7 +151,7 @@ export function createPWAInstallManager() {
      * Dispensar banner
      */
     function dismissBanner() {
-        console.log('📱 [PWA] Dispensando banner');
+        console.log('[PWA] Dispensando banner');
         if (installBanner) {
             installBanner.classList.remove("pwa-banner-visible");
             setTimeout(() => {
@@ -146,7 +166,7 @@ export function createPWAInstallManager() {
             const dismissedUntil = Date.now() + (7 * 24 * 60 * 60 * 1000);
             localStorage.setItem("pwa-install-dismissed", dismissedUntil.toString());
         } catch (e) {
-            console.warn('[PWA] Não foi possível salvar:', e);
+            console.warn('[PWA] Erro ao salvar:', e);
         }
     }
 
@@ -154,21 +174,25 @@ export function createPWAInstallManager() {
      * Lidar com clique no botão instalar
      */
     function handleInstallClick() {
-        console.log('📱 [PWA] Botão instalar clicado');
+        console.log('[PWA] Botão instalar clicado, deferredPrompt:', !!deferredPrompt);
+
         if (deferredPrompt) {
+            // Instalação nativa (Chrome Android)
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
-                console.log('📱 [PWA] Escolha:', choiceResult.outcome);
+                console.log('[PWA] Escolha:', choiceResult.outcome);
                 deferredPrompt = null;
                 if (installBanner) dismissBanner();
-            }).catch(() => {
+            }).catch((err) => {
+                console.error('[PWA] Erro no prompt:', err);
                 if (installBanner) dismissBanner();
             });
         } else {
-            console.log('📱 [PWA] Sem deferredPrompt, fechando banner');
+            // Sem deferredPrompt - instruir ou fechar
+            console.log('[PWA] Sem deferredPrompt');
             setTimeout(() => {
                 if (installBanner) dismissBanner();
-            }, 2000);
+            }, 1500);
         }
     }
 
@@ -176,63 +200,72 @@ export function createPWAInstallManager() {
      * Inicializar
      */
     function init() {
-        console.log('📱 [PWA] init() called');
-        console.log('📱 [PWA] isMobile:', isMobile());
-        console.log('📱 [PWA] isIOS:', isIOS());
-        console.log('📱 [PWA] isInstalled:', isInstalled());
-        console.log('📱 [PWA] wasRecentlyDismissed:', wasRecentlyDismissed());
+        const mobile = isMobile();
+        const ios = isIOS();
+        const android = isAndroid();
+        const installed = isInstalled();
+        const dismissed = wasRecentlyDismissed();
+
+        console.log('[PWA] init - mobile:', mobile, 'iOS:', ios, 'Android:', android, 'installed:', installed, 'dismissed:', dismissed);
+        console.log('[PWA] UserAgent:', navigator.userAgent);
 
         // Se já está instalado
-        if (isInstalled()) {
-            console.log("📱 [PWA] App já instalado, saindo");
+        if (installed) {
+            console.log('[PWA] App já instalado, saindo');
             return;
         }
 
         // Se dispensou recentemente
-        if (wasRecentlyDismissed()) {
-            console.log("📱 [PWA] Banner dispensado recentemente, saindo");
+        if (dismissed) {
+            console.log('[PWA] Dispensado recentemente, saindo');
             return;
         }
 
-        // Listener beforeinstallprompt
+        // Listener beforeinstallprompt (Chrome/Edge)
         window.addEventListener("beforeinstallprompt", (e) => {
-            console.log("📱 [PWA] beforeinstallprompt evento recebido!");
+            console.log('[PWA] beforeinstallprompt recebido!');
             e.preventDefault();
             deferredPrompt = e;
-            setTimeout(() => {
-                if (!hasShownBanner) showInstallBanner();
-            }, 2000);
+
+            // Mostrar banner após 1.5s do evento
+            initTimeout = setTimeout(() => {
+                if (!hasShownBanner) {
+                    showInstallBanner();
+                }
+            }, 1500);
         });
 
         // Listener appinstalled
         window.addEventListener("appinstalled", () => {
-            console.log("📱 [PWA] appinstalled evento!");
+            console.log('[PWA] appinstalled recebido!');
             if (installBanner) dismissBanner();
             try {
                 localStorage.removeItem("pwa-install-dismissed");
             } catch (e) {}
         });
 
-        // iOS: mostrar banner após 4 segundos
-        if (isIOS()) {
-            console.log("📱 [PWA] Detectado iOS, mostrando banner em 4s");
-            setTimeout(() => {
-                if (!hasShownBanner) showInstallBanner();
-            }, 4000);
-        }
-
-        // Mobile geral: mostrar após 6 segundos se não houve beforeinstallprompt
-        if (isMobile()) {
-            console.log("📱 [PWA] Detectado mobile, mostrar banner em 6s se necessário");
-            setTimeout(() => {
-                if (!hasShownBanner && !deferredPrompt) {
-                    console.log("📱 [PWA] Mostrando banner para mobile (fallback)");
+        // iOS: mostrar banner após 3.5s
+        if (ios) {
+            console.log('[PWA] iOS detectado, agendando banner em 3.5s');
+            initTimeout = setTimeout(() => {
+                if (!hasShownBanner) {
                     showInstallBanner();
                 }
-            }, 6000);
+            }, 3500);
         }
 
-        console.log("📱 [PWA] init() completo - aguardando eventos");
+        // Android: mostrar banner após 5s se beforeinstallprompt não disparou
+        if (android) {
+            console.log('[PWA] Android detectado, agendando banner em 5s (fallback)');
+            initTimeout = setTimeout(() => {
+                if (!hasShownBanner) {
+                    console.log('[PWA] Timeout Android - mostrando banner');
+                    showInstallBanner();
+                }
+            }, 5000);
+        }
+
+        console.log('[PWA] init completo');
     }
 
     return {
